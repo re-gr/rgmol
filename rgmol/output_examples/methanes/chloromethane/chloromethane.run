@@ -1,0 +1,39 @@
+#!/bin/sh
+
+"$AMSBIN/ams" << eor
+
+Task SinglePoint
+Properties
+    NormalModes Yes
+End
+System
+    Atoms
+        C -0.008952495509201788 -0.008952495509201781 -0.008952495509201788 
+        Cl 1.022521460904516 1.022521460904516 1.022521460904516 
+        H -0.627876056304104 0.6351297853134019 -0.627876056304104 
+        H 0.6351297853134019 -0.627876056304104 -0.627876056304104 
+        H -0.627876056304104 -0.627876056304104 0.6351297853134019 
+    End
+    BondOrders
+         1 2 1.0
+         1 3 1.0
+         1 4 1.0
+         1 5 1.0
+    End
+End
+
+Engine ADF
+    Basis
+        Type TZP
+        Core None
+    End
+    XC
+        Hybrid PBE0
+    End
+    ConceptualDFT
+        Enabled Yes
+        AnalysisLevel Full
+    End
+EndEngine
+eor
+
