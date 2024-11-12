@@ -1,3 +1,0 @@
-name: Publish rgmol to Pypi and TestPyPi
-
-on: push
