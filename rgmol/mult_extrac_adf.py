@@ -317,6 +317,7 @@ def find_rota(List_out,Rota_arb,Scale,bond,mol):
 
 
 if __name__=="__main__":
+    """
     parser = argparse.ArgumentParser(description='Extraction, computation and saving representation of a folder containing adf files')
     parser.add_argument('-f', default="frag", help='Folder containing the adf folder / files (default: A)')
     parser.add_argument('-r',default="out",help="adf ouptut files format (default:out)")
@@ -400,3 +401,4 @@ if __name__=="__main__":
         Rota_arb=find_rota(List_out,Rota_arb,Scal,bond,0)
         plot_all_one_vec(List_out,0,int(args.s),args.mv,Rota_arb=Rota_arb,Scale=Scal,List_name=List_name)
     # print(List_out)
+    """
