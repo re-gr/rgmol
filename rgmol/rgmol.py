@@ -577,6 +577,7 @@ def rename(file):
 
 
 if __name__=="__main__":
+    """
     parser = argparse.ArgumentParser(description='Extraction, computation and graphical display of adf file')
     parser.add_argument('-i', default="frag//HCN//HCN.out", help='Input file of adf')
     parser.add_argument('-o',default="X",help="Choose do the 3d representation of a diagonalized matrix (format : matrix or matrix,vector) Matrices :  X : linear response, S* local softness, E* local hardness, f* fukui function (f(r)*f(r')/eta), XS* for the sum of X and S; with * being either : 0,+,-")
@@ -733,6 +734,6 @@ if __name__=="__main__":
             else:
                 plot_all_3d(Pos,Rad,XSmV,XSmvp,Name,B,Ord,file+O,save)
         else: raise ValueError("The matrix chosen is not in the list : X; S0; S+; S-; E0; E+; E-; f0; f+; f-; XS0; XS+; XS-")
-
+    """
 
 
