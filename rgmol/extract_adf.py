@@ -14,8 +14,7 @@ def is_CDFT(file):
     """
     Finds if the file contains CDFT
     """
-
-    for line in codecs.open(file,"r",encodinge="utf-8"):
+    for line in codecs.open(file,"r",encoding="utf-8"):
         if  "C O N C E P T U A L  D F T" in line:
             return True
     return False
@@ -80,7 +79,7 @@ def glob_desc(file):
         raise ImportError("The file contains more or less descriptors than expected. ADF update ?")
 
     for desc in range(len(L)):
-        global_desc_dict
+        global_desc_dict[global_desc[desc]] = L[desc]
 
     return L,global_desc_dict,Name
 
@@ -105,7 +104,7 @@ def ker(file):
         elif flag==1 and "1" in line:
             flag=2
             Lin.append(line.split()[3:])
-            Name.append(line.split()[2])
+            Name.append(line.split()[1])
         elif flag==2 and len(line)!=1 and flag_long>0:
             Lin[-1]+=line.split()
             flag_long-=1
@@ -113,7 +112,7 @@ def ker(file):
             if int(line.split()[0])>10:
                 flag_long=int(line.split()[0])//10
             Lin.append(line.split()[3:])
-            Name.append(line.split()[2])
+            Name.append(line.split()[1])
         elif flag==2: flag=3
 
         if "SOFTNESS KERNEL" in line:
@@ -162,10 +161,10 @@ def pos_rad(file):
         elif flag==1 and "1" in line:
             flag=2
             Pos.append(line.split()[2:])
-            Name.append(line.split()[2])
+            Name.append(line.split()[1])
         elif flag==2 and len(line)!=2:
             Pos.append(line.split()[2:])
-            Name.append(line.split()[2])
+            Name.append(line.split()[1])
         elif flag==2: flag=3
 
         if "Electron Density at Nuclei" in line:
@@ -205,13 +204,13 @@ def fukui(file,eta=1):
             fm.append(line.split()[4])
             f0.append(line.split()[5])
             f2.append(line.split()[6])
-            Name.append(line.split()[2])
+            Name.append(line.split()[1])
         elif flag==2 and not ("--" in line):
             fp.append(line.split()[3])
             fm.append(line.split()[4])
             f0.append(line.split()[5])
             f2.append(line.split()[6])
-            Name.append(line.split()[2])
+            Name.append(line.split()[1])
         elif flag==2: flag=3
     et=eta**(1/2)
     return np.array(fp,dtype="float")/et,np.array(fm,dtype="float")/et,np.array(f0,dtype="float")/et,np.array(f2,dtype="float")/et,Name
@@ -234,9 +233,9 @@ def bonds(file):
             flag=1
         elif flag==1 and "1" in line:
             flag=2
-            list_bonds.append([line.split()[:-1]]+float(line.split()[-1]))
+            list_bonds.append(line.split()[:-1]+[float(line.split()[-1])])
         elif flag==2 and not ("End" in line):
-            list_bonds.append([line.split()[:-1]]+float(line.split()[-1]))
+            list_bonds.append(line.split()[:-1]+[float(line.split()[-1])])
         elif flag==2: flag=3
     return list_bonds
 
@@ -262,12 +261,17 @@ def extract_all(file):
         X,S,Name=ker(fileout)
         fp,fm,f0,f2,Name=fukui(fileout,eta=global_desc_dict["eta"])
         for prop in zip(Name,pos,rad,X,S,fp,fm,f0,f2):
-            dict_properties = {"radius":prop[2],"condensed linear response":prop[3],"softness kernel":prop[4],"fukui plus":prop[5],"fukui minus":prop[6],"fukui":prop[7],"dual":prop[8]}
-            atom_x = atom(prop[0],prop[1],property=dict_properties)
+            dict_properties = {"condensed linear response":prop[3],"softness kernel":prop[4],"fukui plus":prop[5],"fukui minus":prop[6],"fukui":prop[7],"dual":prop[8]}
+            atom_x = atom(prop[0],prop[1],properties=dict_properties,color=[0.5,0,0]) #TO CHANGE COLOR
             list_atoms.append(atom_x)
-        dict_properties_mol = {"condensed linear response":X, "softness kernel":S, "fukui":f0,"dual":f2}
 
-        mol = molecule(list_atoms,list_bonds,properties=dict_properties)
+        global_desc_dict["condensed linear response"]=X
+        global_desc_dict["softness kernel"]=S
+        global_desc_dict["fukui"]=f0
+        global_desc_dict["dual"]=f2
+
+
+        mol = molecule(list_atoms,list_bonds,properties=global_desc_dict)
 
 
     else:
@@ -275,9 +279,10 @@ def extract_all(file):
             dict_properties = {"radius":prop[2]}
             atom_x = atom(prop[0],prop[1],property=dict_properties)
             list_atoms.append(atom_x)
+        mol = molecule(list_atoms,list_bonds)
 
 
-    return molecule
+    return mol
 
 
 

@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 from write import *
-from representation_matplotlib import *
-from extrac import extrac_adf
+from plot_plt import *
+import extract_adf
 
 def create_newS(L,f):
     """
