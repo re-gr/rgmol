@@ -105,7 +105,7 @@ def ker(file):
         elif flag==1 and "1" in line:
             flag=2
             Lin.append(line.split()[3:])
-            Name.append(line.split()[:2])
+            Name.append(line.split()[2])
         elif flag==2 and len(line)!=1 and flag_long>0:
             Lin[-1]+=line.split()
             flag_long-=1
@@ -113,7 +113,7 @@ def ker(file):
             if int(line.split()[0])>10:
                 flag_long=int(line.split()[0])//10
             Lin.append(line.split()[3:])
-            Name.append(line.split()[:2])
+            Name.append(line.split()[2])
         elif flag==2: flag=3
 
         if "SOFTNESS KERNEL" in line:
@@ -162,10 +162,10 @@ def pos_rad(file):
         elif flag==1 and "1" in line:
             flag=2
             Pos.append(line.split()[2:])
-            Name.append(line.split()[:2])
+            Name.append(line.split()[2])
         elif flag==2 and len(line)!=2:
             Pos.append(line.split()[2:])
-            Name.append(line.split()[:2])
+            Name.append(line.split()[2])
         elif flag==2: flag=3
 
         if "Electron Density at Nuclei" in line:
@@ -205,13 +205,13 @@ def fukui(file,eta=1):
             fm.append(line.split()[4])
             f0.append(line.split()[5])
             f2.append(line.split()[6])
-            Name.append(line.split()[:2])
+            Name.append(line.split()[2])
         elif flag==2 and not ("--" in line):
             fp.append(line.split()[3])
             fm.append(line.split()[4])
             f0.append(line.split()[5])
             f2.append(line.split()[6])
-            Name.append(line.split()[:2])
+            Name.append(line.split()[2])
         elif flag==2: flag=3
     et=eta**(1/2)
     return np.array(fp,dtype="float")/et,np.array(fm,dtype="float")/et,np.array(f0,dtype="float")/et,np.array(f2,dtype="float")/et,Name
@@ -226,21 +226,19 @@ def bonds(file):
                 O       (list) order of the bonds
     """
     flag,flag2=0,0
-    B,O=[],[]
+    list_bonds=[]
+
     for line in codecs.open(file, 'r',encoding="utf-8"):
         #Collect data for the bonds. Uses flags to check when the descriptors are reached
         if "BondOrders" in line:
             flag=1
         elif flag==1 and "1" in line:
             flag=2
-            B.append(line.split()[:-1])
-            O.append(float(line.split()[-1]))
-
+            list_bonds.append([line.split()[:-1]]+float(line.split()[-1]))
         elif flag==2 and not ("End" in line):
-            B.append(line.split()[:-1])
-            O.append(float(line.split()[-1]))
+            list_bonds.append([line.split()[:-1]]+float(line.split()[-1]))
         elif flag==2: flag=3
-    return B,O
+    return list_bonds
 
 
 def extract_all(file):
@@ -255,16 +253,28 @@ def extract_all(file):
     """
 
     fileout,filerun,file=rename(file)
+    list_atoms=[]
+
     pos,rad,Name=pos_rad(fileout)
-    B,O=bonds(filerun)
+    list_bonds=bonds(filerun)
     if is_CDFT(fileout):
         L,global_desc_dict,Name=glob_desc(fileout)
         X,S,Name=ker(fileout)
         fp,fm,f0,f2,Name=fukui(fileout,eta=global_desc_dict["eta"])
         for prop in zip(Name,pos,rad,X,S,fp,fm,f0,f2):
-            atom_x = atom()
+            dict_properties = {"radius":prop[2],"condensed linear response":prop[3],"softness kernel":prop[4],"fukui plus":prop[5],"fukui minus":prop[6],"fukui":prop[7],"dual":prop[8]}
+            atom_x = atom(prop[0],prop[1],property=dict_properties)
+            list_atoms.append(atom_x)
+        dict_properties_mol = {"condensed linear response":X, "softness kernel":S, "fukui":f0,"dual":f2}
 
-    else: pass
+        mol = molecule(list_atoms,list_bonds,properties=dict_properties)
+
+
+    else:
+        for prop in zip(Name,pos,rad):
+            dict_properties = {"radius":prop[2]}
+            atom_x = atom(prop[0],prop[1],property=dict_properties)
+            list_atoms.append(atom_x)
 
 
     return molecule

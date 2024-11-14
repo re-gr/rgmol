@@ -197,7 +197,7 @@ def transf_pos(Pos,B,Ord,Rota_arb,row,Scale):
     return Pos
 
 
-def bonds_plotting(ax,Pos,B,Ord,Vec,mode,fact):
+def bonds_plotting(ax,Pos,bonds,Vec,factor=1,mode='1'):
     """
     Plot the bonds
     """
@@ -205,13 +205,16 @@ def bonds_plotting(ax,Pos,B,Ord,Vec,mode,fact):
     Radbond=0.05
     u=np.linspace(0,2*np.pi,30)#base of the cylinder
     v=np.linspace(0,np.pi,2) #height of the cylinder
+
+
     for k in range(len(B)):
-        one,two=int(B[k][0])-1,int(B[k][1])-1
+        one,two=int(bonds[k][0])-1,int(bonds[k][1])-1
+        order = bonds[k][2]
         Vect=Pos[one]-Pos[two]
 
         if mode=="1": #Drawn
-            if Ord[k]==1: ax.plot([Pos[one][0],Pos[two][0]],[Pos[one][1],Pos[two][1]],[Pos[one][2],Pos[two][2]],"gray",linewidth=4)
-            elif Ord[k]==2:
+            if order==1: ax.plot([Pos[one][0],Pos[two][0]],[Pos[one][1],Pos[two][1]],[Pos[one][2],Pos[two][2]],"gray",linewidth=4)
+            elif order==2:
                 zpe,pe=orthonormal_basis(Pos,B,k)
                 pe=pe/np.linalg.norm(pe)
                 pe/=15
@@ -231,18 +234,18 @@ def bonds_plotting(ax,Pos,B,Ord,Vec,mode,fact):
 
             x=Radbond*(np.outer(np.cos(u),np.ones(np.size(v))))
             y=Radbond*(np.outer(np.sin(u),np.ones(np.size(v))))
-            z=(np.outer(np.ones(np.size(u)),np.linspace((abs(Vec[one]/fact)-1/20),(dist-abs(Vec[two]/fact)+1/20),np.size(v))))
+            z=(np.outer(np.ones(np.size(u)),np.linspace((abs(Vec[one]/factor)-1/20),(dist-abs(Vec[two]/factor)+1/20),np.size(v))))
             x,y,z=rota_bonds(Vect,x,y,z)
             x,y,z=x-Pos[one][0],y-Pos[one][1],z-Pos[one][2]
-            if Ord[k]==1: ax.plot_surface(x,y,z,color="gray")
+            if order==1: ax.plot_surface(x,y,z,color="gray")
 
-            elif Ord[k]==1.5:
+            elif order==1.5:
                 zpe,pe=orthonormal_basis(Pos,B,k)#Get a orthonormal vector in order to distance the two cylinders
                 pe=pe/np.linalg.norm(pe)/15
                 ax.plot_surface(x-pe[0],y-pe[1],z-pe[2],color="gray")
                 ax.plot_surface(x+pe[0],y+pe[1],z+pe[2],color="white")
 
-            elif Ord[k]==2:
+            elif order==2:
                 zpe,pe=orthonormal_basis(Pos,B,k)
                 pe=pe/np.linalg.norm(pe)/15
                 ax.plot_surface(x-pe[0],y-pe[1],z-pe[2],color="gray")
@@ -544,7 +547,7 @@ def plot_one_vec_3d(Pos,Rad,V,vp,nvec,Name,B,Ord,file,nrow,ncol,col,fig,modevec,
     else: title=List_name[col]
     ax.set_title('{}, '.format(title)+r"$\mathrm{\lambda}$"+" = {:3.2f}".format(vp),y=1.0,pad=-6)
 
-def plot_atom(ax,atom,plotted_property="radius"):
+def plot_atom(ax,atom,plotted_property="radius",transparency=1,factor=1):
     """plot atom as a sphere"""
 
     Norm = atom.property[plotted_property]
@@ -553,9 +556,9 @@ def plot_atom(ax,atom,plotted_property="radius"):
     u=np.linspace(0,2*np.pi,20)
     v=np.linspace(0,np.pi,15)
 
-    x=Norm*(np.outer(np.cos(u),np.sin(v)))-Pos[0]
-    y=Norm*(np.outer(np.sin(u),np.sin(v)))-Pos[1]
-    z=Norm*(np.outer(np.ones(np.size(u)),np.cos(v)))-Pos[2]
-    ax.plot_surface(x,y,z,color=atom.color,label=label)
+    x=Norm*factor*(np.outer(np.cos(u),np.sin(v)))-Pos[0]
+    y=Norm*factor*(np.outer(np.sin(u),np.sin(v)))-Pos[1]
+    z=Norm*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))-Pos[2]
+    ax.plot_surface(x,y,z,color=atom.color,alpha=transparency)
 
 

@@ -25,15 +25,6 @@ def create_newS(L,f):
 
 ##
 
-def rename(file):
-    """
-    Rename the file in order to have the .out and the .run files
-    """
-    if ".out" in file:
-        return file,file[:-3]+"run",file[:-4]
-    else: return file+".out", file+".run",file
-
-
 
 if __name__=="__main__":
     pass
