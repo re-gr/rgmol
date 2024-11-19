@@ -221,19 +221,19 @@ def bonds_plotting(ax,bonds,Pos,Vec,factor=1):
         if order==1: ax.plot_surface(x,y,z,color="gray")
 
         elif order==1.5:
-            zpe,pe=orthonormal_basis(Pos,B,k)#Get a orthonormal vector in order to distance the two cylinders
+            zpe,pe=orthonormal_basis(Pos,bonds,k)#Get a orthonormal vector in order to distance the two cylinders
             pe=pe/np.linalg.norm(pe)/15
             ax.plot_surface(x-pe[0],y-pe[1],z-pe[2],color="gray")
             ax.plot_surface(x+pe[0],y+pe[1],z+pe[2],color="white")
 
         elif order==2:
-            zpe,pe=orthonormal_basis(Pos,B,k)
+            zpe,pe=orthonormal_basis(Pos,bonds,k)
             pe=pe/np.linalg.norm(pe)/15
             ax.plot_surface(x-pe[0],y-pe[1],z-pe[2],color="gray")
             ax.plot_surface(x+pe[0],y+pe[1],z+pe[2],color="gray")
 
         else:
-            zpe,pe=orthonormal_basis(Pos,B,k)
+            zpe,pe=orthonormal_basis(Pos,bonds,k)
             pe=pe/np.linalg.norm(pe)/12
             ax.plot_surface(x-pe[0],y-pe[1],z-pe[2],color="gray")
             ax.plot_surface(x+pe[0],y+pe[1],z+pe[2],color="gray")
@@ -491,20 +491,21 @@ def plot_atom(ax,atom,plotted_property="radius",transparency=1,factor=1):
     ax.plot_surface(x,y,z,color=atom.color,alpha=transparency)
 
 
-def plot_eigen_atom(ax,atom,eigenvector,eigenvalue,transparency=1,factor=1):
+def plot_vector_atom(ax,atom,vector,transparency=1,factor=1):
     """plot atom as a sphere"""
 
-    Pos = atom.pos
 
-    u=np.linspace(0,2*np.pi,20)
+    u=np.linspace(0,2*np.pi,10)
     v=np.linspace(0,np.pi,15)
+    colors=["r","w"]
 
-    for vec in eigenvector:
-
-        x=vec*factor*(np.outer(np.cos(u),np.sin(v)))-Pos[0]
-        y=vec*factor*(np.outer(np.sin(u),np.sin(v)))-Pos[1]
-        z=vec*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))-Pos[2]
-        ax.plot_surface(x,y,z,color=atom.color,alpha=transparency)
+    if vector>0:
+        col=colors[0]
+    else: col=colors[1]
+    x=abs(vector)*factor*(np.outer(np.cos(u),np.sin(v)))-atom.pos[0]
+    y=abs(vector)*factor*(np.outer(np.sin(u),np.sin(v)))-atom.pos[1]
+    z=abs(vector)*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))-atom.pos[2]
+    ax.plot_surface(x,y,z,color=col,alpha=transparency)
 
 
 

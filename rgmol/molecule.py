@@ -4,7 +4,11 @@
 import periodictable as pt
 import numpy as np
 from dicts import *
-from plot_plt import *
+import plot_plt
+import plot_plotly
+from plotly.subplots import make_subplots
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 class atom(object):
     """
@@ -46,7 +50,10 @@ class atom(object):
         if is_color:
             ##NEED TO ADD EXCEPTIONS AND REFORMATING
             self.color=is_color
-        else: self.color=dict_color[self.name]
+        else:
+            self.color=(np.array(dict_color[self.name])/255).tolist()
+
+
 
         is_nickname = kwargs.get("nickname")
         if type(is_nickname) is str:
@@ -66,12 +73,22 @@ class atom(object):
 
     def plot_plt(self,ax,plotted_property="radius",transparency=1,factor=1):
         """plot the atom on the figure"""
-        plot_atom(ax,self,plotted_property=plotted_property,transparency=transparency,factor=factor)
+        plot_plt.plot_atom(ax,self,plotted_property=plotted_property,transparency=transparency,factor=factor)
 
 
-    def plot_eigen_plt(self,ax,eigenvector,eigenvalue,transparency=1,factor=1):
+    def plot_vector_plt(self,ax,vector,transparency=1,factor=1):
         """plot the atom on the figure"""
-        plot_eigen_atom(ax,self,eigenvector,eigenvalue,transparency=transparency,factor=factor)
+        plot_plt.plot_vector_atom(ax,self,vector,transparency=transparency,factor=factor)
+
+
+    def plot_plotly(self,Surfaces,plotted_property="radius",transparency=1,factor=1):
+        """plot the atom on the figure"""
+        return plot_plotly.plot_atom(Surfaces,self,plotted_property=plotted_property,transparency=transparency,factor=factor)
+
+
+    def plot_vector_plotly(self,Surfaces,vector,transparency=1,factor=1):
+        """plot the atom on the figure"""
+        return plot_plotly.plot_vector_atom(Surfaces,self,vector,transparency=transparency,factor=factor)
 
 
 
@@ -126,21 +143,14 @@ class molecule(object):
         for atom_x in self.atoms:
             atom_x.plot_plt(ax,plotted_property=plotted_property,transparency=transparency,factor=factor)
         if show_bonds:
-            bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+            plot_plt.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
 
     def plot_vector_plt(self,ax,vector,transparency=1,factor=1):
         """
         Plot the entire molecule
         """
-        for atom_x in self.atoms:
-            atom_x.plot_eigen_plt(ax,vector,transparency=transparency,factor=factor)
-
-    def plot_eigen_plt(self,ax,eigenvector,eigenvalue,transparency=1,factor=1):
-        """
-        Plot the entire molecule
-        """
-        for atom_x in self.atoms:
-            atom_x.plot_eigen_plt(ax,eigenvector,eigenvalue,transparency=transparency,factor=factor)
+        for atom_x in range(len(self.atoms)):
+            self.atoms[atom_x].plot_vector_plt(ax,vector[atom_x],transparency=transparency,factor=factor)
 
 
     def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,factor_radius=.3,with_radius=1):
@@ -184,10 +194,73 @@ class molecule(object):
             ax.set_xticks([])
             ax.set_yticks([])
             ax.set_zticks([])
+            ax.set_title(r"$\mathrm{\lambda}$"+" = {:3.2f}".format(Xvp[vec]),y=1.0,pad=-6)
             if with_radius:
-                self.plot_plt(ax,factor=factor_radius)
+                self.plot_plt(ax,factor=factor_radius,transparency=0.8)
 
-            self.plot_eigen_plt(ax,XV[vec],Xvp,transparency=transparency,factor=factor)
+            self.plot_vector_plt(ax,XV[:,vec],transparency=transparency,factor=factor)
+
+
+    def plot_plotly(self,Surfaces,plotted_property="radius",transparency=1,show_bonds=1,factor=1):
+        """
+        Plot the entire molecule
+        """
+        for atom_x in self.atoms:
+            Surfaces=atom_x.plot_plotly(Surfaces,plotted_property=plotted_property,transparency=transparency,factor=factor)
+        if show_bonds:
+            Surfaces=plot_plotly.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+        return Surfaces
+
+    def plot_vector_plotly(self,Sufaces,vector,transparency=1,factor=1):
+        """
+        Plot the entire molecule
+        """
+        for atom_x in range(len(self.atoms)):
+            Surfaces=self.atoms[atom_x].plot_vector_plotly(Sufaces,vector[atom_x],transparency=transparency,factor=factor)
+        return Surfaces
+
+    def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,factor_radius=.3,with_radius=1):
+        """
+        Plot kernel
+        """
+        X = self.properties[plotted_kernel]
+        Xvp,XV = np.linalg.eigh(X)
+        ncols = len(X)
+
+        scene_dict = {"type":"scene"}
+
+
+        titles_subplots = []
+        for vec in range(len(XV)):
+            titles_subplots.append(r"$\mathrm{\lambda}"+"= {:3.2f}$".format(Xvp[vec]))
+
+        fig = make_subplots(rows=1,cols=len(XV),specs=[[scene_dict for k in range(len(XV))] for j in range(1)],subplot_titles=titles_subplots)
+
+        for vec in range(len(XV)):
+            Surfaces = []
+
+
+            if with_radius:
+                Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=0.8)
+            Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],transparency=transparency,factor=factor)
+
+            for k in Surfaces:
+                fig.add_trace(k,row=1,col=vec+1)
+
+
+
+        dict_layout={"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'}
+        fig["layout"]["scene"] = dict_layout
+        for k in range(2,len(XV)*1+1):
+            fig["layout"]["scene"+str(k)] = dict_layout
+
+         # {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
+
+        fig.show()
+
+
+
+
 
 
 class group_molecules(object):

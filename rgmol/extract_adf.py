@@ -52,7 +52,7 @@ def glob_desc(file):
         #Collect data for the global descriptors. Uses flags to check when the descriptors are reached
         if "GLOBAL DESCRIPTORS" in line:
             flag=1
-        elif flag==1 and "1" in line:
+        elif flag==1 and "." in line:
             flag=2
             a=line.split()
             if a[-1]=="(eV)":
@@ -71,7 +71,6 @@ def glob_desc(file):
                 else: L.append(float(a[-1]))
                 Name.append(a[:-2])
         elif flag==2: flag=3
-
 
     if len(L)==0:
         raise ImportError("The file does not contain the global descriptors")
@@ -104,15 +103,15 @@ def ker(file):
         elif flag==1 and "1" in line:
             flag=2
             Lin.append(line.split()[3:])
-            Name.append(line.split()[1])
+            Name.append(line.split()[:2])
         elif flag==2 and len(line)!=1 and flag_long>0:
             Lin[-1]+=line.split()
             flag_long-=1
         elif flag==2 and len(line)!=1:
             if int(line.split()[0])>10:
-                flag_long=int(line.split()[0])//10
+                flag_long=(int(line.split()[0])-1)//10
             Lin.append(line.split()[3:])
-            Name.append(line.split()[1])
+            Name.append(line.split()[:2])
         elif flag==2: flag=3
 
         if "SOFTNESS KERNEL" in line:
@@ -125,7 +124,7 @@ def ker(file):
             flag_long2-=1
         elif flag2==2 and len(line)!=1:
             if int(line.split()[0])>10:
-                flag_long2=int(line.split()[0])//10
+                flag_long2=(int(line.split()[0])-1)//10
             Sof.append(line.split()[3:])
         elif flag2==2: flag2=3
     L,S=np.zeros((len(Lin[-1]),len(Lin[-1]))),np.zeros((len(Sof[-1]),len(Sof[-1])))
@@ -261,8 +260,9 @@ def extract_all(file):
         X,S,Name=ker(fileout)
         fp,fm,f0,f2,Name=fukui(fileout,eta=global_desc_dict["eta"])
         for prop in zip(Name,pos,rad,X,S,fp,fm,f0,f2):
+
             dict_properties = {"condensed linear response":prop[3],"softness kernel":prop[4],"fukui plus":prop[5],"fukui minus":prop[6],"fukui":prop[7],"dual":prop[8]}
-            atom_x = atom(prop[0],prop[1],properties=dict_properties,color=[0.5,0,0]) #TO CHANGE COLOR
+            atom_x = atom(prop[0],prop[1],properties=dict_properties)
             list_atoms.append(atom_x)
 
         global_desc_dict["condensed linear response"]=X
