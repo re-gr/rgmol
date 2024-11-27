@@ -9,6 +9,7 @@ import plot_plotly
 from plotly.subplots import make_subplots
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+from plotly_resampler import FigureResampler
 
 class atom(object):
     """
@@ -219,7 +220,26 @@ class molecule(object):
             Surfaces=self.atoms[atom_x].plot_vector_plotly(Sufaces,vector[atom_x],transparency=transparency,factor=factor)
         return Surfaces
 
-    def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,factor_radius=.3,with_radius=1):
+
+    def plot_property_plotly(self,plotted_property,transparency=1,factor=1,with_radius=1,transparency_radius=.8,factor_radius=.3):
+        """
+        Plot the entire molecule
+        """
+        X = self.properties[plotted_property]
+
+        Surfaces = []
+
+        if with_radius:
+            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=transparency_radius)
+        Surfaces=self.plot_vector_plotly(Surfaces,X,transparency=transparency,factor=factor)
+
+        fig = go.Figure(data=Surfaces)
+        fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
+
+        fig.show()
+
+
+    def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,with_radius=1,transparency_radius=.8,factor_radius=.3):
         """
         Plot kernel
         """
@@ -236,27 +256,73 @@ class molecule(object):
 
         fig = make_subplots(rows=1,cols=len(XV),specs=[[scene_dict for k in range(len(XV))] for j in range(1)],subplot_titles=titles_subplots)
 
+
         for vec in range(len(XV)):
             Surfaces = []
 
-
             if with_radius:
-                Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=0.8)
+                Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=transparency_radius)
             Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],transparency=transparency,factor=factor)
 
             for k in Surfaces:
                 fig.add_trace(k,row=1,col=vec+1)
-
-
 
         dict_layout={"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'}
         fig["layout"]["scene"] = dict_layout
         for k in range(2,len(XV)*1+1):
             fig["layout"]["scene"+str(k)] = dict_layout
 
-         # {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
+
 
         fig.show()
+
+
+    def plot_diagonalized_kernel_slider_plotly(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.3):
+        """
+        Plot kernel
+        """
+        X = self.properties[plotted_kernel]
+        Xvp,XV = np.linalg.eigh(X)
+        ncols = len(X)
+
+        number_items = len(self.atoms) + len(self.bonds)
+        number_vectors = len(self.atoms)*len(X)
+        number_atoms = len(self.atoms)
+
+        Surfaces = []
+        if with_radius:
+            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=transparency_radius)
+        for vec in range(len(XV)):
+            Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],transparency=transparency,factor=factor)
+
+
+        # fig = FigureResampler(go.Figure(data=Surfaces))
+        fig = go.Figure(data=Surfaces)
+        fig.update_traces(visible=False)
+
+        fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
+
+        #Toggle the first eigenvector visible
+        for j in range(number_items+len(self.atoms)):
+            fig["data"][j]["visible"] = True
+
+
+
+        steps = []
+
+        for i in range(len(X)):
+            step = dict(method="update",args=[{"visible": [True]*number_items + [False] * (number_vectors)}])
+            for j in range(number_atoms):
+                step["args"][0]["visible"][i*number_atoms+j+number_items] = True  # Toggle i'th trace to "visible"
+            steps.append(step)
+
+        sliders = [dict(active=0,currentvalue={"prefix": "Eigenvector: "},pad={"t": 1},steps=steps)]
+
+        fig.update_layout(sliders=sliders)
+
+        # fig.show_dash()
+        # fig.show()
+        fig.write_html("plot.html", auto_open=True)
 
 
 

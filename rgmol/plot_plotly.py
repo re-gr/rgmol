@@ -231,15 +231,15 @@ def plot_atom(Surfaces,atom,plotted_property="radius",transparency=1,factor=1):
     z=Norm*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))-atom.pos[2]
 
 
-    Surfaces.append(go.Surface(x=x,y=y,z=z,showscale=False,colorscale=convert_color_to_plotly(atom.color),name=atom.name))
+    Surfaces.append(go.Surface(x=x,y=y,z=z,showscale=False,opacity=transparency,colorscale=convert_color_to_plotly(atom.color),name=atom.name))
     return Surfaces
 
 
 def plot_vector_atom(Surfaces,atom,vector,transparency=1,factor=1):
     """plot atom as a sphere"""
 
-    u=np.linspace(0,2*np.pi,100)
-    v=np.linspace(0,np.pi,100)
+    u=np.linspace(0,2*np.pi,50)
+    v=np.linspace(0,np.pi,50)
     colors={"red":[[0,"rgb(150,30,30)"],[1,"rgb(200,0,0)"]] ,"white":[[0,"rgb(50,50,50)"],[1,"rgb(255,255,255)"]]}
 
     x=abs(vector)*factor*(np.outer(np.cos(u),np.sin(v)))-atom.pos[0]

@@ -21,7 +21,7 @@ def is_CDFT(file):
 
 
 
-def glob_desc(file):
+def extract_global_descriptors(file):
     """
     Extracts the global descriptors from an adf output
 
@@ -70,7 +70,7 @@ def glob_desc(file):
                 if "*" in a[-1]: L.append(None)
                 else: L.append(float(a[-1]))
                 Name.append(a[:-2])
-        elif flag==2: flag=3
+        elif flag==2: break
 
     if len(L)==0:
         raise ImportError("The file does not contain the global descriptors")
@@ -82,7 +82,7 @@ def glob_desc(file):
 
     return L,global_desc_dict,Name
 
-def ker(file):
+def extract_ker(file):
     """
     Extracts the kernel from an adf output
 
@@ -140,7 +140,7 @@ def ker(file):
 
     return L,S,Name
 
-def pos_rad(file):
+def extract_pos(file):
     """
     Extracts the positions and the radius of the nucleus from an adf output
 
@@ -159,25 +159,17 @@ def pos_rad(file):
             flag=1
         elif flag==1 and "1" in line:
             flag=2
-            Pos.append(line.split()[2:])
+            Pos.append(line.split()[2:5])
             Name.append(line.split()[1])
         elif flag==2 and len(line)!=2:
-            Pos.append(line.split()[2:])
+            Pos.append(line.split()[2:5])
             Name.append(line.split()[1])
         elif flag==2: flag=3
 
-        if "Electron Density at Nuclei" in line:
-            flag2=1
-        elif flag2==1 and "1" in line:
-            flag2=2
-            Rad.append(line.split()[2])
-        elif flag2==2 and len(line)!=1:
-            Rad.append(line.split()[2])
-        elif flag2==2: flag2=3
-    return np.array(Pos,dtype="float"),np.array(Rad,dtype="float"),Name
+    return np.array(Pos,dtype="float"),Name
 
 
-def fukui(file,eta=1):
+def extract_fukui(file,eta=1):
     """
     Extracts the fukui functions from an adf output
 
@@ -210,11 +202,12 @@ def fukui(file,eta=1):
             f0.append(line.split()[5])
             f2.append(line.split()[6])
             Name.append(line.split()[1])
-        elif flag==2: flag=3
+
+        elif flag==2: break
     et=eta**(1/2)
     return np.array(fp,dtype="float")/et,np.array(fm,dtype="float")/et,np.array(f0,dtype="float")/et,np.array(f2,dtype="float")/et,Name
 
-def bonds(file):
+def extract_bonds(file):
     """
     Extracts the bonds from an adf input
 
@@ -253,15 +246,15 @@ def extract_all(file):
     fileout,filerun,file=rename(file)
     list_atoms=[]
 
-    pos,rad,Name=pos_rad(fileout)
-    list_bonds=bonds(filerun)
+    pos,Name=extract_pos(fileout)
+    list_bonds=extract_bonds(filerun)
     if is_CDFT(fileout):
-        L,global_desc_dict,Name=glob_desc(fileout)
-        X,S,Name=ker(fileout)
-        fp,fm,f0,f2,Name=fukui(fileout,eta=global_desc_dict["eta"])
-        for prop in zip(Name,pos,rad,X,S,fp,fm,f0,f2):
+        L,global_desc_dict,Name=extract_global_descriptors(fileout)
+        X,S,Name=extract_ker(fileout)
+        fp,fm,f0,f2,Name=extract_fukui(fileout,eta=global_desc_dict["eta"])
+        for prop in zip(Name,pos,X,S,fp,fm,f0,f2):
 
-            dict_properties = {"condensed linear response":prop[3],"softness kernel":prop[4],"fukui plus":prop[5],"fukui minus":prop[6],"fukui":prop[7],"dual":prop[8]}
+            dict_properties = {"condensed linear response":prop[2],"softness kernel":prop[3],"fukui plus":prop[4],"fukui minus":prop[5],"fukui":prop[6],"dual":prop[7]}
             atom_x = atom(prop[0],prop[1],properties=dict_properties)
             list_atoms.append(atom_x)
 
@@ -275,9 +268,8 @@ def extract_all(file):
 
 
     else:
-        for prop in zip(Name,pos,rad):
-            dict_properties = {"radius":prop[2]}
-            atom_x = atom(prop[0],prop[1],property=dict_properties)
+        for prop in zip(Name,pos):
+            atom_x = atom(prop[0],prop[1])
             list_atoms.append(atom_x)
         mol = molecule(list_atoms,list_bonds)
 
