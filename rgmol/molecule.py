@@ -29,10 +29,9 @@ class atom(object):
                 color :
                 prop :
         """
-
         if type(name_or_atomic_number) is int:
             self.atomic_number = name_or_atomic_number
-            self.name = pt.elements[name_or_atomic_number]
+            self.name = pt.elements[name_or_atomic_number].symbol
 
         elif type(name_or_atomic_number) is str:
             self.name = name_or_atomic_number
@@ -53,7 +52,6 @@ class atom(object):
             self.color=is_color
         else:
             self.color=(np.array(dict_color[self.name])/255).tolist()
-
 
 
         is_nickname = kwargs.get("nickname")
@@ -273,8 +271,9 @@ class molecule(object):
             fig["layout"]["scene"+str(k)] = dict_layout
 
 
+        fig.write_html("plot.html", auto_open=True)
 
-        fig.show()
+        # fig.show()
 
 
     def plot_diagonalized_kernel_slider_plotly(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.3):
@@ -324,6 +323,22 @@ class molecule(object):
         # fig.show()
         fig.write_html("plot.html", auto_open=True)
 
+
+
+    def plot_cube_plotly(self,plotted_isodensity="cube",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.3):
+        """
+        Plot cube
+        """
+
+        Surfaces = []
+
+        if with_radius:
+            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=transparency_radius,show_bonds=False)
+        Surfaces=plot_plotly.plot_isodensity(Surfaces,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],transparency=transparency,factor=factor)
+        fig = go.Figure(data=Surfaces)
+        fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
+
+        fig.write_html("plot.html", auto_open=True)
 
 
 

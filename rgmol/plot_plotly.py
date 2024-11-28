@@ -209,6 +209,8 @@ def bonds_plotting(Surfaces,bonds,Pos,Vec,factor=1):
             Surfaces.append(go.Surface(x=x,y=y,z=z,colorscale="gray",showscale=False))
     return Surfaces
 
+
+
 def convert_color_to_plotly(color):
     """convert color to plotly"""
     c0,c1,c2 = color
@@ -226,9 +228,9 @@ def plot_atom(Surfaces,atom,plotted_property="radius",transparency=1,factor=1):
     u=np.linspace(0,2*np.pi,50)
     v=np.linspace(0,np.pi,50)
 
-    x=Norm*factor*(np.outer(np.cos(u),np.sin(v)))-atom.pos[0]
-    y=Norm*factor*(np.outer(np.sin(u),np.sin(v)))-atom.pos[1]
-    z=Norm*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))-atom.pos[2]
+    x=Norm*factor*(np.outer(np.cos(u),np.sin(v)))+atom.pos[0]
+    y=Norm*factor*(np.outer(np.sin(u),np.sin(v)))+atom.pos[1]
+    z=Norm*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))+atom.pos[2]
 
 
     Surfaces.append(go.Surface(x=x,y=y,z=z,showscale=False,opacity=transparency,colorscale=convert_color_to_plotly(atom.color),name=atom.name))
@@ -242,9 +244,59 @@ def plot_vector_atom(Surfaces,atom,vector,transparency=1,factor=1):
     v=np.linspace(0,np.pi,50)
     colors={"red":[[0,"rgb(150,30,30)"],[1,"rgb(200,0,0)"]] ,"white":[[0,"rgb(50,50,50)"],[1,"rgb(255,255,255)"]]}
 
-    x=abs(vector)*factor*(np.outer(np.cos(u),np.sin(v)))-atom.pos[0]
-    y=abs(vector)*factor*(np.outer(np.sin(u),np.sin(v)))-atom.pos[1]
-    z=abs(vector)*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))-atom.pos[2]
+    x=abs(vector)*factor*(np.outer(np.cos(u),np.sin(v)))+atom.pos[0]
+    y=abs(vector)*factor*(np.outer(np.sin(u),np.sin(v)))+atom.pos[1]
+    z=abs(vector)*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))+atom.pos[2]
     Surfaces.append(go.Surface(x=x,y=y,z=z,colorscale=colors[["red","white"][(vector>0)*1]],opacity=transparency,showscale=False,name=atom.name))
+    return Surfaces
+
+
+
+def plot_isodensity(Surfaces,voxel_origin,voxel_matrix,cube,cutoff=0.2,transparency=1,factor=1):
+    """plot atom as a sphere"""
+
+    nx,ny,nz = np.shape(cube)
+    voxel_end = [0,0,0]
+    voxel_end[0] = voxel_origin[0] + voxel_matrix[0][0]*nx
+    voxel_end[1] = voxel_origin[1] + voxel_matrix[1][1]*nx
+    voxel_end[2] = voxel_origin[2] + voxel_matrix[2][2]*nx
+
+    # pos_x = np.reshape(np.linspace(voxel_origin[0],voxel_end[0],nx),(nx,1,1,1)) * np.reshape([1,0,0],(1,1,1,3))
+    # pos_y = np.reshape(np.linspace(voxel_origin[1],voxel_end[1],ny),(1,ny,1,1)) * np.reshape([0,1,0],(1,1,1,3))
+    # pos_z = np.reshape(np.linspace(voxel_origin[2],voxel_end[2],nz),(1,1,nz,1)) * np.reshape([0,0,1],(1,1,1,3))
+    #
+    # cube_pos = pos_x + pos_y + pos_z
+
+    #Non new cube matrices will be computed as it takes too much memory
+    #Calculate cube density
+    cube = cube**2 * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+    #Calculate renormalization
+    cube = cube / np.sum(cube)
+
+
+    array_sort = np.argsort(cube,axis=None)[::-1]
+
+    cube_sorted = cube.flatten()[array_sort]
+    cube_values_sorted = np.cumsum(cube_sorted)
+
+    #Find how to unsort the array. There should be a more efficient way to do this
+    indexes = np.arange(len(array_sort),dtype=int)
+    array_unsort = np.zeros(len(array_sort),dtype=int)
+    for k in range(len(array_sort)):
+        array_unsort[array_sort[k]] = indexes[k]
+
+    cube_values = cube_values_sorted[array_unsort]
+
+
+    colors={"red":[[0,"rgb(150,30,30)"],[1,"rgb(200,0,0)"]] ,"white":[[0,"rgb(50,50,50)"],[1,"rgb(255,255,255)"]]}
+
+    x = np.linspace(voxel_origin[0],voxel_end[0],nx)
+    y = np.linspace(voxel_origin[1],voxel_end[1],ny)
+    z = np.linspace(voxel_origin[2],voxel_end[2],nz)
+    x,y,z=np.meshgrid(x,y,z)
+    x,y,z=x.flatten(),y.flatten(),z.flatten()
+
+    Surfaces.append(go.Volume(x=x,y=y,z=z,value=cube_values,isomin=0,isomax=1-cutoff,opacity=.5,showscale=False))
+
     return Surfaces
 

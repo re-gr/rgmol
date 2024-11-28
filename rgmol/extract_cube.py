@@ -13,7 +13,7 @@ from molecule import *
 
 
 
-def extract(file):
+def extract_cube(file):
     """
     Extracts the global descriptors from an adf output
 
@@ -46,6 +46,7 @@ def extract(file):
 
         elif flag_atoms:
             number_atoms = abs(int(L[0]))
+            voxel_origin = [float(L[1]),float(L[2]),float(L[3])]
             flag_pos = number_atoms
             flag_atoms -= 1
 
@@ -81,6 +82,26 @@ def extract(file):
                     cube.append(square)
                     square = []
                     count_square = 0
+    return voxel_origin,voxel_matrix,atom_number,atom_position,np.array(cube)
 
 
-    return voxel_matrix,atom_number,atom_position,np.array(cube)
+def extract(file):
+    """
+    Extracts the global descriptors from an adf output
+
+    Input : file (str)
+
+    Outputs :
+    """
+
+    voxel_origin,voxel_matrix,atom_number,atom_position,cube = extract_cube(file)
+
+
+    list_atoms = []
+    for prop in zip(atom_number,atom_position):
+        atom_x = atom(prop[0],prop[1])
+        list_atoms.append(atom_x)
+
+    mol = molecule(list_atoms,[],properties={"voxel_origin":voxel_origin,"voxel_matrix":voxel_matrix,"cube":cube})
+
+    return mol
