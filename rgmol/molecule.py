@@ -9,7 +9,6 @@ import plot_plotly
 from plotly.subplots import make_subplots
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from plotly_resampler import FigureResampler
 
 class atom(object):
     """
@@ -219,6 +218,21 @@ class molecule(object):
         return Surfaces
 
 
+    def plot_radius_plotly(self,transparency=1,show_bonds=1,factor=1):
+        """
+        Plot the entire molecule
+        """
+        Surfaces=[]
+        for atom_x in self.atoms:
+            Surfaces=atom_x.plot_plotly(Surfaces,transparency=transparency,factor=factor)
+        if show_bonds:
+            Surfaces=plot_plotly.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+        fig = go.Figure(data=Surfaces)
+        fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
+
+        fig.write_html("plot.html", auto_open=True)
+
+
     def plot_property_plotly(self,plotted_property,transparency=1,factor=1,with_radius=1,transparency_radius=.8,factor_radius=.3):
         """
         Plot the entire molecule
@@ -234,7 +248,7 @@ class molecule(object):
         fig = go.Figure(data=Surfaces)
         fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
 
-        fig.show()
+        fig.write_html("plot.html", auto_open=True)
 
 
     def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,with_radius=1,transparency_radius=.8,factor_radius=.3):
@@ -295,7 +309,6 @@ class molecule(object):
             Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],transparency=transparency,factor=factor)
 
 
-        # fig = FigureResampler(go.Figure(data=Surfaces))
         fig = go.Figure(data=Surfaces)
         fig.update_traces(visible=False)
 
@@ -319,13 +332,11 @@ class molecule(object):
 
         fig.update_layout(sliders=sliders)
 
-        # fig.show_dash()
-        # fig.show()
         fig.write_html("plot.html", auto_open=True)
 
 
 
-    def plot_cube_plotly(self,plotted_isodensity="cube",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.3):
+    def plot_cube_plotly(self,plotted_isodensity="cube",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=1):
         """
         Plot cube
         """
@@ -339,7 +350,6 @@ class molecule(object):
         fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
 
         fig.write_html("plot.html", auto_open=True)
-
 
 
 

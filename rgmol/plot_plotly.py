@@ -124,8 +124,8 @@ def orthonormal_basis(Pos,B,k):
                 z (ndarray dim(3)) z axis
                 y (ndarray dim(3)) y axis
     """
-    ind=int(B[k][0])-1
-    ind2=int(B[k][1])-1
+    ind=int(B[k][1])-1
+    ind2=int(B[k][0])-1
     # print(ind,ind2)
     Vec=(Pos[ind2]-Pos[ind])/np.linalg.norm((Pos[ind]-Pos[ind2]))
 
@@ -135,19 +135,17 @@ def orthonormal_basis(Pos,B,k):
             num=int(j[1])-1
             Dist=(Pos[ind]-Pos[num])/np.linalg.norm((Pos[ind]-Pos[num]))
             angl=find_angle(Dist,Vec)
-            # print(angl)
+
             if angl<0: Dist=-Dist
             if abs(Dist.dot(Vec))<0.95:
                 per=np.cross(Vec,Dist)
-                # if ind==0 and ind2==5:
-                #     print(Vec,Dist,np.cross(Vec,per),abs(Dist.dot(Vec)))
                 return per,np.cross(Vec,per)
 
         if int(j[1])-1==ind and int(j[0])-1!=ind2:
             num=int(j[0])-1
             Dist=(Pos[ind]-Pos[num])/np.linalg.norm((Pos[ind]-Pos[num]))
             angl=find_angle(Dist,Vec)
-            # print(angl)
+
             if angl<0: Dist=-Dist
             if abs(Dist.dot(Vec))<0.95:
                 per=np.cross(Vec,Dist)
@@ -160,7 +158,6 @@ def orthonormal_basis(Pos,B,k):
     aVec/=np.linalg.norm(aVec)
     per=np.cross(Vec,aVec)
     return per,np.array([1,-1,-1.3])#linear
-    return per,np.cross(Vec,per)#linear
 
 
 
@@ -182,9 +179,10 @@ def bonds_plotting(Surfaces,bonds,Pos,Vec,factor=1):
 
         x=Radbond*(np.outer(np.cos(u),np.ones(np.size(v))))
         y=Radbond*(np.outer(np.sin(u),np.ones(np.size(v))))
-        z=(np.outer(np.ones(np.size(u)),np.linspace((abs(Vec[one]*factor)-1/20),(dist-abs(Vec[two]*factor)+1/20),np.size(v))))
+        z=(np.outer(np.ones(np.size(u)),np.linspace((abs(Vec[two]*factor)-1/20),(dist-abs(Vec[one]*factor)+1/20),np.size(v))))
         x,y,z=rota_bonds(Vect,x,y,z)
-        x,y,z=x-Pos[one][0],y-Pos[one][1],z-Pos[one][2]
+        x,y,z=x+Pos[two][0],y+Pos[two][1],z+Pos[two][2]
+
         if order==1:
             Surfaces.append(go.Surface(x=x,y=y,z=z,colorscale="gray",showscale=False))
 
@@ -225,8 +223,8 @@ def plot_atom(Surfaces,atom,plotted_property="radius",transparency=1,factor=1):
 
     Norm = atom.properties[plotted_property]
 
-    u=np.linspace(0,2*np.pi,50)
-    v=np.linspace(0,np.pi,50)
+    u=np.linspace(0,2*np.pi,30)
+    v=np.linspace(0,np.pi,30)
 
     x=Norm*factor*(np.outer(np.cos(u),np.sin(v)))+atom.pos[0]
     y=Norm*factor*(np.outer(np.sin(u),np.sin(v)))+atom.pos[1]
@@ -240,8 +238,8 @@ def plot_atom(Surfaces,atom,plotted_property="radius",transparency=1,factor=1):
 def plot_vector_atom(Surfaces,atom,vector,transparency=1,factor=1):
     """plot atom as a sphere"""
 
-    u=np.linspace(0,2*np.pi,50)
-    v=np.linspace(0,np.pi,50)
+    u=np.linspace(0,2*np.pi,30)
+    v=np.linspace(0,np.pi,30)
     colors={"red":[[0,"rgb(150,30,30)"],[1,"rgb(200,0,0)"]] ,"white":[[0,"rgb(50,50,50)"],[1,"rgb(255,255,255)"]]}
 
     x=abs(vector)*factor*(np.outer(np.cos(u),np.sin(v)))+atom.pos[0]
@@ -261,42 +259,44 @@ def plot_isodensity(Surfaces,voxel_origin,voxel_matrix,cube,cutoff=0.2,transpare
     voxel_end[1] = voxel_origin[1] + voxel_matrix[1][1]*nx
     voxel_end[2] = voxel_origin[2] + voxel_matrix[2][2]*nx
 
-    # pos_x = np.reshape(np.linspace(voxel_origin[0],voxel_end[0],nx),(nx,1,1,1)) * np.reshape([1,0,0],(1,1,1,3))
-    # pos_y = np.reshape(np.linspace(voxel_origin[1],voxel_end[1],ny),(1,ny,1,1)) * np.reshape([0,1,0],(1,1,1,3))
-    # pos_z = np.reshape(np.linspace(voxel_origin[2],voxel_end[2],nz),(1,1,nz,1)) * np.reshape([0,0,1],(1,1,1,3))
-    #
-    # cube_pos = pos_x + pos_y + pos_z
-
-    #Non new cube matrices will be computed as it takes too much memory
     #Calculate cube density
-    cube = cube**2 * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
-    #Calculate renormalization
-    cube = cube / np.sum(cube)
+    cube_density = cube**2 * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+
+    #Calculate renormalization as for some reason some cube files are not normalized
+    cube_density = cube_density / np.sum(cube_density)
 
 
-    array_sort = np.argsort(cube,axis=None)[::-1]
+    array_sort = np.argsort(cube_density,axis=None)[::-1]
 
-    cube_sorted = cube.flatten()[array_sort]
+    cube_sorted = cube_density.flatten()[array_sort]
     cube_values_sorted = np.cumsum(cube_sorted)
 
     #Find how to unsort the array. There should be a more efficient way to do this
     indexes = np.arange(len(array_sort),dtype=int)
     array_unsort = np.zeros(len(array_sort),dtype=int)
+
     for k in range(len(array_sort)):
         array_unsort[array_sort[k]] = indexes[k]
 
     cube_values = cube_values_sorted[array_unsort]
 
+    # #Multiply by the sign to keep the positive and negative aspect
+    # cube_nozero = (cube + (cube==0)*1e-15).flatten()
+    #
+    # cube_values = cube_values * np.sign(cube_nozero)
 
     colors={"red":[[0,"rgb(150,30,30)"],[1,"rgb(200,0,0)"]] ,"white":[[0,"rgb(50,50,50)"],[1,"rgb(255,255,255)"]]}
 
     x = np.linspace(voxel_origin[0],voxel_end[0],nx)
     y = np.linspace(voxel_origin[1],voxel_end[1],ny)
     z = np.linspace(voxel_origin[2],voxel_end[2],nz)
-    x,y,z=np.meshgrid(x,y,z)
+
+    #This order is important to keep z as the inner, y as the middle and x as the outer coordinates
+    y,x,z=np.meshgrid(y,x,z)
     x,y,z=x.flatten(),y.flatten(),z.flatten()
 
-    Surfaces.append(go.Volume(x=x,y=y,z=z,value=cube_values,isomin=0,isomax=1-cutoff,opacity=.5,showscale=False))
+
+    Surfaces.append(go.Volume(x=x,y=y,z=z,value=cube_values,isomin=-1+cutoff,isomax=1-cutoff,opacity=.5,showscale=False))
 
     return Surfaces
 

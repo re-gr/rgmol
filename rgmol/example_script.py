@@ -16,21 +16,22 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     file=args.i
-    # file = "output_examples//methanes//bromomethane//bromomethane.out"
+    file = "output_examples//methanes//bromomethane//bromomethane.out"
 
 
 
-    # mol = rgmol.extract_adf.extract_all(file)
+    mol = rgmol.extract_adf.extract_all(file)
     # mol.plot_plt(ax,factor=.5)
+    mol.plot_radius_plotly(factor=.3)
     # mol.plot_diagonalized_kernel_plt(plotted_kernel="condensed linear response",transparency=0.3,factor=1)
     # fig=mol.plot_diagonalized_kernel_plotly(plotted_kernel="condensed linear response",transparency=0.3,factor=1)
     # fig=mol.plot_diagonalized_kernel_slider_plotly(plotted_kernel="condensed linear response",transparency=0.3,factor=1)
     # fig=mol.plot_property_plotly(plotted_property="dual",transparency=0.3,factor=2,transparency_radius=.7)
     #
 
-    file = "output_examples//n1_CNNH2//n1_CNNH2.mo71a.cube"
-    mol=rgmol.extract_cube.extract(file)
-    mol.plot_cube_plotly()
+    # file = "output_examples//n1_CNNH2//n1_CNNH2.mo71a.cube"
+    # mol=rgmol.extract_cube.extract(file)
+    # mol.plot_cube_plotly()
 
 
 

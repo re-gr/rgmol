@@ -1,0 +1,4 @@
+#ignore all cache
+__pycache__
+#ignore html files
+*.html
