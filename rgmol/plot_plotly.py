@@ -190,20 +190,20 @@ def bonds_plotting(Surfaces,bonds,Pos,Vec,factor=1):
         elif order==1.5:
             zpe,pe=orthonormal_basis(Pos,bonds,k)#Get a orthonormal vector in order to distance the two cylinders
             pe=pe/np.linalg.norm(pe)/15
-            Surfaces.append(go.Surface(x=x-pe[0],y=y-pe[0],z=z-pe[0],colorscale="gray",showscale=False))
-            Surfaces.append(go.Surface(x=x+pe[0],y=y+pe[0],z=z+pe[0],colorscale="gray",opacity=.5,showscale=False))
+            Surfaces.append(go.Surface(x=x-pe[0],y=y-pe[1],z=z-pe[2],colorscale="gray",showscale=False))
+            Surfaces.append(go.Surface(x=x+pe[0],y=y+pe[1],z=z+pe[2],colorscale="gray",opacity=.5,showscale=False))
 
 
         elif order==2:
             zpe,pe=orthonormal_basis(Pos,bonds,k)
             pe=pe/np.linalg.norm(pe)/15
-            Surfaces.append(go.Surface(x=x-pe[0],y=y-pe[0],z=z-pe[0],colorscale="gray",showscale=False))
-            Surfaces.append(go.Surface(x=x+pe[0],y=y+pe[0],z=z+pe[0],colorscale="gray",showscale=False))
+            Surfaces.append(go.Surface(x=x-pe[0],y=y-pe[1],z=z-pe[2],colorscale="gray",showscale=False))
+            Surfaces.append(go.Surface(x=x+pe[0],y=y+pe[1],z=z+pe[2],colorscale="gray",showscale=False))
         else:
             zpe,pe=orthonormal_basis(Pos,bonds,k)
             pe=pe/np.linalg.norm(pe)/12
-            Surfaces.append(go.Surface(x=x-pe[0],y=y-pe[0],z=z-pe[0],colorscale="gray",showscale=False))
-            Surfaces.append(go.Surface(x=x+pe[0],y=y+pe[0],z=z+pe[0],colorscale="white",showscale=False))
+            Surfaces.append(go.Surface(x=x-pe[0],y=y-pe[1],z=z-pe[2],colorscale="gray",showscale=False))
+            Surfaces.append(go.Surface(x=x+pe[0],y=y+pe[1],z=z+pe[2],colorscale="white",showscale=False))
             Surfaces.append(go.Surface(x=x,y=y,z=z,colorscale="gray",showscale=False))
     return Surfaces
 
