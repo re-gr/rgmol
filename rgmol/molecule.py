@@ -15,20 +15,35 @@ import pyvista
 class atom(object):
     """
     Atom object
-
     """
 
     def __init__(self,name_or_atomic_number,pos,**kwargs):
         """
+        atom(name_or_atomic_number,pos,**kwargs)
+
         Constructs atom object from properties
 
         Parameters
         ----------
             name_or_atomic_number : int or float
-            pos : list or array of 3 elements; position of the atom
+                The atomic number or the name of the element
+            pos : list or array_like of 3 elements
+                The position of the atom
+
+        Returns
+        -------
+            atom
+                The atom object
+
+        Other Parameters
+        ----------------
             **kwargs :
-                color :
-                prop :
+                nickname : str
+                    The nickname of the atom
+                color : list or array_like of 3 elements
+                    The color of the atom. If not provided, an already defined color will be used.
+                properties : dict
+                    The properties of the atom, if the radius is not provided, it will be taken from an already defined dictionnary.
         """
         if type(name_or_atomic_number) is int:
             self.atomic_number = name_or_atomic_number
@@ -49,7 +64,6 @@ class atom(object):
 
         is_color = kwargs.get("color")
         if is_color:
-            ##NEED TO ADD EXCEPTIONS AND REFORMATING
             self.color=is_color
         else:
             self.color=(np.array(dict_color[self.name])/255).tolist()
@@ -71,36 +85,156 @@ class atom(object):
                 self.properties[prop] = is_prop[prop]
 
 
-    def plot_plt(self,ax,plotted_property="radius",transparency=1,factor=1):
-        """plot the atom on the figure"""
-        plot_plt.plot_atom(ax,self,plotted_property=plotted_property,transparency=transparency,factor=factor)
+    def plot_plt(self,ax,plotted_property="radius",opacity=1,factor=1):
+        """
+        plot_plt(ax,plotted_property="radius",opacity=1,factor=1)
+
+        Plot a property of the atom on the ax using matplotlib
+
+        Parameters
+        ----------
+            ax : matplotlib.axes
+                The ax object from matplotlib on which the atom will be plotted. It can be easily defined using ax = fig.add_subplot(nrows,nncols,index)
+            plotted_property : string, optional
+                The property to be plotted. By default the radius is plotted.
+            opacity : float, optional
+                The opacity of the plot. By default equals to 1
+            factor : float, optional
+                The factor by which the plotted_property will be multiplied. By default equals to 1
+
+        Returns
+        -------
+            None
+                The atom is plotted on the ax object
+        """
+        plot_plt.plot_atom(ax,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
 
 
-    def plot_vector_plt(self,ax,vector,transparency=1,factor=1):
-        """plot the atom on the figure"""
-        plot_plt.plot_vector_atom(ax,self,vector,transparency=transparency,factor=factor)
+    def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
+        """
+        plot_vector_plt(ax,plotted_property="radius",opacity=1,factor=1)
+
+        Plot a value of a vector on the position of the atom on the ax using matplotlib
+
+        Parameters
+        ----------
+            ax : matplotlib.axes
+                The ax object from matplotlib on which the atom will be plotted. It can be easily defined using ax = fig.add_subplot(nrows,nncols,index)
+            vector : float
+                The value to be plotted
+            opacity : float, optional
+                The opacity of the plot. By default equals to 1
+            factor : float, optional
+                The factor by which the vector will be multiplied. By default equals to 1
+
+        Returns
+        -------
+            None
+                The atom is plotted on the ax object
+        """
+        plot_plt.plot_vector_atom(ax,self,vector,opacity=opacity,factor=factor)
 
 
-    def plot_plotly(self,Surfaces,plotted_property="radius",transparency=1,factor=1):
-        """plot the atom on the figure"""
-        return plot_plotly.plot_atom(Surfaces,self,plotted_property=plotted_property,transparency=transparency,factor=factor)
+    def plot_plotly(self,Surfaces,plotted_property="radius",opacity=1,factor=1):
+        """
+        plot_plotly(Surfaces,plotted_property="radius",opacity=1,factor=1)
+
+        Plot a value of a vector on the position of the atom using plotly
+
+        Parameters
+        ----------
+            Surfaces : list
+                A list of plotly.graph_object.surface
+            plotted_property : string, optional
+                The property to be plotted. By default the radius is plotted.
+            opacity : float, optional
+                The opacity of the plot. By default equals to 1
+            factor : float, optional
+                The factor by which the plotted_property will be multiplied. By default equals to 1
+
+        Returns
+        -------
+            Surfaces
+                The updated Surfaces list
+        """
+        return plot_plotly.plot_atom(Surfaces,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
 
 
-    def plot_vector_plotly(self,Surfaces,vector,transparency=1,factor=1):
-        """plot the atom on the figure"""
-        return plot_plotly.plot_vector_atom(Surfaces,self,vector,transparency=transparency,factor=factor)
+    def plot_vector_plotly(self,Surfaces,vector,opacity=1,factor=1):
+        """
+        plot_vector_plotly(Surfaces,plotted_property="radius",opacity=1,factor=1)
+
+        Plot a value of a vector on the position of the atom using plotly
+
+        Parameters
+        ----------
+            Surfaces : list
+                A list of plotly.graph_object.surface
+            vector : float
+                The value to be plotted
+            opacity : float, optional
+                The opacity of the plot. By default equals to 1
+            factor : float, optional
+                The factor by which the vector will be multiplied. By default equals to 1
+
+        Returns
+        -------
+            Surfaces
+                The updated Surfaces list
+        """
+        return plot_plotly.plot_vector_atom(Surfaces,self,vector,opacity=opacity,factor=factor)
 
 
-    def plot_pyvista(self,plotter,plotted_property="radius",transparency=1,factor=1):
-        """plot the atom on the figure"""
-        plot_pyvista.plot_atom(plotter,self,plotted_property=plotted_property,transparency=transparency,factor=factor)
-        return
+    def plot_pyvista(self,plotter,plotted_property="radius",opacity=1,factor=1):
+        """
+        plot_pyvista(plotter,plotted_property="radius",opacity=1,factor=1)
+
+        Plot a property of the atom on the plotter using pyvista
+
+        Parameters
+        ----------
+            plotter : pyvista.plotter
+                The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
+            plotted_property : string, optional
+                The property to be plotted. By default the radius is plotted.
+            opacity : float, optional
+                The opacity of the plot. By default equals to 1
+            factor : float, optional
+                The factor by which the plotted_property will be multiplied. By default equals to 1
+
+        Returns
+        -------
+            None
+                The atom is plotted on the plotter object
+        """
+        plot_pyvista.plot_atom(plotter,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
 
 
-    def plot_vector_pyvista(self,plotter,vector,transparency=1,factor=1):
-        """plot the atom on the figure"""
-        plot_pyvista.plot_vector_atom(plotter,self,vector,transparency=transparency,factor=factor)
-        return
+
+    def plot_vector_pyvista(self,plotter,vector,opacity=1,factor=1):
+        """
+        plot_vector_pyvista(plotter,plotted_property="radius",opacity=1,factor=1)
+
+        Plot a value of a vector on the position of the atom using pyvista
+
+        Parameters
+        ----------
+            plotter : pyvista.plotter
+                The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
+            vector : float
+                The value to be plotted
+            opacity : float, optional
+                The opacity of the plot. By default equals to 1
+            factor : float, optional
+                The factor by which the plotted_property will be multiplied. By default equals to 1
+
+        Returns
+        -------
+            None
+                The atom is plotted on the plotter object
+        """
+        plot_pyvista.plot_vector_atom(plotter,self,vector,opacity=opacity,factor=factor)
+
 
 
 
@@ -148,24 +282,24 @@ class molecule(object):
 
 
 
-    def plot_plt(self,ax,plotted_property="radius",transparency=1,show_bonds=1,factor=1):
+    def plot_plt(self,ax,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
         """
         Plot the entire molecule
         """
         for atom_x in self.atoms:
-            atom_x.plot_plt(ax,plotted_property=plotted_property,transparency=transparency,factor=factor)
+            atom_x.plot_plt(ax,plotted_property=plotted_property,opacity=opacity,factor=factor)
         if show_bonds:
             plot_plt.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
 
-    def plot_vector_plt(self,ax,vector,transparency=1,factor=1):
+    def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
         """
         Plot the entire molecule
         """
         for atom_x in range(len(self.atoms)):
-            self.atoms[atom_x].plot_vector_plt(ax,vector[atom_x],transparency=transparency,factor=factor)
+            self.atoms[atom_x].plot_vector_plt(ax,vector[atom_x],opacity=opacity,factor=factor)
 
 
-    def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,factor_radius=.3,with_radius=1):
+    def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,factor_radius=.3,with_radius=1):
         """
         Plot kernel
         """
@@ -208,37 +342,37 @@ class molecule(object):
             ax.set_zticks([])
             ax.set_title(r"$\mathrm{\lambda}$"+" = {:3.2f}".format(Xvp[vec]),y=1.0,pad=-6)
             if with_radius:
-                self.plot_plt(ax,factor=factor_radius,transparency=0.8)
+                self.plot_plt(ax,factor=factor_radius,opacity=0.8)
 
-            self.plot_vector_plt(ax,XV[:,vec],transparency=transparency,factor=factor)
+            self.plot_vector_plt(ax,XV[:,vec],opacity=opacity,factor=factor)
 
 
-    def plot_plotly(self,Surfaces,plotted_property="radius",transparency=1,show_bonds=1,factor=1):
+    def plot_plotly(self,Surfaces,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
         """
         Plot the entire molecule
         """
         for atom_x in self.atoms:
-            Surfaces=atom_x.plot_plotly(Surfaces,plotted_property=plotted_property,transparency=transparency,factor=factor)
+            Surfaces=atom_x.plot_plotly(Surfaces,plotted_property=plotted_property,opacity=opacity,factor=factor)
         if show_bonds:
             Surfaces=plot_plotly.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
         return Surfaces
 
-    def plot_vector_plotly(self,Sufaces,vector,transparency=1,factor=1):
+    def plot_vector_plotly(self,Sufaces,vector,opacity=1,factor=1):
         """
         Plot the entire molecule
         """
         for atom_x in range(len(self.atoms)):
-            Surfaces=self.atoms[atom_x].plot_vector_plotly(Sufaces,vector[atom_x],transparency=transparency,factor=factor)
+            Surfaces=self.atoms[atom_x].plot_vector_plotly(Sufaces,vector[atom_x],opacity=opacity,factor=factor)
         return Surfaces
 
 
-    def plot_radius_plotly(self,transparency=1,show_bonds=1,factor=1):
+    def plot_radius_plotly(self,opacity=1,show_bonds=1,factor=1):
         """
         Plot the entire molecule
         """
         Surfaces=[]
         for atom_x in self.atoms:
-            Surfaces=atom_x.plot_plotly(Surfaces,transparency=transparency,factor=factor)
+            Surfaces=atom_x.plot_plotly(Surfaces,opacity=opacity,factor=factor)
         if show_bonds:
             Surfaces=plot_plotly.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
         fig = go.Figure(data=Surfaces)
@@ -247,7 +381,7 @@ class molecule(object):
         fig.write_html("plot.html", auto_open=True)
 
 
-    def plot_property_plotly(self,plotted_property,transparency=1,factor=1,with_radius=1,transparency_radius=.8,factor_radius=.3):
+    def plot_property_plotly(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
         """
         Plot the entire molecule
         """
@@ -256,8 +390,8 @@ class molecule(object):
         Surfaces = []
 
         if with_radius:
-            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=transparency_radius)
-        Surfaces=self.plot_vector_plotly(Surfaces,X,transparency=transparency,factor=factor)
+            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
+        Surfaces=self.plot_vector_plotly(Surfaces,X,opacity=opacity,factor=factor)
 
         fig = go.Figure(data=Surfaces)
         fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
@@ -265,7 +399,7 @@ class molecule(object):
         fig.write_html("plot.html", auto_open=True)
 
 
-    def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,with_radius=1,transparency_radius=.8,factor_radius=.3):
+    def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
         """
         Plot kernel
         """
@@ -287,8 +421,8 @@ class molecule(object):
             Surfaces = []
 
             if with_radius:
-                Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=transparency_radius)
-            Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],transparency=transparency,factor=factor)
+                Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
+            Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],opacity=opacity,factor=factor)
 
             for k in Surfaces:
                 fig.add_trace(k,row=1,col=vec+1)
@@ -304,7 +438,7 @@ class molecule(object):
         # fig.show()
 
 
-    def plot_diagonalized_kernel_slider_plotly(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.3):
+    def plot_diagonalized_kernel_slider_plotly(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
         """
         Plot kernel
         """
@@ -318,9 +452,9 @@ class molecule(object):
 
         Surfaces = []
         if with_radius:
-            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=transparency_radius)
+            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
         for vec in range(len(XV)):
-            Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],transparency=transparency,factor=factor)
+            Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],opacity=opacity,factor=factor)
 
         fig = go.Figure(data=Surfaces)
         fig.update_traces(visible=False)
@@ -340,7 +474,7 @@ class molecule(object):
 
 
 
-    def plot_cube_plotly(self,plotted_isodensity="cube",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=1):
+    def plot_cube_plotly(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=1):
         """
         Plot cube
         """
@@ -348,8 +482,8 @@ class molecule(object):
         Surfaces = []
 
         if with_radius:
-            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,transparency=transparency_radius,show_bonds=False)
-        Surfaces=plot_plotly.plot_isodensity(Surfaces,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],transparency=transparency,factor=factor)
+            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius,show_bonds=False)
+        Surfaces=plot_plotly.plot_isodensity(Surfaces,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
         fig = go.Figure(data=Surfaces)
         fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
 
@@ -357,32 +491,32 @@ class molecule(object):
 
 
 
-    def plot_pyvista(self,plotter,plotted_property="radius",transparency=1,show_bonds=1,factor=1):
+    def plot_pyvista(self,plotter,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
         """
         Plot the entire molecule
         """
         for atom_x in self.atoms:
-            atom_x.plot_pyvista(plotter,plotted_property=plotted_property,transparency=transparency,factor=factor)
+            atom_x.plot_pyvista(plotter,plotted_property=plotted_property,opacity=opacity,factor=factor)
         if show_bonds:
             plot_pyvista.bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
         return
 
-    def plot_vector_pyvista(self,plotter,vector,transparency=1,factor=1):
+    def plot_vector_pyvista(self,plotter,vector,opacity=1,factor=1):
         """
         Plot the entire molecule
         """
         for atom_x in range(len(self.atoms)):
-            self.atoms[atom_x].plot_vector_pyvista(plotter,vector[atom_x],transparency=transparency,factor=factor)
+            self.atoms[atom_x].plot_vector_pyvista(plotter,vector[atom_x],opacity=opacity,factor=factor)
         return
 
 
-    def plot_radius_pyvista(self,transparency=1,show_bonds=1,factor=1):
+    def plot_radius_pyvista(self,opacity=1,show_bonds=1,factor=1):
         """
         Plot the entire molecule
         """
         plotter = pyvista.Plotter()
         for atom_x in self.atoms:
-            atom_x.plot_pyvista(plotter,transparency=transparency,factor=factor)
+            atom_x.plot_pyvista(plotter,opacity=opacity,factor=factor)
         if show_bonds:
             plot_pyvista.bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
@@ -390,7 +524,7 @@ class molecule(object):
         plotter.show(full_screen=True)
 
 
-    def plot_property_pyvista(self,plotted_property,transparency=1,factor=1,with_radius=1,transparency_radius=.8,factor_radius=.3):
+    def plot_property_pyvista(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
         """
         Plot the entire molecule
         """
@@ -398,13 +532,13 @@ class molecule(object):
         plotter = pyvista.Plotter()
 
         if with_radius:
-            self.plot_pyvista(plotter,factor=factor_radius,transparency=transparency_radius)
-        self.plot_vector_pyvista(plotter,X,transparency=transparency,factor=factor)
+            self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+        self.plot_vector_pyvista(plotter,X,opacity=opacity,factor=factor)
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
         plotter.show(full_screen=True)
 
-    def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.3):
+    def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
         """
         Plot kernel
         """
@@ -414,25 +548,25 @@ class molecule(object):
 
         plotter = pyvista.Plotter()
         if with_radius:
-            self.plot_pyvista(plotter,factor=factor_radius,transparency=transparency_radius)
+            self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
         def create_mesh_diagonalized_kernel(value):
             vector_number = int(round(value))
-            self.plot_vector_pyvista(plotter,XV[:,vector_number],transparency=transparency,factor=factor)
+            self.plot_vector_pyvista(plotter,XV[:,vector_number],opacity=opacity,factor=factor)
 
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
         plotter.add_slider_widget(create_mesh_diagonalized_kernel, [0, len(XV)-1],value=0,title="Eigenvector", fmt="%1.0f")
         plotter.show(full_screen=True)
 
-    def plot_cube_pyvista(self,plotted_isodensity="cube",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.5):
+    def plot_cube_pyvista(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5):
         """
         Plot cube
         """
 
         plotter = pyvista.Plotter()
         if with_radius:
-            self.plot_pyvista(plotter,factor=factor_radius,transparency=transparency_radius,show_bonds=True)
-        plot_pyvista.plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],transparency=transparency,factor=factor)
+            self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
+        plot_pyvista.plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
 
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
@@ -450,7 +584,7 @@ class group_molecules(object):
 
 
 
-    def plot_kernel_plt(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1):
+    def plot_kernel_plt(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1):
         """
         Plot kernel
         """
@@ -470,7 +604,7 @@ class group_molecules(object):
                 ax=fig.add_subplot(nrows,ncols,mol*nrows+1,projection="3d",aspect="equal")
 
 
-    def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1):
+    def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1):
         """
         Plot kernel
         """
@@ -518,7 +652,7 @@ class group_molecules(object):
                 ax.set_xticks([])
                 ax.set_yticks([])
                 ax.set_zticks([])
-                self.molecules.plot_vector_plt(ax,XV,transparency=transparency,factor=factor)
+                self.molecules.plot_vector_plt(ax,XV,opacity=opacity,factor=factor)
 
 
 
