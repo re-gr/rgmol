@@ -6,9 +6,11 @@ import numpy as np
 from dicts import *
 import plot_plt
 import plot_plotly
+import plot_pyvista
 from plotly.subplots import make_subplots
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+import pyvista
 
 class atom(object):
     """
@@ -87,6 +89,18 @@ class atom(object):
     def plot_vector_plotly(self,Surfaces,vector,transparency=1,factor=1):
         """plot the atom on the figure"""
         return plot_plotly.plot_vector_atom(Surfaces,self,vector,transparency=transparency,factor=factor)
+
+
+    def plot_pyvista(self,plotter,plotted_property="radius",transparency=1,factor=1):
+        """plot the atom on the figure"""
+        plot_pyvista.plot_atom(plotter,self,plotted_property=plotted_property,transparency=transparency,factor=factor)
+        return
+
+
+    def plot_vector_pyvista(self,plotter,vector,transparency=1,factor=1):
+        """plot the atom on the figure"""
+        plot_pyvista.plot_vector_atom(plotter,self,vector,transparency=transparency,factor=factor)
+        return
 
 
 
@@ -308,30 +322,20 @@ class molecule(object):
         for vec in range(len(XV)):
             Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],transparency=transparency,factor=factor)
 
-
         fig = go.Figure(data=Surfaces)
         fig.update_traces(visible=False)
-
         fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
-
         #Toggle the first eigenvector visible
         for j in range(number_items+len(self.atoms)):
             fig["data"][j]["visible"] = True
-
-
-
         steps = []
-
         for i in range(len(X)):
             step = dict(method="update",args=[{"visible": [True]*number_items + [False] * (number_vectors)}])
             for j in range(number_atoms):
                 step["args"][0]["visible"][i*number_atoms+j+number_items] = True  # Toggle i'th trace to "visible"
             steps.append(step)
-
         sliders = [dict(active=0,currentvalue={"prefix": "Eigenvector: "},pad={"t": 1},steps=steps)]
-
         fig.update_layout(sliders=sliders)
-
         fig.write_html("plot.html", auto_open=True)
 
 
@@ -351,6 +355,88 @@ class molecule(object):
 
         fig.write_html("plot.html", auto_open=True)
 
+
+
+    def plot_pyvista(self,plotter,plotted_property="radius",transparency=1,show_bonds=1,factor=1):
+        """
+        Plot the entire molecule
+        """
+        for atom_x in self.atoms:
+            atom_x.plot_pyvista(plotter,plotted_property=plotted_property,transparency=transparency,factor=factor)
+        if show_bonds:
+            plot_pyvista.bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+        return
+
+    def plot_vector_pyvista(self,plotter,vector,transparency=1,factor=1):
+        """
+        Plot the entire molecule
+        """
+        for atom_x in range(len(self.atoms)):
+            self.atoms[atom_x].plot_vector_pyvista(plotter,vector[atom_x],transparency=transparency,factor=factor)
+        return
+
+
+    def plot_radius_pyvista(self,transparency=1,show_bonds=1,factor=1):
+        """
+        Plot the entire molecule
+        """
+        plotter = pyvista.Plotter()
+        for atom_x in self.atoms:
+            atom_x.plot_pyvista(plotter,transparency=transparency,factor=factor)
+        if show_bonds:
+            plot_pyvista.bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+        light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+        plotter.add_light(light)
+        plotter.show(full_screen=True)
+
+
+    def plot_property_pyvista(self,plotted_property,transparency=1,factor=1,with_radius=1,transparency_radius=.8,factor_radius=.3):
+        """
+        Plot the entire molecule
+        """
+        X = self.properties[plotted_property]
+        plotter = pyvista.Plotter()
+
+        if with_radius:
+            self.plot_pyvista(plotter,factor=factor_radius,transparency=transparency_radius)
+        self.plot_vector_pyvista(plotter,X,transparency=transparency,factor=factor)
+        light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+        plotter.add_light(light)
+        plotter.show(full_screen=True)
+
+    def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linear response",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.3):
+        """
+        Plot kernel
+        """
+        X = self.properties[plotted_kernel]
+        Xvp,XV = np.linalg.eigh(X)
+        ncols = len(X)
+
+        plotter = pyvista.Plotter()
+        if with_radius:
+            self.plot_pyvista(plotter,factor=factor_radius,transparency=transparency_radius)
+        def create_mesh_diagonalized_kernel(value):
+            vector_number = int(round(value))
+            self.plot_vector_pyvista(plotter,XV[:,vector_number],transparency=transparency,factor=factor)
+
+        light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+        plotter.add_light(light)
+        plotter.add_slider_widget(create_mesh_diagonalized_kernel, [0, len(XV)-1],value=0,title="Eigenvector", fmt="%1.0f")
+        plotter.show(full_screen=True)
+
+    def plot_cube_pyvista(self,plotted_isodensity="cube",transparency=0.5,factor=1,with_radius=1,transparency_radius=1,factor_radius=.5):
+        """
+        Plot cube
+        """
+
+        plotter = pyvista.Plotter()
+        if with_radius:
+            self.plot_pyvista(plotter,factor=factor_radius,transparency=transparency_radius,show_bonds=True)
+        plot_pyvista.plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],transparency=transparency,factor=factor)
+
+        light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+        plotter.add_light(light)
+        plotter.show(full_screen=True)
 
 
 
