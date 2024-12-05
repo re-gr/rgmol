@@ -13,12 +13,15 @@ classifiers = [
 	"Development Status :: 1 - Planning",
 	"Programming Language :: Python :: 3.12",
 ]
-depedencies = [
+dependencies = [
 	"numpy",
 	"matplotlib",
 	"plotly",
 	"codecs",
 	"argparse",
+ 	"pyvista",
+  	"plotly",
+   	"periodictable"
 ]
 [project.urls]
 Repository = "https://github.com/re-gr/rgmol"
