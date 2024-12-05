@@ -217,33 +217,27 @@ def bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
 
 
 
-def convert_color_to_plotly(color):
-    """convert color to plotly"""
-    c0,c1,c2 = color
-    c3=max(c0-.2,0)
-    c4=max(c1-.2,0)
-    c5=max(c2-.2,0)
-    return [[0,'rgb({},{},{})'.format(c0,c1,c2)],[1,'rgb({},{},{})'.format(c3,c4,c5)]]
 
 
-def plot_atom(plotter,atom,plotted_property="radius",transparency=1,factor=1):
+def plot_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
     """plot atom as a sphere"""
     Norm = atom.properties[plotted_property]
     atom_sphere = pyvista.Sphere(radius=Norm*factor, phi_resolution=100, theta_resolution=100,center=atom.pos)
-    plotter.add_mesh(atom_sphere,name=atom.nickname,color=atom.color,pbr=True,roughness=.5,metallic=.1,opacity=transparency)
+    plotter.add_mesh(atom_sphere,name=atom.nickname,color=atom.color,pbr=False,roughness=0.0,metallic=0.0,diffuse=1,opacity=opacity)
     return
 
 
-def plot_vector_atom(plotter,atom,vector,transparency=1,factor=1):
+def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     """plot atom as a sphere"""
 
-    colors=[[200,0,0],[255,255,255]]
+    colors=[[255,0,0],[255,255,255]]
     atom_sphere = pyvista.Sphere(radius=abs(vector)*factor, phi_resolution=100, theta_resolution=100,center=atom.pos)
-    plotter.add_mesh(atom_sphere,name=atom.nickname+"vector",color=colors[(vector>0)*1],pbr=True,roughness=.5,metallic=.4,opacity=transparency)
+    plotter.add_mesh(atom_sphere,name=atom.nickname+"vector",color=colors[(vector>0)*1],pbr=True,roughness=.4,metallic=.4,diffuse=1,opacity=opacity)
+
     return
 
 
-def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,transparency=1,factor=1):
+def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,factor=1):
     """plot atom as a sphere"""
     cube = np.transpose(cube,(2,1,0))
     nx,ny,nz = np.shape(cube)
@@ -274,8 +268,8 @@ def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,transparen
     contour_negative = grid.contour(isosurfaces=2,scalars=cube_values_negative,rng=[0,1-cutoff])
 
 
-    plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=transparency,pbr=True,roughness=.5,metallic=1,color="blue")
-    plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=transparency,pbr=True,roughness=.5,metallic=1,color="red")
+    plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.5,metallic=1,color="blue")
+    plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.5,metallic=1,color="red")
 
     return
 

@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 from write import *
-from plot_plt import *
 import extract_adf
 import extract_cube
 

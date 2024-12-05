@@ -281,7 +281,6 @@ class molecule(object):
         return np.array(L)
 
 
-
     def plot_plt(self,ax,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
         """
         Plot the entire molecule
@@ -297,6 +296,51 @@ class molecule(object):
         """
         for atom_x in range(len(self.atoms)):
             self.atoms[atom_x].plot_vector_plt(ax,vector[atom_x],opacity=opacity,factor=factor)
+
+
+    def plot_radius_plt(self,opacity=1,show_bonds=1,factor=1):
+        """
+        Plot kernel
+        """
+
+
+        fig=plt.figure(figsize=(3.1,2.8),dpi=200)
+        plt.rcParams.update({'font.size': 13})
+        plt.rcParams['svg.fonttype'] = 'none'
+
+        #remove grid background
+        plt.rcParams['axes.edgecolor'] = 'none'
+        plt.rcParams['axes3d.xaxis.panecolor'] = 'none'
+        plt.rcParams['axes3d.yaxis.panecolor'] = 'none'
+        plt.rcParams['axes3d.zaxis.panecolor'] = 'none'
+
+
+        #Add box to the graph with a title
+        ax=fig.add_subplot(1,1,1)
+        if self.name:
+            title = self.name
+            ax.set_title("{}".format(title),fontsize=20)
+
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.spines['bottom'].set_color('black') #add box
+        ax.spines['top'].set_color('black')
+        ax.spines['right'].set_color('black')
+        ax.spines['left'].set_color('black')
+        ax.set_facecolor("none")
+
+        ax=fig.add_subplot(1,1,1,projection="3d",aspect="equal")
+        ax.grid(False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_zticks([])
+
+        for atom_x in self.atoms:
+            atom_x.plot_plt(ax,opacity=opacity,factor=factor)
+        if show_bonds:
+            plot_plt.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+        plot_plt.axes_equal(ax)
+        plt.show()
 
 
     def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,factor_radius=.3,with_radius=1):
@@ -343,8 +387,10 @@ class molecule(object):
             ax.set_title(r"$\mathrm{\lambda}$"+" = {:3.2f}".format(Xvp[vec]),y=1.0,pad=-6)
             if with_radius:
                 self.plot_plt(ax,factor=factor_radius,opacity=0.8)
-
             self.plot_vector_plt(ax,XV[:,vec],opacity=opacity,factor=factor)
+            plot_plt.axes_equal(ax)
+        plt.show()
+
 
 
     def plot_plotly(self,Surfaces,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
@@ -472,8 +518,6 @@ class molecule(object):
         fig.update_layout(sliders=sliders)
         fig.write_html("plot.html", auto_open=True)
 
-
-
     def plot_cube_plotly(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=1):
         """
         Plot cube
@@ -488,6 +532,8 @@ class molecule(object):
         fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
 
         fig.write_html("plot.html", auto_open=True)
+
+
 
 
 
@@ -536,7 +582,7 @@ class molecule(object):
         self.plot_vector_pyvista(plotter,X,opacity=opacity,factor=factor)
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
-        plotter.show(full_screen=True)
+        plotter.show(full_screen=False)
 
     def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
         """
@@ -553,16 +599,17 @@ class molecule(object):
             vector_number = int(round(value))
             self.plot_vector_pyvista(plotter,XV[:,vector_number],opacity=opacity,factor=factor)
 
-        light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
-        plotter.add_light(light)
+        # light = pyvista.Light((0,10,0),(0,0,0),"white",light_type="camera light",intensity=.3)
+        # plotter.add_light(light)
         plotter.add_slider_widget(create_mesh_diagonalized_kernel, [0, len(XV)-1],value=0,title="Eigenvector", fmt="%1.0f")
-        plotter.show(full_screen=True)
+
+        plotter.show(full_screen=False)
+
 
     def plot_cube_pyvista(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5):
         """
         Plot cube
         """
-
         plotter = pyvista.Plotter()
         if with_radius:
             self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
@@ -570,7 +617,9 @@ class molecule(object):
 
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
-        plotter.show(full_screen=True)
+        plotter.show(full_screen=False)
+
+
 
 
 
