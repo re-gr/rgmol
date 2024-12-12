@@ -33,6 +33,24 @@ def corr_angle(angle,x,y):
 
 
 
+def axes_equal(ax):
+    """
+    Makes axes equal
+    """
+
+    boundaries = np.array([ax.get_xlim3d(),ax.get_ylim3d(),ax.get_zlim3d()])
+    ranges = np.diff(boundaries,axis=1)
+    middles = np.sum(boundaries,axis=1)/2
+    max_range = np.max(ranges)/2
+
+    ax.set_xlim3d([middles[0]-max_range,middles[0]+max_range])
+    ax.set_ylim3d([middles[1]-max_range,middles[1]+max_range])
+    ax.set_zlim3d([middles[2]-max_range,middles[2]+max_range])
+
+
+
+
+
 def rota_bonds(Vec,x,y,z):
     """
     Roates the bonds
@@ -215,9 +233,9 @@ def bonds_plotting(ax,bonds,Pos,Vec,factor=1):
 
         x=Radbond*(np.outer(np.cos(u),np.ones(np.size(v))))
         y=Radbond*(np.outer(np.sin(u),np.ones(np.size(v))))
-        z=(np.outer(np.ones(np.size(u)),np.linspace((abs(Vec[one]*factor)-1/20),(dist-abs(Vec[two]*factor)+1/20),np.size(v))))
+        z=(np.outer(np.ones(np.size(u)),np.linspace((abs(Vec[two]*factor)-1/20),(dist-abs(Vec[one]*factor)+1/20),np.size(v))))
         x,y,z=rota_bonds(Vect,x,y,z)
-        x,y,z=x-Pos[one][0],y-Pos[one][1],z-Pos[one][2]
+        x,y,z=x+Pos[two][0],y+Pos[two][1],z+Pos[two][2]
         if order==1: ax.plot_surface(x,y,z,color="gray")
 
         elif order==1.5:
@@ -241,242 +259,7 @@ def bonds_plotting(ax,bonds,Pos,Vec,factor=1):
 
 
 
-
-
-
-
-def plot_all_3d(Pos,Rad,V,vp,Name,B,Ord,file,save,mode="2"):
-    """
-    Do the 3d plot of a vector V
-    """
-    fact=1.3#Factor reduce radius 1.3 seems to be a good value
-    plt.rcParams.update({'font.size': 7})
-    plt.rcParams['svg.fonttype'] = 'none'
-    Pos[:,0]-=np.mean(Pos[:,0]) #Center the Pos
-    Pos[:,1]-=np.mean(Pos[:,1])
-    Pos[:,2]-=np.mean(Pos[:,2])
-    minV,maxV=np.min(V), np.max(V)
-    if save>=0:
-        fig=plt.figure(figsize=(20,10),dpi=300)
-    else:
-        fig=plt.figure()
-    u=np.linspace(0,2*np.pi,20)
-    v=np.linspace(0,np.pi,15)
-    nrow=int(round(len(V)**(1/2)))
-    ncol=int(len(V)/nrow+((len(V)%nrow)!=0))
-
-    #rotates the molecule to be perpendicual to the default projection
-    Zmean=np.array([0.,0.,0.])
-    Zdefault=np.array([1.,-1.,1.])#The default projection from matplotlib
-    if len(Ord)!=0: #If there are bonds, rotate the molecule
-        # Mord=np.max(Ord)
-        for k in range(len(B)):
-            # if Ord[k]==Mord:
-            zpe,ype=orthonormal_basis(Pos,B,k)
-            Zmean+=zpe
-        Zmean=Zmean/np.linalg.norm(Zmean)
-        Zdefault=Zdefault/np.linalg.norm(Zdefault)
-
-        Pos,Rota=rota_mol(Pos,Zdefault,Zmean)
-
-    for num_vec in range(len(V)):
-        Vec=V[:,num_vec]
-        if Vec[0]<0:
-            Vec=-Vec #Fix the sign of the first atom to be always positive
-
-        ax=fig.add_subplot(nrow,ncol,num_vec+1,projection="3d")
-
-
-        bonds_plotting(ax,Pos,B,Ord,Vec,mode,fact)
-        u=np.linspace(0,2*np.pi,20)
-        v=np.linspace(0,np.pi,15)
-        for k in range(len(Pos)):
-            x=Vec[k]/fact*(np.outer(np.cos(u),np.sin(v)))-Pos[k][0]
-            y=Vec[k]/fact*(np.outer(np.sin(u),np.sin(v)))-Pos[k][1]
-            z=Vec[k]/fact*(np.outer(np.ones(np.size(u)),np.cos(v)))-Pos[k][2]
-            ax.plot_surface(x,y,z,color=["r","w"][(Vec[k]>0)*1],label=Name[k][0]+Name[k][1]+":{:3.2f}".format(Vec[k]))
-
-        # ax.legend(loc='center left', bbox_to_anchor=(1.07, 0.5))
-        ax.set_xlim(np.min(Pos),np.max(Pos))
-        ax.set_ylim(np.min(Pos),np.max(Pos))
-        ax.set_zlim(np.min(Pos),np.max(Pos))
-        ax.set_aspect('equal')
-        ax.set_title('Eigenvector n°{}, '.format(num_vec+1)+r"$\mathrm{\lambda}$"+" = {:3.2f}".format(vp[num_vec]))
-    if save==0:
-        plt.savefig(file+".png")
-    elif save==1:
-        plt.savefig(file+".svg")
-    else: plt.show()
-    plt.close()
-
-
-
-def plot_line_3d(Pos,Rad,V,vp,Name,B,Ord,file,nrow,ncol,row,fig,modevec,Rota_arb=0,Scale=[],List_name=[],mode="2"):
-    """
-    Do the 3d plot of a vector V on a line does not save
-    This function is primarely used in the file mult_extrac_adf
-    """
-    if modevec=="1":
-        fact=1.3#Factor reduce radius 1.3 seems to be a good value
-    if modevec=="3":
-        fact=4*1.3
-        V=V*V*abs(vp)
-    Pos[:,0]-=np.mean(Pos[:,0]) #Center the Pos
-    Pos[:,1]-=np.mean(Pos[:,1])
-    Pos[:,2]-=np.mean(Pos[:,2])
-
-    #rotates the molecule to be perpendicular to the default projection
-    Zmean=np.array([0.,0.,0.])
-    Zdefault=np.array([0.,1.,0.])#The default projection axis from matplotlib
-    if len(Ord)!=0: #If there are bonds, rotate the molecule
-        # Mord=np.max(Ord)
-        # Mord=2
-        for k in range(len(B)):
-            # if Ord[k]==Mord:
-            zpe,ype=orthonormal_basis(Pos,B,k)
-            Zmean+=zpe
-        Zmean=Zmean/np.linalg.norm(Zmean)
-        Zdefault=Zdefault/np.linalg.norm(Zdefault)
-        for k in range(len(B)):
-            zpe,ype=orthonormal_basis(Pos,B,k)
-
-        Pos,Rota=rota_mol(Pos,Zdefault,Zmean)
-        for k in range(len(Pos)):
-            Pos[k]=Rota.transpose().dot(Pos[k])#Rotation to xyz
-
-        #Scale the molecule ONLY USE 1 or -1 TO MIRROR
-        if Scale!=[]:
-            Pos[:,0]=Scale[row][0]*Pos[:,0]
-            Pos[:,1]=Scale[row][1]*Pos[:,1]
-            Pos[:,2]=Scale[row][2]*Pos[:,2]
-
-        for k in range(len(Pos)):
-            Pos[k]=Rota.dot(Rz(Rota_arb).dot(Pos[k])) #Rotation around the z axis and go back on the 1 -1 1 axis
-    ncolmem=ncol
-    for num_vec in range(len(V[0])):
-        Vec=V[:,num_vec]
-        if Vec[0]<0:
-            Vec=-Vec #Fix the sign of the first atom to always be positive
-        # if row==0 and num_vec==4:
-        #     Vec=-Vec
-        ncol=len(V[0])
-        num_vec2=num_vec
-        if num_vec==0:
-            ncol=ncolmem
-        if num_vec==len(V)-1:
-            ncol=ncolmem
-            num_vec2=ncol-1
-        # if modevec!="3":
-        ax=fig.add_subplot(nrow,ncol,num_vec2+1+row*ncol,projection="3d")
-        # if modevec=="3":
-        #     ax=fig.add_subplot(1,nrow,row+1,projection="3d")
-        ax.grid(False)
-        ax.set_xticks([])#remove ticks
-        ax.set_yticks([])
-        ax.set_zticks([])
-        ax.view_init(elev=0,azim=-90)
-
-        bonds_plotting(ax,Pos,B,Ord,Vec,mode,fact)
-        u=np.linspace(0,2*np.pi,60)
-        v=np.linspace(0,np.pi,40)
-        for k in range(len(Pos)):
-            x=Vec[k]/fact*(np.outer(np.cos(u),np.sin(v)))-Pos[k][0]
-            y=Vec[k]/fact*(np.outer(np.sin(u),np.sin(v)))-Pos[k][1]
-            z=Vec[k]/fact*(np.outer(np.ones(np.size(u)),np.cos(v)))-Pos[k][2]
-            ax.plot_surface(x,y,z,color=["r","w"][(Vec[k]>0)*1],label=Name[k][0]+Name[k][1]+":{:3.2f}".format(Vec[k]))
-
-        # ax.legend(loc='center left', bbox_to_anchor=(1.07, 0.5))
-        ax.set_xlim(np.min(Pos)-np.max(abs(Vec))/fact/2,np.max(Pos)+np.max(abs(Vec))/fact/2)
-        ax.set_ylim(np.min(Pos)-np.max(abs(Vec))/fact/2,np.max(Pos)+np.max(abs(Vec))/fact/2)
-        ax.set_zlim(np.min(Pos)-np.max(abs(Vec))/fact/2,np.max(Pos)+np.max(abs(Vec))/fact/2)
-        ax.set_aspect('equal')
-        # ax.set_title('Eigenvector n°{}, '.format(num_vec+1)+r"$\mathrm{\lambda}$"+"$_{}$".format(num_vec+1)+" = {:3.2f}".format(vp[num_vec]),y=1.0,pad=-6)
-        ax.set_title(r"$\mathrm{\lambda}$"+"$_{}$".format(num_vec+1)+" = {:3.2f} a.u.".format(vp[num_vec]),y=1.0,pad=-6)
-        # if modevec=="3": break
-    # if modevec!="3":
-    ax=fig.add_subplot(nrow,1,row+1)
-    # if modevec=="3":
-    #     ax=fig.add_subplot(nrow,1,row+1)
-    if List_name==[]:
-        title=file.split("//")[-1]
-        title=title[0].upper()+title[1:-1]
-    else: title=List_name[row]
-    ax.set_title("{}".format(title),fontsize=20)
-    # ax.grid(False)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.spines['bottom'].set_color('black') #add box
-    ax.spines['top'].set_color('black')
-    ax.spines['right'].set_color('black')
-    ax.spines['left'].set_color('black')
-    ax.set_facecolor("none")
-
-
-
-
-def plot_one_vec_3d(Pos,Rad,V,vp,nvec,Name,B,Ord,file,nrow,ncol,col,fig,modevec,Rota_arb=0,Scale=[],List_name=[],mode="2"):
-    """
-    Do the 3d plot of a vector V on a line does not save
-    This function is primarely used in the file mult_extrac_adf
-    """
-    Vec=V[:,nvec]
-    vp=vp[nvec]
-    if modevec=="1":
-        fact=1.3#Factor reduce radius 1.3 seems to be a good value
-    if modevec=="3":
-        fact=5*1.3
-        Vec=Vec*vp
-    Pos[:,0]-=np.mean(Pos[:,0]) #Center the Pos
-    Pos[:,1]-=np.mean(Pos[:,1])
-    Pos[:,2]-=np.mean(Pos[:,2])
-
-    #rotates the molecule to be perpendicular to the default projection
-    Zmean=np.array([0.,0.,0.])
-    Zdefault=np.array([1.,-1.,1.])#The default projection axis from matplotlib
-    # Mord=np.max(Ord)
-    for k in range(len(B)):
-        # if Ord[k]==Mord:
-        zpe,ype=orthonormal_basis(Pos,B,k)
-        Zmean+=zpe
-    Zmean=Zmean/np.linalg.norm(Zmean)
-    Zdefault=Zdefault/np.linalg.norm(Zdefault)
-
-    Pos,Rota=rota_mol(Pos,Zdefault,Zmean)
-
-    for k in range(len(Pos)):
-        Pos[k]=Rota.dot(Rz(Rota_arb).dot(Rota.transpose().dot(Pos[k])))
-
-    if Vec[0]<0:
-        Vec=-Vec #Fix the sign of the first atom to always be positive
-
-    ax=fig.add_subplot(nrow,ncol,col+1,projection="3d")
-    ax.grid(False)
-    ax.set_xticks([])#remove ticks
-    ax.set_yticks([])
-    ax.set_zticks([])
-
-
-    bonds_plotting(ax,Pos,B,Ord,Vec,mode,fact)
-    u=np.linspace(0,2*np.pi,60)
-    v=np.linspace(0,np.pi,40)
-    for k in range(len(Pos)):
-        x=Vec[k]/fact*(np.outer(np.cos(u),np.sin(v)))-Pos[k][0]
-        y=Vec[k]/fact*(np.outer(np.sin(u),np.sin(v)))-Pos[k][1]
-        z=Vec[k]/fact*(np.outer(np.ones(np.size(u)),np.cos(v)))-Pos[k][2]
-        ax.plot_surface(x,y,z,color=["r","w"][(Vec[k]>0)*1],label=Name[k][0]+Name[k][1]+":{:3.2f}".format(Vec[k]))
-
-    # ax.legend(loc='center left', bbox_to_anchor=(1.07, 0.5))
-    ax.set_xlim(np.min(Pos)-np.max(abs(Vec))/fact/2,np.max(Pos)+np.max(abs(Vec))/fact/2)
-    ax.set_ylim(np.min(Pos)-np.max(abs(Vec))/fact/2,np.max(Pos)+np.max(abs(Vec))/fact/2)
-    ax.set_zlim(np.min(Pos)-np.max(abs(Vec))/fact/2,np.max(Pos)+np.max(abs(Vec))/fact/2)
-    ax.set_aspect('equal')
-    if List_name==[]:
-        title=file.split("//")[-1]
-        title=title[0].upper()+title[1:-1]
-    else: title=List_name[col]
-    ax.set_title('{}, '.format(title)+r"$\mathrm{\lambda}$"+" = {:3.2f}".format(vp),y=1.0,pad=-6)
-
-def plot_atom(ax,atom,plotted_property="radius",transparency=1,factor=1):
+def plot_atom(ax,atom,plotted_property="radius",opacity=1,factor=1):
     """plot atom as a sphere"""
 
     Norm = atom.properties[plotted_property]
@@ -485,13 +268,13 @@ def plot_atom(ax,atom,plotted_property="radius",transparency=1,factor=1):
     u=np.linspace(0,2*np.pi,20)
     v=np.linspace(0,np.pi,15)
 
-    x=Norm*factor*(np.outer(np.cos(u),np.sin(v)))-Pos[0]
-    y=Norm*factor*(np.outer(np.sin(u),np.sin(v)))-Pos[1]
-    z=Norm*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))-Pos[2]
-    ax.plot_surface(x,y,z,color=atom.color,alpha=transparency)
+    x=Norm*factor*(np.outer(np.cos(u),np.sin(v)))+Pos[0]
+    y=Norm*factor*(np.outer(np.sin(u),np.sin(v)))+Pos[1]
+    z=Norm*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))+Pos[2]
+    ax.plot_surface(x,y,z,color=atom.color,alpha=opacity)
 
 
-def plot_vector_atom(ax,atom,vector,transparency=1,factor=1):
+def plot_vector_atom(ax,atom,vector,opacity=1,factor=1):
     """plot atom as a sphere"""
 
 
@@ -502,10 +285,10 @@ def plot_vector_atom(ax,atom,vector,transparency=1,factor=1):
     if vector>0:
         col=colors[0]
     else: col=colors[1]
-    x=abs(vector)*factor*(np.outer(np.cos(u),np.sin(v)))-atom.pos[0]
-    y=abs(vector)*factor*(np.outer(np.sin(u),np.sin(v)))-atom.pos[1]
-    z=abs(vector)*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))-atom.pos[2]
-    ax.plot_surface(x,y,z,color=col,alpha=transparency)
+    x=abs(vector)*factor*(np.outer(np.cos(u),np.sin(v)))+atom.pos[0]
+    y=abs(vector)*factor*(np.outer(np.sin(u),np.sin(v)))+atom.pos[1]
+    z=abs(vector)*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))+atom.pos[2]
+    ax.plot_surface(x,y,z,color=col,alpha=opacity)
 
 
 
