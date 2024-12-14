@@ -3,6 +3,9 @@
 
 import numpy as np
 import pyvista
+import molecule
+
+
 
 
 ##############################
@@ -237,7 +240,7 @@ def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     return
 
 
-def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,factor=1):
+def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1):
     """plot atom as a sphere"""
     cube = np.transpose(cube,(2,1,0))
     nx,ny,nz = np.shape(cube)
@@ -258,7 +261,6 @@ def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,
 
     for k in range(len(array_sort)):
         array_unsort[array_sort[k]] = indexes[k]
-
     cube_values = cube_values_sorted[array_unsort]
 
     cube_values_positive = cube_values + (cube<0).flatten() * (1-cube_values)
@@ -267,9 +269,9 @@ def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,
     contour_positive = grid.contour(isosurfaces=2,scalars=cube_values_positive,rng=[0,1-cutoff])
     contour_negative = grid.contour(isosurfaces=2,scalars=cube_values_negative,rng=[0,1-cutoff])
 
+    if len(contour_positive.point_data["Contour Data"]):
+        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.5,metallic=.3,color="blue")
+    if len(contour_negative.point_data["Contour Data"]):
+        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.5,metallic=.3,color="red")
 
-    plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.5,metallic=1,color="blue")
-    plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.5,metallic=1,color="red")
-
-    return
 

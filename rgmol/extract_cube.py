@@ -3,7 +3,8 @@
 
 import codecs
 import numpy as np
-from molecule import *
+from objects import *
+from general_function import find_bonds
 
 
 ##########################
@@ -85,7 +86,7 @@ def extract_cube(file):
     return voxel_origin,voxel_matrix,atom_number,atom_position,np.array(cube)
 
 
-def extract(file):
+def extract(file,do_find_bonds=1):
     """
     Extracts the global descriptors from an adf output
 
@@ -98,10 +99,15 @@ def extract(file):
 
 
     list_atoms = []
+    nicknaming = 0
     for prop in zip(atom_number,atom_position):
-        atom_x = atom(prop[0],prop[1])
+        atom_x = atom(prop[0],prop[1],nickname=str(nicknaming))
         list_atoms.append(atom_x)
+        nicknaming+=1
 
     mol = molecule(list_atoms,[],properties={"voxel_origin":voxel_origin,"voxel_matrix":voxel_matrix,"cube":cube})
+
+    if do_find_bonds:
+        mol.bonds = find_bonds(mol)
 
     return mol
