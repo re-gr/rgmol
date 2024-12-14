@@ -1,0 +1,6 @@
+- Implementation mostly for pyvista : need to add matplotlib and plotly functions
+- Gaussian / Orca / xyz files extraction functions
+- Documentation / Tutorials / Comments
+- CI ?
+- README File
+
