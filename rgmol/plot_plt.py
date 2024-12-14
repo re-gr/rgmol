@@ -6,6 +6,190 @@ import matplotlib.pyplot as plt
 
 
 
+########################################
+## Adding Plotting Methods for Atoms  ##
+########################################
+
+
+    def plot_plt(self,ax,plotted_property="radius",opacity=1,factor=1):
+        """
+        plot_plt(ax,plotted_property="radius",opacity=1,factor=1)
+
+        Plot a property of the atom on the ax using matplotlib
+
+        Parameters
+        ----------
+            ax : matplotlib.axes
+                The ax object from matplotlib on which the atom will be plotted. It can be easily defined using ax = fig.add_subplot(nrows,nncols,index)
+            plotted_property : string, optional
+                The property to be plotted. By default the radius is plotted.
+            opacity : float, optional
+                The opacity of the plot. By default equals to 1
+            factor : float, optional
+                The factor by which the plotted_property will be multiplied. By default equals to 1
+
+        Returns
+        -------
+            None
+                The atom is plotted on the ax object
+        """
+        plot_plt.plot_atom(ax,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
+
+
+    def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
+        """
+        plot_vector_plt(ax,plotted_property="radius",opacity=1,factor=1)
+
+        Plot a value of a vector on the position of the atom on the ax using matplotlib
+
+        Parameters
+        ----------
+            ax : matplotlib.axes
+                The ax object from matplotlib on which the atom will be plotted. It can be easily defined using ax = fig.add_subplot(nrows,nncols,index)
+            vector : float
+                The value to be plotted
+            opacity : float, optional
+                The opacity of the plot. By default equals to 1
+            factor : float, optional
+                The factor by which the vector will be multiplied. By default equals to 1
+
+        Returns
+        -------
+            None
+                The atom is plotted on the ax object
+        """
+        plot_plt.plot_vector_atom(ax,self,vector,opacity=opacity,factor=factor)
+
+
+objects.atom.plot_plt = plot_plt
+objects.atom.plot_vector_plt = plot_vector_plt
+
+
+############################################
+## Adding Plotting Methods for Molecules  ##
+############################################
+
+
+
+
+def plot_plt(self,ax,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
+    """
+    Plot the entire molecule
+    """
+    for atom_x in self.atoms:
+        atom_x.plot_plt(ax,plotted_property=plotted_property,opacity=opacity,factor=factor)
+    if show_bonds:
+        plot_plt.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+
+def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
+    """
+    Plot the entire molecule
+    """
+    for atom_x in range(len(self.atoms)):
+        self.atoms[atom_x].plot_vector_plt(ax,vector[atom_x],opacity=opacity,factor=factor)
+
+
+def plot_radius_plt(self,opacity=1,show_bonds=1,factor=1):
+    """
+    Plot kernel
+    """
+
+
+    fig=plt.figure(figsize=(3.1,2.8),dpi=200)
+    plt.rcParams.update({'font.size': 13})
+    plt.rcParams['svg.fonttype'] = 'none'
+
+    #remove grid background
+    plt.rcParams['axes.edgecolor'] = 'none'
+    plt.rcParams['axes3d.xaxis.panecolor'] = 'none'
+    plt.rcParams['axes3d.yaxis.panecolor'] = 'none'
+    plt.rcParams['axes3d.zaxis.panecolor'] = 'none'
+
+
+    #Add box to the graph with a title
+    ax=fig.add_subplot(1,1,1)
+    if self.name:
+        title = self.name
+        ax.set_title("{}".format(title),fontsize=20)
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['bottom'].set_color('black') #add box
+    ax.spines['top'].set_color('black')
+    ax.spines['right'].set_color('black')
+    ax.spines['left'].set_color('black')
+    ax.set_facecolor("none")
+
+    ax=fig.add_subplot(1,1,1,projection="3d",aspect="equal")
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_zticks([])
+
+    for atom_x in self.atoms:
+        atom_x.plot_plt(ax,opacity=opacity,factor=factor)
+    if show_bonds:
+        plot_plt.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+    plot_plt.axes_equal(ax)
+    plt.show()
+
+
+def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,factor_radius=.3,with_radius=1):
+    """
+    Plot kernel
+    """
+    X = self.properties[plotted_kernel]
+    Xvp,XV = np.linalg.eigh(X)
+    ncols = len(X)
+
+    fig=plt.figure(figsize=(3.1*ncols,2.8),dpi=200)
+    plt.rcParams.update({'font.size': 13})
+    plt.rcParams['svg.fonttype'] = 'none'
+
+    #remove grid background
+    plt.rcParams['axes.edgecolor'] = 'none'
+    plt.rcParams['axes3d.xaxis.panecolor'] = 'none'
+    plt.rcParams['axes3d.yaxis.panecolor'] = 'none'
+    plt.rcParams['axes3d.zaxis.panecolor'] = 'none'
+
+
+    #Add box to the graph with a title
+    ax=fig.add_subplot(1,1,1)
+    if self.name:
+        title = self.name
+        ax.set_title("{}".format(title),fontsize=20)
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['bottom'].set_color('black') #add box
+    ax.spines['top'].set_color('black')
+    ax.spines['right'].set_color('black')
+    ax.spines['left'].set_color('black')
+    ax.set_facecolor("none")
+
+
+    for vec in range(len(XV)):
+        ax=fig.add_subplot(1,ncols,vec+1,projection="3d",aspect="equal")
+        #Remove grid and ticks because prettier
+        ax.grid(False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_zticks([])
+        ax.set_title(r"$\mathrm{\lambda}$"+" = {:3.2f}".format(Xvp[vec]),y=1.0,pad=-6)
+        if with_radius:
+            self.plot_plt(ax,factor=factor_radius,opacity=0.8)
+        self.plot_vector_plt(ax,XV[:,vec],opacity=opacity,factor=factor)
+        plot_plt.axes_equal(ax)
+    plt.show()
+
+
+
+objects.molecule.plot_plt = plot_plt
+objects.molecule.plot_vector_plt = plot_vector_plt
+objects.molecule.plot_radius_plt = plot_radius_plt
+objects.molecule.plot_property_plt = plot_property_plt
+
+
 ##############################
 ## Representation functions ##
 ##############################

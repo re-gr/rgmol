@@ -2,7 +2,224 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import objects
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+
+########################################
+## Adding Plotting Methods for Atoms  ##
+########################################
+
+
+def plot_plotly(self,Surfaces,plotted_property="radius",opacity=1,factor=1):
+    """
+    plot_plotly(Surfaces,plotted_property="radius",opacity=1,factor=1)
+
+    Plot a value of a vector on the position of the atom using plotly
+
+    Parameters
+    ----------
+        Surfaces : list
+            A list of plotly.graph_object.surface
+        plotted_property : string, optional
+            The property to be plotted. By default the radius is plotted.
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+
+    Returns
+    -------
+        Surfaces
+            The updated Surfaces list
+    """
+    return plot_plotly.plot_atom(Surfaces,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
+
+
+def plot_vector_plotly(self,Surfaces,vector,opacity=1,factor=1):
+    """
+    plot_vector_plotly(Surfaces,plotted_property="radius",opacity=1,factor=1)
+
+    Plot a value of a vector on the position of the atom using plotly
+
+    Parameters
+    ----------
+        Surfaces : list
+            A list of plotly.graph_object.surface
+        vector : float
+            The value to be plotted
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the vector will be multiplied. By default equals to 1
+
+    Returns
+    -------
+        Surfaces
+            The updated Surfaces list
+    """
+    return plot_plotly.plot_vector_atom(Surfaces,self,vector,opacity=opacity,factor=factor)
+
+
+objects.atom.plot_plotly = plot_plotly
+objects.atom.plot_vector_plotly = plot_vector_plotly
+
+
+############################################
+## Adding Plotting Methods for Molecules  ##
+############################################
+
+
+def plot_plotly(self,Surfaces,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
+    """
+    Plot the entire molecule
+    """
+    for atom_x in self.atoms:
+        Surfaces=atom_x.plot_plotly(Surfaces,plotted_property=plotted_property,opacity=opacity,factor=factor)
+    if show_bonds:
+        Surfaces=plot_plotly.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+    return Surfaces
+
+def plot_vector_plotly(self,Sufaces,vector,opacity=1,factor=1):
+    """
+    Plot the entire molecule
+    """
+    for atom_x in range(len(self.atoms)):
+        Surfaces=self.atoms[atom_x].plot_vector_plotly(Sufaces,vector[atom_x],opacity=opacity,factor=factor)
+    return Surfaces
+
+
+def plot_radius_plotly(self,opacity=1,show_bonds=1,factor=1):
+    """
+    Plot the entire molecule
+    """
+    Surfaces=[]
+    for atom_x in self.atoms:
+        Surfaces=atom_x.plot_plotly(Surfaces,opacity=opacity,factor=factor)
+    if show_bonds:
+        Surfaces=plot_plotly.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+    fig = go.Figure(data=Surfaces)
+    fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
+
+    fig.write_html("plot.html", auto_open=True)
+
+
+def plot_property_plotly(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
+    """
+    Plot the entire molecule
+    """
+    X = self.properties[plotted_property]
+
+    Surfaces = []
+
+    if with_radius:
+        Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
+    Surfaces=self.plot_vector_plotly(Surfaces,X,opacity=opacity,factor=factor)
+
+    fig = go.Figure(data=Surfaces)
+    fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
+
+    fig.write_html("plot.html", auto_open=True)
+
+
+def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
+    """
+    Plot kernel
+    """
+    X = self.properties[plotted_kernel]
+    Xvp,XV = np.linalg.eigh(X)
+    ncols = len(X)
+
+    scene_dict = {"type":"scene"}
+
+
+    titles_subplots = []
+    for vec in range(len(XV)):
+        titles_subplots.append(r"$\mathrm{\lambda}"+"= {:3.2f}$".format(Xvp[vec]))
+
+    fig = make_subplots(rows=1,cols=len(XV),specs=[[scene_dict for k in range(len(XV))] for j in range(1)],subplot_titles=titles_subplots)
+
+
+    for vec in range(len(XV)):
+        Surfaces = []
+
+        if with_radius:
+            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
+        Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],opacity=opacity,factor=factor)
+
+        for k in Surfaces:
+            fig.add_trace(k,row=1,col=vec+1)
+
+    dict_layout={"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'}
+    fig["layout"]["scene"] = dict_layout
+    for k in range(2,len(XV)*1+1):
+        fig["layout"]["scene"+str(k)] = dict_layout
+
+
+    fig.write_html("plot.html", auto_open=True)
+
+    # fig.show()
+
+
+def plot_diagonalized_kernel_slider_plotly(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+    """
+    Plot kernel
+    """
+    X = self.properties[plotted_kernel]
+    Xvp,XV = np.linalg.eigh(X)
+    ncols = len(X)
+
+    number_items = len(self.atoms) + len(self.bonds)
+    number_vectors = len(self.atoms)*len(X)
+    number_atoms = len(self.atoms)
+
+    Surfaces = []
+    if with_radius:
+        Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
+    for vec in range(len(XV)):
+        Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],opacity=opacity,factor=factor)
+
+    fig = go.Figure(data=Surfaces)
+    fig.update_traces(visible=False)
+    fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
+    #Toggle the first eigenvector visible
+    for j in range(number_items+len(self.atoms)):
+        fig["data"][j]["visible"] = True
+    steps = []
+    for i in range(len(X)):
+        step = dict(method="update",args=[{"visible": [True]*number_items + [False] * (number_vectors)}])
+        for j in range(number_atoms):
+            step["args"][0]["visible"][i*number_atoms+j+number_items] = True  # Toggle i'th trace to "visible"
+        steps.append(step)
+    sliders = [dict(active=0,currentvalue={"prefix": "Eigenvector: "},pad={"t": 1},steps=steps)]
+    fig.update_layout(sliders=sliders)
+    fig.write_html("plot.html", auto_open=True)
+
+def plot_cube_plotly(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=1):
+    """
+    Plot cube
+    """
+
+    Surfaces = []
+
+    if with_radius:
+        Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius,show_bonds=False)
+    Surfaces=plot_plotly.plot_isodensity(Surfaces,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
+    fig = go.Figure(data=Surfaces)
+    fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
+
+    fig.write_html("plot.html", auto_open=True)
+
+
+
+objects.molecule.plot_plotly = plot_plotly
+objects.molecule.plot_vector_plotly = plot_vector_plotly
+objects.molecule.plot_radius_plotly = plot_radius_plotly
+objects.molecule.plot_property_plotly = plot_property_plotly
+objects.molecule.plot_diagonalized_kernel_slider_plotly = plot_diagonalized_kernel_slider_plotly
+objects.molecule.plot_cube_plotly = plot_cube_plotly
+
 
 
 

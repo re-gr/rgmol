@@ -3,9 +3,165 @@
 
 import numpy as np
 import pyvista
-import molecule
+import objects
 
 
+########################################
+## Adding Plotting Methods for Atoms  ##
+########################################
+
+
+
+def plot_pyvista(self,plotter,plotted_property="radius",opacity=1,factor=1):
+    """
+    plot_pyvista(plotter,plotted_property="radius",opacity=1,factor=1)
+
+    Plot a property of the atom on the plotter using pyvista
+
+    Parameters
+    ----------
+        plotter : pyvista.plotter
+            The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
+        plotted_property : string, optional
+            The property to be plotted. By default the radius is plotted.
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+
+    Returns
+    -------
+        None
+            The atom is plotted on the plotter object
+    """
+    plot_atom(plotter,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
+
+
+
+def plot_vector_pyvista(self,plotter,vector,opacity=1,factor=1):
+    """
+    plot_vector_pyvista(plotter,plotted_property="radius",opacity=1,factor=1)
+
+    Plot a value of a vector on the position of the atom using pyvista
+
+    Parameters
+    ----------
+        plotter : pyvista.plotter
+            The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
+        vector : float
+            The value to be plotted
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+
+    Returns
+    -------
+        None
+            The atom is plotted on the plotter object
+    """
+    plot_vector_atom(plotter,self,vector,opacity=opacity,factor=factor)
+
+
+objects.atom.plot_pyvista = plot_pyvista
+objects.atom.plot_vector_pyvista = plot_vector_pyvista
+
+
+############################################
+## Adding Plotting Methods for Molecules  ##
+############################################
+
+
+
+def plot_pyvista(self,plotter,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
+    """
+    Plot the entire molecule
+    """
+    for atom_x in self.atoms:
+        atom_x.plot_pyvista(plotter,plotted_property=plotted_property,opacity=opacity,factor=factor)
+    if show_bonds:
+        bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+    return
+
+def plot_vector_pyvista(self,plotter,vector,opacity=1,factor=1):
+    """
+    Plot the entire molecule
+    """
+    for atom_x in range(len(self.atoms)):
+        self.atoms[atom_x].plot_vector_pyvista(plotter,vector[atom_x],opacity=opacity,factor=factor)
+    return
+
+
+def plot_radius_pyvista(self,opacity=1,show_bonds=1,factor=1):
+    """
+    Plot the entire molecule
+    """
+    plotter = pyvista.Plotter()
+    for atom_x in self.atoms:
+        atom_x.plot_pyvista(plotter,opacity=opacity,factor=factor)
+    if show_bonds:
+        bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.show(full_screen=False)
+
+
+def plot_property_pyvista(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
+    """
+    Plot the entire molecule
+    """
+    X = self.properties[plotted_property]
+    plotter = pyvista.Plotter()
+
+    if with_radius:
+        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+    self.plot_vector_pyvista(plotter,X,opacity=opacity,factor=factor)
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.show(full_screen=False)
+
+def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+    """
+    Plot kernel
+    """
+    X = self.properties[plotted_kernel]
+    Xvp,XV = np.linalg.eigh(X)
+    ncols = len(X)
+
+    plotter = pyvista.Plotter()
+    if with_radius:
+        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+    def create_mesh_diagonalized_kernel(value):
+        vector_number = int(round(value))
+        self.plot_vector_pyvista(plotter,XV[:,vector_number-1],opacity=opacity,factor=factor)
+        plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(Xvp[vector_number-1]),name="eigenvalue")
+
+
+    # light = pyvista.Light((0,10,0),(0,0,0),"white",light_type="camera light",intensity=.3)
+    # plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_diagonalized_kernel, [1, len(XV)],value=1,title="Eigenvector", fmt="%1.0f")
+    plotter.show(full_screen=False)
+
+
+def plot_cube_pyvista(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5):
+    """
+    Plot cube
+    """
+    plotter = pyvista.Plotter()
+    if with_radius:
+        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
+    plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.show(full_screen=False)
+
+objects.molecule.plot_pyvista = plot_pyvista
+objects.molecule.plot_vector_pyvista = plot_vector_pyvista
+objects.molecule.plot_radius_pyvista = plot_radius_pyvista
+objects.molecule.plot_property_pyvista = plot_property_pyvista
+objects.molecule.plot_diagonalized_kernel_slider_pyvista = plot_diagonalized_kernel_slider_pyvista
+objects.molecule.plot_cube_pyvista = plot_cube_pyvista
 
 
 ##############################
