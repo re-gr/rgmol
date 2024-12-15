@@ -4,6 +4,7 @@
 import numpy as np
 import pyvista
 import objects
+import calculate_mo
 
 
 ########################################
@@ -137,8 +138,8 @@ def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linea
         plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(Xvp[vector_number-1]),name="eigenvalue")
 
 
-    # light = pyvista.Light((0,10,0),(0,0,0),"white",light_type="camera light",intensity=.3)
-    # plotter.add_light(light)
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
     plotter.add_slider_widget(create_mesh_diagonalized_kernel, [1, len(XV)],value=1,title="Eigenvector", fmt="%1.0f")
     plotter.show(full_screen=False)
 
@@ -156,12 +157,71 @@ def plot_cube_pyvista(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_r
     plotter.add_light(light)
     plotter.show(full_screen=False)
 
+def plot_AO_pyvista(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
+    """
+    Plot kernel
+    """
+    plotter = pyvista.Plotter()
+
+    if not "AO_calculated" in self.properties:
+        calculate_mo.calculate_AO(self,grid_points,delta=delta)
+
+    if with_radius:
+        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+    def create_mesh_AO(value):
+        plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor)
+        AO_number = int(round(value))
+        # plotter.add_text(text=r"AO = "+'{:3.3f} (a.u.)'.format(),name="ao number")
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_AO, [1, len(self.properties["AO_calculated"])],value=1,title="Number", fmt="%1.0f")
+    plotter.show(full_screen=False)
+
+
+
+
+
+def plot_MO_pyvista(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
+    """
+    Plot kernel
+    """
+    plotter = pyvista.Plotter()
+
+    if not calculate_on_the_fly and not "MO_calculated" in self.properties:
+        calculate_mo.calculate_MO(self,grid_points,delta=delta)
+
+    if calculate_on_the_fly and not "MO_calculated" in self.properties:
+        self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
+
+    if with_radius:
+        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+    def create_mesh_MO(value):
+        MO_number = int(round(value))
+        MO_calculated = self.calculate_MO_chosen(MO_number-1,grid_points,delta=delta)
+
+        plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor)
+
+        plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number-1]),name="mo energy")
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_MO, [1, len(self.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
+    plotter.show(full_screen=False)
+
+
+
+
+
 objects.molecule.plot_pyvista = plot_pyvista
 objects.molecule.plot_vector_pyvista = plot_vector_pyvista
 objects.molecule.plot_radius_pyvista = plot_radius_pyvista
 objects.molecule.plot_property_pyvista = plot_property_pyvista
 objects.molecule.plot_diagonalized_kernel_slider_pyvista = plot_diagonalized_kernel_slider_pyvista
 objects.molecule.plot_cube_pyvista = plot_cube_pyvista
+objects.molecule.plot_AO_pyvista = plot_AO_pyvista
+objects.molecule.plot_MO_pyvista = plot_MO_pyvista
 
 
 ##############################
@@ -200,7 +260,10 @@ def rota_bonds(Vec,x,y,z):
     alpha=np.arctan(np.abs(Vec[1]/Vec[0]))
     alpha=corr_angle(alpha,Vec[0],Vec[1])
     Vec2=Rz(-alpha).dot(Vec)
-    beta=np.arctan(abs(Vec2[0]/Vec2[2]))
+    if Vec2[2] == 0:
+        beta = -np.pi/2
+    else:
+        beta=np.arctan(abs(Vec2[0]/Vec2[2]))
     beta=corr_angle(beta,Vec2[2],Vec2[0])
     Rota=Rz(alpha).dot(Ry(beta))#The rotation matrix to convert to a vector of the x axis to a colinear vector of Vec the starting vector
     #Rotates the bonds
@@ -323,6 +386,7 @@ def bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
     """
     Plot the bonds
     """
+
     #initial values for the parameters of the bonds
     Radbond=0.05
     u=np.linspace(0,2*np.pi,30)#base of the cylinder
@@ -396,14 +460,16 @@ def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     return
 
 
-def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1):
+def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,factor=1):
     """plot atom as a sphere"""
-    cube = np.transpose(cube,(2,1,0))
+
     nx,ny,nz = np.shape(cube)
-    grid = pyvista.ImageData(dimensions=(ny,nx,nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=voxel_origin)
+    cube_transposed = np.transpose(cube,(2,1,0))
+
+    grid = pyvista.ImageData(dimensions=(nx,ny,nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=voxel_origin)
 
     #Calculate cube density
-    cube_density = cube**2 * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+    cube_density = cube_transposed**2 * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
     #Calculate renormalization as for some reason some cube files are not normalized
     cube_density = cube_density / np.sum(cube_density)
 
@@ -419,15 +485,18 @@ def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,
         array_unsort[array_sort[k]] = indexes[k]
     cube_values = cube_values_sorted[array_unsort]
 
-    cube_values_positive = cube_values + (cube<0).flatten() * (1-cube_values)
-    cube_values_negative = cube_values + (cube>0).flatten() * (1-cube_values)
+    cube_values_positive = cube_values + (cube_transposed<0).flatten() * (1-cube_values)
+    cube_values_negative = cube_values + (cube_transposed>0).flatten() * (1-cube_values)
 
     contour_positive = grid.contour(isosurfaces=2,scalars=cube_values_positive,rng=[0,1-cutoff])
     contour_negative = grid.contour(isosurfaces=2,scalars=cube_values_negative,rng=[0,1-cutoff])
 
     if len(contour_positive.point_data["Contour Data"]):
-        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.5,metallic=.3,color="blue")
+        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.3,metallic=.3,color="blue")
+    else:
+        plotter.remove_actor("isosurface_cube_positive")
     if len(contour_negative.point_data["Contour Data"]):
-        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.5,metallic=.3,color="red")
-
+        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.3,metallic=.3,color="red")
+    else:
+        plotter.remove_actor("isosurface_cube_negative")
 

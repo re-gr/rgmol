@@ -12,67 +12,6 @@ from general_function import find_bonds
 ##########################
 
 
-def gaussian_s(r,contraction_coefficients,exponent_primitives,r0):
-    n,nx,ny,nz = np.shape(r)
-    sum_gaussian = np.zeros((nx,ny,nz))
-
-    x,y,z = r
-    x0,y0,z0 = r0
-    x,y,z = x-x0,y-y0,z-z0
-    r_r = x**2 + y**2 + z**2
-
-    for coefs in zip(contraction_coefficients,exponent_primitives):
-        sum_gaussian += coefs[0] * np.exp(-coefs[1]*r_r)
-
-    return sum_gaussian
-
-def gaussian_p(r,contraction_coefficients,exponent_primitives,r0):
-    n,nx,ny,nz = np.shape(r)
-    sum_gaussian_x = np.zeros((nx,ny,nz))
-    sum_gaussian_y = np.zeros((nx,ny,nz))
-    sum_gaussian_z = np.zeros((nx,ny,nz))
-
-    x,y,z = r
-    x0,y0,z0 = r0
-    x,y,z = x-x0,y-y0,z-z0
-
-    r_r = x**2 + y**2 + z**2
-
-    for coefs in zip(contraction_coefficients,exponent_primitives):
-        sum_gaussian_x += x*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_y += y*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_z += z*coefs[0] * np.exp(-coefs[1]*r_r)
-
-    return sum_gaussian_x
-
-
-def gaussian_d(r,contraction_coefficients,exponent_primitives,r0):
-    n,nx,ny,nz = np.shape(r)
-    sum_gaussian_xy = np.zeros((nx,ny,nz))
-    sum_gaussian_xz = np.zeros((nx,ny,nz))
-    sum_gaussian_yz = np.zeros((nx,ny,nz))
-    sum_gaussian_xx_yy = np.zeros((nx,ny,nz))
-    sum_gaussian_zz = np.zeros((nx,ny,nz))
-    x,y,z = r
-    x0,y0,z0 = r0
-    x,y,z = x-x0,y-y0,z-z0
-    r0_reshaped = np.array(r0).reshape(3,1,1,1)
-
-    x_x = x*x
-    y_y = y*y
-    r_r = x**2 + y**2 + z**2
-
-    for coefs in zip(contraction_coefficients,exponent_primitives):
-        sum_gaussian_xy += (x*y)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_xz += (x*z)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_yz += (y*z)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_xx_yy += (y_y-x_x)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zz += (2*z*z-x_x-y_y)*coefs[0] * np.exp(-coefs[1]*r_r)
-
-    return sum_gaussian_xy, sum_gaussian_xz, sum_gaussian_yz,sum_gaussian_xx_yy,sum_gaussian_zz
-
-
-
 def extract_molden(file):
     """
     Extracts the global descriptors from an molden file format
@@ -85,11 +24,17 @@ def extract_molden(file):
     flag_gto = 0
     flag_mo = 0
     flag_change = 0
-    atoms_names = []
-    atoms_pos = []
+    flag_mo_lines = 4
+    atom_names = []
+    atom_position = []
 
-    gaussian_coef = []
-    gaussian_type = []
+    AO_list = []
+    AO_type_list = []
+
+    MO_list = []
+    MO_energy = []
+    spin = []
+    occupancy = []
 
 
     for line in codecs.open(file, 'r',encoding="utf-8"):
@@ -124,13 +69,13 @@ def extract_molden(file):
             flag_change = 0
 
         elif flag_atoms:
-            atoms_names.append(lsplit[0])
-            atoms_pos.append([float(lsplit[3]),float(lsplit[4]),float(lsplit[5])])
+            atom_names.append(lsplit[0])
+            atom_position.append([float(lsplit[3]),float(lsplit[4]),float(lsplit[5])])
 
         elif flag_gto:
             if flag_gto_atom:#New atom
-                gauss_atom = []
-                gauss_atom_orbital_type = []
+                AO_atom = []
+                AO_atom_orbital_type = []
                 flag_gto_atom = 0
                 flag_gto_orb_num = 1
 
@@ -138,31 +83,76 @@ def extract_molden(file):
                 if len(line) == 1:#Empty line meaning change of atom
                     flag_gto_orb_num = 0
                     flag_gto_atom = 1
-                    gaussian_coef.append(gauss_atom)
-                    gaussian_type.append(gauss_atom_orbital_type)
+                    AO_list.append(AO_atom)
+                    AO_type_list.append(AO_atom_orbital_type)
                 else:
-                    gauss_orbital = []
-                    gauss_atom_orbital_type.append(lsplit[0])
+                    AO_orbital = []
+                    AO_atom_orbital_type.append(lsplit[0])
                     num_orb = int(lsplit[1])
                     flag_gto_orb_num = 0
                     flag_gto_orb = 1
 
             elif flag_gto_orb:#New orbital value
-                gauss_orbital.append([float(lsplit[0]),float(lsplit[1])])
+                AO_orbital.append([float(lsplit[0]),float(lsplit[1])])
                 num_orb -= 1
 
                 if num_orb == 0:#Last value
-                    gauss_atom.append(gauss_orbital)
+                    AO_atom.append(AO_orbital)
 
                     flag_gto_orb = 0
                     flag_gto_orb_num = 1
 
-
-
-
-
-
         elif flag_mo:
-            pass
+            if len(line)==1:#Last line for molecular orbitals
+                MO_list.append(AO_contribution)
 
-    return atoms_names,atoms_pos,gaussian_coef
+            #The first 4 lines contain details
+            elif flag_mo_lines == 4:
+                flag_mo_lines -= 1
+
+            elif flag_mo_lines == 3:
+                MO_energy.append(float(lsplit[1]))
+                flag_mo_lines -= 1
+
+            elif flag_mo_lines == 2:
+                if lsplit[1] == "Beta":
+                    raise ValueError("Unrestricted calculations not currently implemented")
+                spin.append(lsplit[1])
+                flag_mo_lines -= 1
+
+            elif flag_mo_lines == 1:
+                occupancy.append(float(lsplit[1]))
+                AO_contribution = []
+                flag_mo_lines -= 1
+
+            #The contribution of each AO
+            elif flag_mo_lines == 0:
+                if lsplit[0]=="Sym=":#New MO
+                    flag_mo_lines = 3
+                    MO_list.append(AO_contribution)
+                else:
+                    AO_contribution.append(float(lsplit[1]))
+
+    return atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy
+
+
+def extract(file,do_find_bonds=1):
+    """Extract from molden input and create molecule object"""
+
+    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy = extract_molden(file)
+
+
+    list_atoms = []
+    nicknaming = 0
+    for prop in zip(atom_names,atom_position):
+        atom_x = atom(prop[0],prop[1],nickname=str(nicknaming))
+        list_atoms.append(atom_x)
+        nicknaming+=1
+
+    mol = molecule(list_atoms,[],properties={"AO_list":AO_list,"AO_type_list":AO_type_list,"MO_list":MO_list,"MO_energy":MO_energy})
+
+    if do_find_bonds:
+        mol.bonds = find_bonds(mol)
+
+    return mol
+

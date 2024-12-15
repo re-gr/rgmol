@@ -40,7 +40,7 @@ dict_electronegativity = {
 }
 
 
-def find_atom_near(molecule,pos,factor_threshold=1.3):
+def find_atom_near(molecule,pos,factor_threshold=1.2):
     """
     function that returns the atoms that are near the one of interest
     """
@@ -171,8 +171,6 @@ def find_bonds(mol):
 
 
     return bonds
-
-
 
 
 

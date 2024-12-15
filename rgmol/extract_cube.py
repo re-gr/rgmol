@@ -83,6 +83,7 @@ def extract_cube(file):
                     cube.append(square)
                     square = []
                     count_square = 0
+
     return voxel_origin,voxel_matrix,atom_number,atom_position,np.array(cube)
 
 
@@ -104,6 +105,8 @@ def extract(file,do_find_bonds=1):
         atom_x = atom(prop[0],prop[1],nickname=str(nicknaming))
         list_atoms.append(atom_x)
         nicknaming+=1
+
+
 
     mol = molecule(list_atoms,[],properties={"voxel_origin":voxel_origin,"voxel_matrix":voxel_matrix,"cube":cube})
 
