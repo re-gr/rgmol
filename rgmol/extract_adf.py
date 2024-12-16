@@ -3,7 +3,7 @@
 
 import codecs
 import numpy as np
-from molecule import *
+from objects import *
 
 
 ##########################
@@ -160,10 +160,10 @@ def extract_pos(file):
         elif flag==1 and "1" in line:
             flag=2
             Pos.append(line.split()[2:5])
-            Name.append(line.split()[1])
+            Name.append(line.split())
         elif flag==2 and len(line)!=2:
             Pos.append(line.split()[2:5])
-            Name.append(line.split()[1])
+            Name.append(line.split())
         elif flag==2: flag=3
 
     return np.array(Pos,dtype="float"),Name
@@ -195,13 +195,13 @@ def extract_fukui(file,eta=1):
             fm.append(line.split()[4])
             f0.append(line.split()[5])
             f2.append(line.split()[6])
-            Name.append(line.split()[1])
+            Name.append(line.split())
         elif flag==2 and not ("--" in line):
             fp.append(line.split()[3])
             fm.append(line.split()[4])
             f0.append(line.split()[5])
             f2.append(line.split()[6])
-            Name.append(line.split()[1])
+            Name.append(line.split())
 
         elif flag==2: break
     et=eta**(1/2)
@@ -253,9 +253,8 @@ def extract_all(file):
         X,S,Name=extract_ker(fileout)
         fp,fm,f0,f2,Name=extract_fukui(fileout,eta=global_desc_dict["eta"])
         for prop in zip(Name,pos,X,S,fp,fm,f0,f2):
-
             dict_properties = {"condensed linear response":prop[2],"softness kernel":prop[3],"fukui plus":prop[4],"fukui minus":prop[5],"fukui":prop[6],"dual":prop[7]}
-            atom_x = atom(prop[0],prop[1],properties=dict_properties)
+            atom_x = atom(prop[0][1],prop[1],properties=dict_properties,nickname=prop[0][0]+prop[0][1])
             list_atoms.append(atom_x)
 
         global_desc_dict["condensed linear response"]=X

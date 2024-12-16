@@ -213,6 +213,39 @@ def plot_MO_pyvista(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius
 
 
 
+def plot_transition_density_pyvista(self,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
+    """
+    Plot kernel
+    """
+    plotter = pyvista.Plotter()
+
+    if not "MO_calculated" in self.properties:
+        self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
+
+    if not "transition_density_list" in self.properties:
+        self.properties["transition_density_list"] = [[] for k in range(len(self.properties["transition_list"]))]
+
+    if with_radius:
+        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+
+
+    def create_mesh_transition_density(value):
+        transition_number = int(round(value))
+        transition_density_calculated = self.calculate_chosen_transition_density(transition_number-1,grid_points,delta=delta)
+
+        plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],transition_density_calculated,opacity=opacity,factor=factor)
+
+        plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["transition_energy"][transition_number-1]),name="transition energy")
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_transition_density, [1, len(self.properties["transition_density_list"])],value=1,title="Number", fmt="%1.0f")
+    plotter.show(full_screen=False)
+
+
+
+
 
 objects.molecule.plot_pyvista = plot_pyvista
 objects.molecule.plot_vector_pyvista = plot_vector_pyvista
@@ -222,6 +255,7 @@ objects.molecule.plot_diagonalized_kernel_slider_pyvista = plot_diagonalized_ker
 objects.molecule.plot_cube_pyvista = plot_cube_pyvista
 objects.molecule.plot_AO_pyvista = plot_AO_pyvista
 objects.molecule.plot_MO_pyvista = plot_MO_pyvista
+objects.molecule.plot_transition_density_pyvista = plot_transition_density_pyvista
 
 
 ##############################
@@ -492,11 +526,11 @@ def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,
     contour_negative = grid.contour(isosurfaces=2,scalars=cube_values_negative,rng=[0,1-cutoff])
 
     if len(contour_positive.point_data["Contour Data"]):
-        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.3,metallic=.3,color="blue")
+        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.4,metallic=.2,color="blue")
     else:
         plotter.remove_actor("isosurface_cube_positive")
     if len(contour_negative.point_data["Contour Data"]):
-        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.3,metallic=.3,color="red")
+        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.4,metallic=.2,color="red")
     else:
         plotter.remove_actor("isosurface_cube_negative")
 
