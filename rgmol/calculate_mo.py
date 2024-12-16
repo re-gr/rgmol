@@ -193,8 +193,8 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
     AO_calculated = self.properties["AO_calculated"]
     N_AO = len(AO_calculated)
     MO_chosen_calculated = self.properties["MO_calculated"][MO_chosen]
-    if MO_chosen_calculated!=[]:
-        return MO_calculated
+    if type(MO_chosen_calculated) is not list:
+        return MO_chosen_calculated
 
     MO = np.array(self.properties["MO_list"])[MO_chosen]
     AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
@@ -210,8 +210,59 @@ objects.molecule.calculate_AO = calculate_AO
 objects.molecule.calculate_MO = calculate_MO
 objects.molecule.calculate_MO_chosen = calculate_MO_chosen
 
+####################
+## EXCITED STATES ##
+####################
 
 
+def calculate_transition_density(self,grid_points):
+    """yes"""
+    transition_list = self.properties["transition_list"]
+    transition_factor_list = self.properties["transition_factor_list"]
+
+    nx,ny,nz = grid_points
+
+    transition_density_list = []
+    for transition in zip(transition_list,transition_factor_list):
+        transition_density = np.zeros((nx,ny,nz))
+
+        for transition_MO in zip(transition[0],transition[1]):
+            MO_OCC = calculate_MO_chosen(self,transition_MO[0][0],grid_points,delta=delta)
+            MO_VIRT = calculate_MO_chosen(self,transition_MO[0][1],grid_points,delta=delta)
+
+            transition_density += transition_MO[1][0] * MO_OCC * MO_VIRT
+
+        transition_density_list.append(transition_density)
+
+    self.properties["transition_density_list"] = transition_density_list
+    return transition_density_list
+
+
+def calculate_chosen_transition_density(self,chosen_transition_density,grid_points,delta=3):
+    """yes"""
+    transition_list = self.properties["transition_list"][chosen_transition_density]
+    transition_factor_list = self.properties["transition_factor_list"][chosen_transition_density]
+
+    nx,ny,nz = grid_points
+
+    transition_density = np.zeros((nx,ny,nz))
+
+    for transition_MO in zip(transition_list, transition_factor_list):
+
+        MO_OCC = calculate_MO_chosen(self,transition_MO[0][0]-1,grid_points,delta=delta)
+        MO_VIRT = calculate_MO_chosen(self,transition_MO[0][1]-1,grid_points,delta=delta)
+
+        transition_density += transition_MO[1][0] * MO_OCC * MO_VIRT
+
+        # transition_density += MO_VIRT
+
+
+    self.properties["transition_density_list"][chosen_transition_density] = transition_density
+    return transition_density
+
+
+objects.molecule.calculate_transition_density = calculate_transition_density
+objects.molecule.calculate_chosen_transition_density = calculate_chosen_transition_density
 
 
 

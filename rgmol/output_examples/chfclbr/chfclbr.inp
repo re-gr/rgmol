@@ -1,0 +1,30 @@
+!def2-SVP PBE0 SARC/J def2-SVP/C Opt
+* xyzfile 0 1 chfclbr.xyz
+%scf
+MaxIter 100
+end
+%rel
+method DKH
+order 2
+picturechange 2
+end
+$new_job
+!def2-SVP PBE0 RI-SOMF(1X) SARC/J def2-SVP/C
+%TDDFT
+NROOTS  3
+DOSOC   TRUE
+TDA     TRUE
+TRIPLETS TRUE
+END
+* xyzfile 0 1 chfclbr.xyz
+%scf
+MaxIter 100
+end
+%rel
+method DKH
+order 2
+picturechange 2
+SOCType 3
+SOCFlags 1,3,3,0
+SOCMaxCenter 4
+end

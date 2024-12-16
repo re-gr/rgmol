@@ -45,10 +45,23 @@ if __name__=="__main__":
     # file = "output_examples//hcl//hcl.molden.input"
     # file = "output_examples//chfclbr//chfclbr.molden.input"
     # file = "output_examples//CH3Br//CH3Br.molden.input"
-    file = "output_examples//n1_CNNH2//n1_CNNH2.molden.input"
-    mol = rgmol.extract_excited_states.extract(file)
+    file = "output_examples//CH3Cl//CH3Cl.molden.input"
+    # file = "output_examples//n1_CNNH2//n1_CNNH2.molden.input"
+    # file = "output_examples//acrolein//acrolein.molden.input"
+    # file = "output_examples//H2CO//H2CO.molden.input"
+    mol = rgmol.extract_excited_states.extract_molden(file)
+    # transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//H2CO//H2CO.out")
+    transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//CH3Cl//CH3Cl.out")
+    # transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//CH3Br//CH3Br.out")
+
+    mol.properties["transition_energy"] = transition_energy
+    mol.properties["transition_list"] = transition_list
+    mol.properties["transition_factor_list"] = transition_factor_list
+
+
+
     # mol.plot_AO_pyvista(delta=5,grid_points=(60,60,60))
-    mol.plot_MO_pyvista(delta=5,grid_points=(100,100,100))
+    mol.plot_transition_density_pyvista(delta=5,grid_points=(100,100,100))
 
 
 

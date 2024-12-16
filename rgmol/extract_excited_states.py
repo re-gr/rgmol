@@ -12,7 +12,7 @@ from general_function import find_bonds
 ##########################
 
 
-def extract_molden(file):
+def extract_molden_file(file):
     """
     Extracts the global descriptors from an molden file format
 
@@ -135,11 +135,66 @@ def extract_molden(file):
 
     return atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy
 
+def extract_transition_orca(file):
+    """Extract state"""
 
-def extract(file,do_find_bonds=1):
+    flag_states = 0
+    flag_completing_state = 0
+    flag_completed_state = 0
+
+    transition_factor_list = []
+    transition_list = []
+    transition_energy = []
+
+
+    for line in codecs.open(file, 'r',encoding="utf-8"):
+
+        if "EXCITED STATES" in line:
+            flag_states = 1
+
+        elif flag_states:
+            lsplit = line.split()
+            if len(line)>1 and lsplit[0] == "STATE":
+                transition_energy.append(float(lsplit[3]))
+
+                transition = []
+                transition_factor = []
+                flag_completing_state = 1
+
+            elif flag_completing_state:
+                if len(line)==1:
+                    flag_completing_state = 0
+                    flag_completed_state = 1
+                    transition_list.append(transition)
+                    transition_factor_list.append(transition_factor)
+                else:
+                    if "b" in lsplit[0]:
+                        raise ValueError("Unrestricted calculations not yet implemented")
+                    transition.append([ int(lsplit[0][:-1]),int(lsplit[2][:-1])])
+                    transition_factor.append([ float(lsplit[-1][:-1]) ])
+
+            elif len(line)==1 and flag_completed_state:
+                flag_states = 0
+                flag_completed_state = 0
+
+    array_sort = np.argsort(transition_energy)
+    transition_energy_sorted = []
+    transition_list_sorted = []
+    transition_factor_list_sorted = []
+    for sorting in array_sort:
+        transition_energy_sorted.append(transition_energy[sorting])
+        transition_list_sorted.append(transition_list[sorting])
+        transition_factor_list_sorted.append(transition_factor_list[sorting])
+
+    return     transition_energy_sorted,transition_list_sorted,transition_factor_list_sorted
+
+
+
+
+def extract_molden(file,do_find_bonds=1):
     """Extract from molden input and create molecule object"""
 
-    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy = extract_molden(file)
+    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy = extract_molden_file(file)
 
 
     list_atoms = []
@@ -155,4 +210,5 @@ def extract(file,do_find_bonds=1):
         mol.bonds = find_bonds(mol)
 
     return mol
+
 
