@@ -3,7 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+import objects
 
 
 ########################################
@@ -11,54 +11,54 @@ import matplotlib.pyplot as plt
 ########################################
 
 
-    def plot_plt(self,ax,plotted_property="radius",opacity=1,factor=1):
-        """
-        plot_plt(ax,plotted_property="radius",opacity=1,factor=1)
+def plot_plt(self,ax,plotted_property="radius",opacity=1,factor=1):
+    """
+    plot_plt(ax,plotted_property="radius",opacity=1,factor=1)
 
-        Plot a property of the atom on the ax using matplotlib
+    Plot a property of the atom on the ax using matplotlib
 
-        Parameters
-        ----------
-            ax : matplotlib.axes
-                The ax object from matplotlib on which the atom will be plotted. It can be easily defined using ax = fig.add_subplot(nrows,nncols,index)
-            plotted_property : string, optional
-                The property to be plotted. By default the radius is plotted.
-            opacity : float, optional
-                The opacity of the plot. By default equals to 1
-            factor : float, optional
-                The factor by which the plotted_property will be multiplied. By default equals to 1
+    Parameters
+    ----------
+        ax : matplotlib.axes
+            The ax object from matplotlib on which the atom will be plotted. It can be easily defined using ax = fig.add_subplot(nrows,nncols,index)
+        plotted_property : string, optional
+            The property to be plotted. By default the radius is plotted.
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
 
-        Returns
-        -------
-            None
-                The atom is plotted on the ax object
-        """
-        plot_plt.plot_atom(ax,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
+    Returns
+    -------
+        None
+            The atom is plotted on the ax object
+    """
+    plot_plt.plot_atom(ax,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
 
 
-    def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
-        """
-        plot_vector_plt(ax,plotted_property="radius",opacity=1,factor=1)
+def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
+    """
+    plot_vector_plt(ax,plotted_property="radius",opacity=1,factor=1)
 
-        Plot a value of a vector on the position of the atom on the ax using matplotlib
+    Plot a value of a vector on the position of the atom on the ax using matplotlib
 
-        Parameters
-        ----------
-            ax : matplotlib.axes
-                The ax object from matplotlib on which the atom will be plotted. It can be easily defined using ax = fig.add_subplot(nrows,nncols,index)
-            vector : float
-                The value to be plotted
-            opacity : float, optional
-                The opacity of the plot. By default equals to 1
-            factor : float, optional
-                The factor by which the vector will be multiplied. By default equals to 1
+    Parameters
+    ----------
+        ax : matplotlib.axes
+            The ax object from matplotlib on which the atom will be plotted. It can be easily defined using ax = fig.add_subplot(nrows,nncols,index)
+        vector : float
+            The value to be plotted
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the vector will be multiplied. By default equals to 1
 
-        Returns
-        -------
-            None
-                The atom is plotted on the ax object
-        """
-        plot_plt.plot_vector_atom(ax,self,vector,opacity=opacity,factor=factor)
+    Returns
+    -------
+        None
+            The atom is plotted on the ax object
+    """
+    plot_plt.plot_vector_atom(ax,self,vector,opacity=opacity,factor=factor)
 
 
 objects.atom.plot_plt = plot_plt
@@ -187,7 +187,7 @@ def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response"
 objects.molecule.plot_plt = plot_plt
 objects.molecule.plot_vector_plt = plot_vector_plt
 objects.molecule.plot_radius_plt = plot_radius_plt
-objects.molecule.plot_property_plt = plot_property_plt
+objects.molecule.plot_diagonalized_kernel_plt = plot_diagonalized_kernel_plt
 
 
 ##############################

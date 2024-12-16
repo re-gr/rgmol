@@ -215,7 +215,7 @@ objects.molecule.calculate_MO_chosen = calculate_MO_chosen
 ####################
 
 
-def calculate_transition_density(self,grid_points):
+def calculate_transition_density(self,grid_points,delta=3):
     """yes"""
     transition_list = self.properties["transition_list"]
     transition_factor_list = self.properties["transition_factor_list"]
