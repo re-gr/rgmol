@@ -157,6 +157,9 @@ def plot_cube_pyvista(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_r
     plotter.add_light(light)
     plotter.show(full_screen=False)
 
+
+
+
 def plot_AO_pyvista(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
     """
     Plot kernel
@@ -182,7 +185,7 @@ def plot_AO_pyvista(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,fac
 
 
 
-def plot_MO_pyvista(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
+def plot_MO_pyvista(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5,grid_points=(40,40,40),delta=3):
     """
     Plot kernel
     """
@@ -245,6 +248,35 @@ def plot_transition_density_pyvista(self,opacity=0.7,factor=1,with_radius=1,opac
 
 
 
+def plot_diagonalized_kernel_isodensity_slider_pyvista(self,grid_points,kernel="linear_response_function",method="total",number_eigenvectors=6,delta=3 ,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+    """
+    Plot kernel
+    """
+
+    if kernel != "linear_response_function":
+        raise ValueError("Only linear response function implemented for now")
+
+    self.diagonalize_kernel(kernel,number_eigenvectors,grid_points,method=method,delta=delta)
+
+    eigenvectors = self.properties["linear_response_eigenvectors"]
+    eigenvalues = self.properties["linear_response_eigenvalues"]
+
+    plotter = pyvista.Plotter()
+    if with_radius:
+        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+
+    def create_mesh_diagonalized_kernel(value):
+        vector_number = int(round(value))
+        plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor)
+        plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_diagonalized_kernel, [1, len(eigenvectors)],value=1,title="Eigenvector", fmt="%1.0f")
+    plotter.show(full_screen=False)
+
+
 
 
 objects.molecule.plot_pyvista = plot_pyvista
@@ -256,6 +288,7 @@ objects.molecule.plot_cube_pyvista = plot_cube_pyvista
 objects.molecule.plot_AO_pyvista = plot_AO_pyvista
 objects.molecule.plot_MO_pyvista = plot_MO_pyvista
 objects.molecule.plot_transition_density_pyvista = plot_transition_density_pyvista
+objects.molecule.plot_diagonalized_kernel_isodensity_slider_pyvista = plot_diagonalized_kernel_isodensity_slider_pyvista
 
 
 ##############################
@@ -291,7 +324,10 @@ def rota_bonds(Vec,x,y,z):
     """
     #Gets the two angles alpha and beta of the vector
     Vec=Vec/np.linalg.norm(Vec)
-    alpha=np.arctan(np.abs(Vec[1]/Vec[0]))
+    if Vec[0]==0:
+        alpha = -np.pi/2
+    else:
+        alpha=np.arctan(np.abs(Vec[1]/Vec[0]))
     alpha=corr_angle(alpha,Vec[0],Vec[1])
     Vec2=Rz(-alpha).dot(Vec)
     if Vec2[2] == 0:
@@ -494,11 +530,12 @@ def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     return
 
 
-def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,factor=1):
+def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1):
     """plot atom as a sphere"""
 
     nx,ny,nz = np.shape(cube)
     cube_transposed = np.transpose(cube,(2,1,0))
+    print(voxel_origin)
 
     grid = pyvista.ImageData(dimensions=(nx,ny,nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=voxel_origin)
 
@@ -526,11 +563,11 @@ def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,
     contour_negative = grid.contour(isosurfaces=2,scalars=cube_values_negative,rng=[0,1-cutoff])
 
     if len(contour_positive.point_data["Contour Data"]):
-        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.4,metallic=.2,color="blue")
+        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="red")
     else:
         plotter.remove_actor("isosurface_cube_positive")
     if len(contour_negative.point_data["Contour Data"]):
-        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.4,metallic=.2,color="red")
+        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="blue")
     else:
         plotter.remove_actor("isosurface_cube_negative")
 

@@ -35,7 +35,7 @@ def extract_molden_file(file):
     MO_energy = []
     spin = []
     occupancy = []
-
+    D = np.arange(154)
 
     for line in codecs.open(file, 'r',encoding="utf-8"):
         lsplit = line.split()
@@ -80,7 +80,7 @@ def extract_molden_file(file):
                 flag_gto_orb_num = 1
 
             elif flag_gto_orb_num:#New orbital name
-                if len(line) == 1:#Empty line meaning change of atom
+                if len(line) <= 2:#Empty line meaning change of atom
                     flag_gto_orb_num = 0
                     flag_gto_atom = 1
                     AO_list.append(AO_atom)
@@ -103,31 +103,35 @@ def extract_molden_file(file):
                     flag_gto_orb_num = 1
 
         elif flag_mo:
-            if len(line)==1:#Last line for molecular orbitals
+            if len(line) <= 2:#Last line for molecular orbitals
                 MO_list.append(AO_contribution)
 
             #The first 4 lines contain details
-            elif flag_mo_lines == 4:
-                flag_mo_lines -= 1
+            elif flag_mo_lines <= 4 and flag_mo_lines > 0:
+                if lsplit[0]=="Ene=":
+                    MO_energy.append(float(lsplit[1]))
 
-            elif flag_mo_lines == 3:
-                MO_energy.append(float(lsplit[1]))
-                flag_mo_lines -= 1
-
-            elif flag_mo_lines == 2:
-                if lsplit[1] == "Beta":
+                if lsplit[0] == "Spin=" and lsplit[1] == "Beta":
                     raise ValueError("Unrestricted calculations not currently implemented")
-                spin.append(lsplit[1])
-                flag_mo_lines -= 1
-
-            elif flag_mo_lines == 1:
-                occupancy.append(float(lsplit[1]))
+                    # spin.append(lsplit[1])
+                if lsplit[0] == "Ocucp=":
+                    occupancy.append(float(lsplit[1]))
                 AO_contribution = []
+
                 flag_mo_lines -= 1
 
             #The contribution of each AO
-            elif flag_mo_lines == 0:
-                if lsplit[0]=="Sym=":#New MO
+            else:
+                if lsplit[0]=="Sym=" or lsplit[0] =="Ene=":#New MO
+                    if lsplit[0]=="Ene=":
+                        MO_energy.append(float(lsplit[1]))
+
+                    if lsplit[0] == "Spin=" and lsplit[1] == "Beta":
+                        raise ValueError("Unrestricted calculations not currently implemented")
+                        # spin.append(lsplit[1])
+                    if lsplit[0] == "Ocucp=":
+                        occupancy.append(float(lsplit[1]))
+
                     flag_mo_lines = 3
                     MO_list.append(AO_contribution)
                 else:
@@ -166,6 +170,11 @@ def extract_transition_orca(file):
                     flag_completing_state = 0
                     flag_completed_state = 1
                     transition_list.append(transition)
+
+                    #renormalize factors
+                    transition_factor = np.array(transition_factor)
+                    transition_factor = (transition_factor / np.sum(transition_factor**2)).tolist()
+
                     transition_factor_list.append(transition_factor)
                 else:
                     if "b" in lsplit[0]:
@@ -189,6 +198,24 @@ def extract_transition_orca(file):
     return     transition_energy_sorted,transition_list_sorted,transition_factor_list_sorted
 
 
+def extract_test(file):
+    """test"""
+    transition_list = []
+    transition_factor_list = []
+    flag=0
+    for line in codecs.open(file, 'r',encoding="utf-8"):
+        if "STATE" in line:
+            if flag:
+                transition_list.append(transition_list_a)
+                transition_factor_list.append(transition_list_b)
+            flag=1
+            transition_list_a = []
+            transition_list_b = []
+        else:
+            transition_list_a.append([int(line.split()[0])-1,int(line.split()[1])-1])
+            transition_list_b.append([float(line.split()[2])])
+
+    return transition_list, transition_factor_list
 
 
 def extract_molden(file,do_find_bonds=1):
