@@ -222,8 +222,13 @@ def plot_transition_density(self,opacity=0.7,factor=1,with_radius=1,opacity_radi
     """
     plotter = pyvista.Plotter()
 
+    #Initialize MO list
     if not "MO_calculated" in self.properties:
         self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
+
+    #Initialize transition density list
+    if not "transition_density_list" in self.properties:
+        self.properties["transition_density_list"] = [[] for k in range(len(self.properties["transition_list"]))]
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
@@ -242,6 +247,8 @@ def plot_transition_density(self,opacity=0.7,factor=1,with_radius=1,opacity_radi
     plotter.add_light(light)
     plotter.add_slider_widget(create_mesh_transition_density, [1, len(self.properties["transition_density_list"])],value=1,title="Number", fmt="%1.0f")
     plotter.show(full_screen=False)
+
+
 
 
 
@@ -561,7 +568,6 @@ def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,
 
     nx,ny,nz = np.shape(cube)
     cube_transposed = np.transpose(cube,(2,1,0))
-    print(voxel_origin)
 
     grid = pyvista.ImageData(dimensions=(nx,ny,nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=voxel_origin)
 
