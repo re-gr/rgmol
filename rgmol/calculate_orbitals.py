@@ -548,18 +548,30 @@ def calculate_transition_density(self,grid_points,delta=3):
 
     Calculates all the transition densities for a molecule
 
-
     Parameters :
     ------------
+        grid_points : list of 3
+        delta : float, optional
+            the length added on all directiosn to the box containing all atomic centers
 
-
+    Returns :
+    ---------
+        transition_density_list
     """
+
+    if not "transition_list" in self.properties:
+        raise ValueError("No transitions were found, one should use rgmol.extract_excited_states.extract_transition to extract transition")
+
     transition_list = self.properties["transition_list"]
     transition_factor_list = self.properties["transition_factor_list"]
 
 
     nx,ny,nz = grid_points
+
+
     print("Calculating Transition Density")
+
+
     transition_density_list = []
     for transition in zip(transition_list,transition_factor_list):
         transition_density = np.zeros((nx,ny,nz))
@@ -575,21 +587,43 @@ def calculate_transition_density(self,grid_points,delta=3):
 
 
     self.properties["transition_density_list"] = transition_density_list
+
+
     print("Finished calculating Transition Density")
 
     return transition_density_list
 
 
 def calculate_chosen_transition_density(self,chosen_transition_density,grid_points,delta=3):
-    """calcaulte a chosen transition density"""
+    """
+    calculate_chosen_transition_density(self,chosen_transition_density,grid_points,delta=3)
+
+    Calculates a chosen transition density for a molecule
+
+    Parameters :
+    ------------
+        chosen_transition_density : int
+        grid_points : list of 3
+        delta : float, optional
+            the length added on all directiosn to the box containing all atomic centers
+
+    Returns :
+    ---------
+        transition_density
+    """
+
+    if not "transition_list" in self.properties:
+        raise ValueError("No transitions were found, one should use rgmol.extract_excited_states.extract_transition to extract transition")
+
+    #Initialize transition density list
+    if not "transition_density_list" in self.properties:
+        self.properties["transition_density_list"] = [[] for k in range(len(self.properties["transition_list"]))]
 
     if type(self.properties["transition_density_list"][chosen_transition_density]) is not list:
         return self.properties["transition_density_list"][chosen_transition_density]
 
 
     transition_list = self.properties["transition_list"][chosen_transition_density]
-
-
     transition_factor_list = self.properties["transition_factor_list"][chosen_transition_density]
 
 
@@ -607,14 +641,12 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
 
         transition_density += transition_MO[1][0] * MO_OCC * MO_VIRT
 
-
-
     self.properties["transition_density_list"][chosen_transition_density] = transition_density
     return transition_density
 
 
 def calculate_linear_response_function(self,grid_points,delta=3):
-    """calculate the linear response function from the transition densities"""
+    """calculate the linear response function from the transition densities WIP"""
 
     nx,ny,nz = grid_points
 
@@ -640,7 +672,7 @@ def calculate_linear_response_function(self,grid_points,delta=3):
 
 
 def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,delta=3):
-    """calculate the linear response function from the transition densities"""
+    """calculate the linear response function from the transition densities WIP"""
 
     nx,ny,nz = grid_points
 
@@ -720,7 +752,7 @@ def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,d
 
 
 def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total",delta=3):
-    """diagonalize lineaar response function"""
+    """diagonalize lineaar response function WIP"""
 
     nx,ny,nz = grid_points
 
