@@ -11,9 +11,9 @@ import objects
 ########################################
 
 
-def plot_plt(self,ax,plotted_property="radius",opacity=1,factor=1):
+def plot(self,ax,plotted_property="radius",opacity=1,factor=1):
     """
-    plot_plt(ax,plotted_property="radius",opacity=1,factor=1)
+    plot(ax,plotted_property="radius",opacity=1,factor=1)
 
     Plot a property of the atom on the ax using matplotlib
 
@@ -33,12 +33,12 @@ def plot_plt(self,ax,plotted_property="radius",opacity=1,factor=1):
         None
             The atom is plotted on the ax object
     """
-    plot_plt.plot_atom(ax,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
+    plot.plot_atom(ax,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
 
 
-def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
+def plot_vector(self,ax,vector,opacity=1,factor=1):
     """
-    plot_vector_plt(ax,plotted_property="radius",opacity=1,factor=1)
+    plot_vector(ax,plotted_property="radius",opacity=1,factor=1)
 
     Plot a value of a vector on the position of the atom on the ax using matplotlib
 
@@ -58,11 +58,11 @@ def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
         None
             The atom is plotted on the ax object
     """
-    plot_plt.plot_vector_atom(ax,self,vector,opacity=opacity,factor=factor)
+    plot.plot_vector_atom(ax,self,vector,opacity=opacity,factor=factor)
 
 
-objects.atom.plot_plt = plot_plt
-objects.atom.plot_vector_plt = plot_vector_plt
+objects.atom.plot = plot
+objects.atom.plot_vector = plot_vector
 
 
 ############################################
@@ -72,24 +72,24 @@ objects.atom.plot_vector_plt = plot_vector_plt
 
 
 
-def plot_plt(self,ax,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
+def plot(self,ax,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
     """
     Plot the entire molecule
     """
     for atom_x in self.atoms:
-        atom_x.plot_plt(ax,plotted_property=plotted_property,opacity=opacity,factor=factor)
+        atom_x.plot(ax,plotted_property=plotted_property,opacity=opacity,factor=factor)
     if show_bonds:
-        plot_plt.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+        plot.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
 
-def plot_vector_plt(self,ax,vector,opacity=1,factor=1):
+def plot_vector(self,ax,vector,opacity=1,factor=1):
     """
     Plot the entire molecule
     """
     for atom_x in range(len(self.atoms)):
-        self.atoms[atom_x].plot_vector_plt(ax,vector[atom_x],opacity=opacity,factor=factor)
+        self.atoms[atom_x].plot_vector(ax,vector[atom_x],opacity=opacity,factor=factor)
 
 
-def plot_radius_plt(self,opacity=1,show_bonds=1,factor=1):
+def plot_radius(self,opacity=1,show_bonds=1,factor=1):
     """
     Plot kernel
     """
@@ -127,14 +127,14 @@ def plot_radius_plt(self,opacity=1,show_bonds=1,factor=1):
     ax.set_zticks([])
 
     for atom_x in self.atoms:
-        atom_x.plot_plt(ax,opacity=opacity,factor=factor)
+        atom_x.plot(ax,opacity=opacity,factor=factor)
     if show_bonds:
-        plot_plt.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
-    plot_plt.axes_equal(ax)
+        plot.bonds_plotting(ax,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+    plot.axes_equal(ax)
     plt.show()
 
 
-def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,factor_radius=.3,with_radius=1):
+def plot_diagonalized_kernel(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,factor_radius=.3,with_radius=1):
     """
     Plot kernel
     """
@@ -177,17 +177,17 @@ def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response"
         ax.set_zticks([])
         ax.set_title(r"$\mathrm{\lambda}$"+" = {:3.2f}".format(Xvp[vec]),y=1.0,pad=-6)
         if with_radius:
-            self.plot_plt(ax,factor=factor_radius,opacity=0.8)
-        self.plot_vector_plt(ax,XV[:,vec],opacity=opacity,factor=factor)
-        plot_plt.axes_equal(ax)
+            self.plot(ax,factor=factor_radius,opacity=0.8)
+        self.plot_vector(ax,XV[:,vec],opacity=opacity,factor=factor)
+        plot.axes_equal(ax)
     plt.show()
 
 
 
-objects.molecule.plot_plt = plot_plt
-objects.molecule.plot_vector_plt = plot_vector_plt
-objects.molecule.plot_radius_plt = plot_radius_plt
-objects.molecule.plot_diagonalized_kernel_plt = plot_diagonalized_kernel_plt
+objects.molecule.plot = plot
+objects.molecule.plot_vector = plot_vector
+objects.molecule.plot_radius = plot_radius
+objects.molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
 
 
 ##############################

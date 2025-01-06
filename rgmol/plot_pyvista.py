@@ -13,9 +13,9 @@ import calculate_mo
 
 
 
-def plot_pyvista(self,plotter,plotted_property="radius",opacity=1,factor=1):
+def plot(self,plotter,plotted_property="radius",opacity=1,factor=1):
     """
-    plot_pyvista(plotter,plotted_property="radius",opacity=1,factor=1)
+    plot(plotter,plotted_property="radius",opacity=1,factor=1)
 
     Plot a property of the atom on the plotter using pyvista
 
@@ -39,9 +39,9 @@ def plot_pyvista(self,plotter,plotted_property="radius",opacity=1,factor=1):
 
 
 
-def plot_vector_pyvista(self,plotter,vector,opacity=1,factor=1):
+def plot_vector(self,plotter,vector,opacity=1,factor=1):
     """
-    plot_vector_pyvista(plotter,plotted_property="radius",opacity=1,factor=1)
+    plot_vector(plotter,plotted_property="radius",opacity=1,factor=1)
 
     Plot a value of a vector on the position of the atom using pyvista
 
@@ -64,8 +64,8 @@ def plot_vector_pyvista(self,plotter,vector,opacity=1,factor=1):
     plot_vector_atom(plotter,self,vector,opacity=opacity,factor=factor)
 
 
-objects.atom.plot_pyvista = plot_pyvista
-objects.atom.plot_vector_pyvista = plot_vector_pyvista
+objects.atom.plot = plot
+objects.atom.plot_vector = plot_vector
 
 
 ############################################
@@ -74,32 +74,32 @@ objects.atom.plot_vector_pyvista = plot_vector_pyvista
 
 
 
-def plot_pyvista(self,plotter,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
+def plot(self,plotter,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
     """
     Plot the entire molecule
     """
     for atom_x in self.atoms:
-        atom_x.plot_pyvista(plotter,plotted_property=plotted_property,opacity=opacity,factor=factor)
+        atom_x.plot(plotter,plotted_property=plotted_property,opacity=opacity,factor=factor)
     if show_bonds:
         bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
     return
 
-def plot_vector_pyvista(self,plotter,vector,opacity=1,factor=1):
+def plot_vector(self,plotter,vector,opacity=1,factor=1):
     """
     Plot the entire molecule
     """
     for atom_x in range(len(self.atoms)):
-        self.atoms[atom_x].plot_vector_pyvista(plotter,vector[atom_x],opacity=opacity,factor=factor)
+        self.atoms[atom_x].plot_vector(plotter,vector[atom_x],opacity=opacity,factor=factor)
     return
 
 
-def plot_radius_pyvista(self,opacity=1,show_bonds=1,factor=1):
+def plot_radius(self,opacity=1,show_bonds=1,factor=1):
     """
     Plot the entire molecule
     """
     plotter = pyvista.Plotter()
     for atom_x in self.atoms:
-        atom_x.plot_pyvista(plotter,opacity=opacity,factor=factor)
+        atom_x.plot(plotter,opacity=opacity,factor=factor)
     if show_bonds:
         bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
@@ -107,7 +107,7 @@ def plot_radius_pyvista(self,opacity=1,show_bonds=1,factor=1):
     plotter.show(full_screen=False)
 
 
-def plot_property_pyvista(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
+def plot_property(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
     """
     Plot the entire molecule
     """
@@ -115,13 +115,13 @@ def plot_property_pyvista(self,plotted_property,opacity=1,factor=1,with_radius=1
     plotter = pyvista.Plotter()
 
     if with_radius:
-        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
-    self.plot_vector_pyvista(plotter,X,opacity=opacity,factor=factor)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+    self.plot_vector(plotter,X,opacity=opacity,factor=factor)
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
     plotter.show(full_screen=False)
 
-def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_kernel_slider(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
     """
     Plot kernel
     """
@@ -131,10 +131,10 @@ def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linea
 
     plotter = pyvista.Plotter()
     if with_radius:
-        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
     def create_mesh_diagonalized_kernel(value):
         vector_number = int(round(value))
-        self.plot_vector_pyvista(plotter,XV[:,vector_number-1],opacity=opacity,factor=factor)
+        self.plot_vector(plotter,XV[:,vector_number-1],opacity=opacity,factor=factor)
         plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(Xvp[vector_number-1]),name="eigenvalue")
 
 
@@ -144,13 +144,13 @@ def plot_diagonalized_kernel_slider_pyvista(self,plotted_kernel="condensed linea
     plotter.show(full_screen=False)
 
 
-def plot_cube_pyvista(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5):
+def plot_cube(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5):
     """
     Plot cube
     """
     plotter = pyvista.Plotter()
     if with_radius:
-        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
     plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
@@ -160,7 +160,7 @@ def plot_cube_pyvista(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_r
 
 
 
-def plot_AO_pyvista(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
+def plot_AO(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
     """
     Plot kernel
     """
@@ -170,7 +170,7 @@ def plot_AO_pyvista(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,fac
         calculate_mo.calculate_AO(self,grid_points,delta=delta)
 
     if with_radius:
-        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
     def create_mesh_AO(value):
         plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor)
         AO_number = int(round(value))
@@ -185,7 +185,7 @@ def plot_AO_pyvista(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,fac
 
 
 
-def plot_MO_pyvista(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5,grid_points=(40,40,40),delta=3):
+def plot_MO(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5,grid_points=(40,40,40),delta=3):
     """
     Plot kernel
     """
@@ -198,7 +198,7 @@ def plot_MO_pyvista(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius
         self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
 
     if with_radius:
-        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
     def create_mesh_MO(value):
         MO_number = int(round(value))
         MO_calculated = self.calculate_MO_chosen(MO_number-1,grid_points,delta=delta)
@@ -216,7 +216,7 @@ def plot_MO_pyvista(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius
 
 
 
-def plot_transition_density_pyvista(self,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
+def plot_transition_density(self,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
     """
     Plot kernel
     """
@@ -229,7 +229,7 @@ def plot_transition_density_pyvista(self,opacity=0.7,factor=1,with_radius=1,opac
         self.properties["transition_density_list"] = [[] for k in range(len(self.properties["transition_list"]))]
 
     if with_radius:
-        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
 
 
     def create_mesh_transition_density(value):
@@ -248,7 +248,7 @@ def plot_transition_density_pyvista(self,opacity=0.7,factor=1,with_radius=1,opac
 
 
 
-def plot_diagonalized_kernel_isodensity_slider_pyvista(self,grid_points,kernel="linear_response_function",method="total",number_eigenvectors=6,delta=3 ,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_kernel_isodensity_slider(self,grid_points,kernel="linear_response_function",method="total",number_eigenvectors=6,delta=3 ,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
     """
     Plot kernel
     """
@@ -263,7 +263,7 @@ def plot_diagonalized_kernel_isodensity_slider_pyvista(self,grid_points,kernel="
 
     plotter = pyvista.Plotter()
     if with_radius:
-        self.plot_pyvista(plotter,factor=factor_radius,opacity=opacity_radius)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
 
     def create_mesh_diagonalized_kernel(value):
         vector_number = int(round(value))
@@ -279,16 +279,16 @@ def plot_diagonalized_kernel_isodensity_slider_pyvista(self,grid_points,kernel="
 
 
 
-objects.molecule.plot_pyvista = plot_pyvista
-objects.molecule.plot_vector_pyvista = plot_vector_pyvista
-objects.molecule.plot_radius_pyvista = plot_radius_pyvista
-objects.molecule.plot_property_pyvista = plot_property_pyvista
-objects.molecule.plot_diagonalized_kernel_slider_pyvista = plot_diagonalized_kernel_slider_pyvista
-objects.molecule.plot_cube_pyvista = plot_cube_pyvista
-objects.molecule.plot_AO_pyvista = plot_AO_pyvista
-objects.molecule.plot_MO_pyvista = plot_MO_pyvista
-objects.molecule.plot_transition_density_pyvista = plot_transition_density_pyvista
-objects.molecule.plot_diagonalized_kernel_isodensity_slider_pyvista = plot_diagonalized_kernel_isodensity_slider_pyvista
+objects.molecule.plot = plot
+objects.molecule.plot_vector = plot_vector
+objects.molecule.plot_radius = plot_radius
+objects.molecule.plot_property = plot_property
+objects.molecule.plot_diagonalized_kernel_slider = plot_diagonalized_kernel_slider
+objects.molecule.plot_cube = plot_cube
+objects.molecule.plot_AO = plot_AO
+objects.molecule.plot_MO = plot_MO
+objects.molecule.plot_transition_density = plot_transition_density
+objects.molecule.plot_diagonalized_kernel_isodensity_slider = plot_diagonalized_kernel_isodensity_slider
 
 
 ##############################

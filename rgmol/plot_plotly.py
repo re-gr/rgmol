@@ -12,9 +12,9 @@ from plotly.subplots import make_subplots
 ########################################
 
 
-def plot_plotly(self,Surfaces,plotted_property="radius",opacity=1,factor=1):
+def plot(self,Surfaces,plotted_property="radius",opacity=1,factor=1):
     """
-    plot_plotly(Surfaces,plotted_property="radius",opacity=1,factor=1)
+    plot(Surfaces,plotted_property="radius",opacity=1,factor=1)
 
     Plot a value of a vector on the position of the atom using plotly
 
@@ -34,12 +34,12 @@ def plot_plotly(self,Surfaces,plotted_property="radius",opacity=1,factor=1):
         Surfaces
             The updated Surfaces list
     """
-    return plot_plotly.plot_atom(Surfaces,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
+    return plot.plot_atom(Surfaces,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
 
 
-def plot_vector_plotly(self,Surfaces,vector,opacity=1,factor=1):
+def plot_vector(self,Surfaces,vector,opacity=1,factor=1):
     """
-    plot_vector_plotly(Surfaces,plotted_property="radius",opacity=1,factor=1)
+    plot_vector(Surfaces,plotted_property="radius",opacity=1,factor=1)
 
     Plot a value of a vector on the position of the atom using plotly
 
@@ -59,11 +59,11 @@ def plot_vector_plotly(self,Surfaces,vector,opacity=1,factor=1):
         Surfaces
             The updated Surfaces list
     """
-    return plot_plotly.plot_vector_atom(Surfaces,self,vector,opacity=opacity,factor=factor)
+    return plot.plot_vector_atom(Surfaces,self,vector,opacity=opacity,factor=factor)
 
 
-objects.atom.plot_plotly = plot_plotly
-objects.atom.plot_vector_plotly = plot_vector_plotly
+objects.atom.plot = plot
+objects.atom.plot_vector = plot_vector
 
 
 ############################################
@@ -71,41 +71,41 @@ objects.atom.plot_vector_plotly = plot_vector_plotly
 ############################################
 
 
-def plot_plotly(self,Surfaces,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
+def plot(self,Surfaces,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
     """
     Plot the entire molecule
     """
     for atom_x in self.atoms:
-        Surfaces=atom_x.plot_plotly(Surfaces,plotted_property=plotted_property,opacity=opacity,factor=factor)
+        Surfaces=atom_x.plot(Surfaces,plotted_property=plotted_property,opacity=opacity,factor=factor)
     if show_bonds:
-        Surfaces=plot_plotly.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+        Surfaces=plot.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
     return Surfaces
 
-def plot_vector_plotly(self,Sufaces,vector,opacity=1,factor=1):
+def plot_vector(self,Sufaces,vector,opacity=1,factor=1):
     """
     Plot the entire molecule
     """
     for atom_x in range(len(self.atoms)):
-        Surfaces=self.atoms[atom_x].plot_vector_plotly(Sufaces,vector[atom_x],opacity=opacity,factor=factor)
+        Surfaces=self.atoms[atom_x].plot_vector(Sufaces,vector[atom_x],opacity=opacity,factor=factor)
     return Surfaces
 
 
-def plot_radius_plotly(self,opacity=1,show_bonds=1,factor=1):
+def plot_radius(self,opacity=1,show_bonds=1,factor=1):
     """
     Plot the entire molecule
     """
     Surfaces=[]
     for atom_x in self.atoms:
-        Surfaces=atom_x.plot_plotly(Surfaces,opacity=opacity,factor=factor)
+        Surfaces=atom_x.plot(Surfaces,opacity=opacity,factor=factor)
     if show_bonds:
-        Surfaces=plot_plotly.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+        Surfaces=plot.bonds_plotting(Surfaces,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
     fig = go.Figure(data=Surfaces)
     fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
 
     fig.write_html("plot.html", auto_open=True)
 
 
-def plot_property_plotly(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
+def plot_property(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
     """
     Plot the entire molecule
     """
@@ -114,8 +114,8 @@ def plot_property_plotly(self,plotted_property,opacity=1,factor=1,with_radius=1,
     Surfaces = []
 
     if with_radius:
-        Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
-    Surfaces=self.plot_vector_plotly(Surfaces,X,opacity=opacity,factor=factor)
+        Surfaces=self.plot(Surfaces,factor=factor_radius,opacity=opacity_radius)
+    Surfaces=self.plot_vector(Surfaces,X,opacity=opacity,factor=factor)
 
     fig = go.Figure(data=Surfaces)
     fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False}})
@@ -123,7 +123,7 @@ def plot_property_plotly(self,plotted_property,opacity=1,factor=1,with_radius=1,
     fig.write_html("plot.html", auto_open=True)
 
 
-def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
+def plot_diagonalized_kernel(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
     """
     Plot kernel
     """
@@ -145,8 +145,8 @@ def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear respon
         Surfaces = []
 
         if with_radius:
-            Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
-        Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],opacity=opacity,factor=factor)
+            Surfaces=self.plot(Surfaces,factor=factor_radius,opacity=opacity_radius)
+        Surfaces=self.plot_vector(Surfaces,XV[:,vec],opacity=opacity,factor=factor)
 
         for k in Surfaces:
             fig.add_trace(k,row=1,col=vec+1)
@@ -162,7 +162,7 @@ def plot_diagonalized_kernel_plotly(self,plotted_kernel="condensed linear respon
     # fig.show()
 
 
-def plot_diagonalized_kernel_slider_plotly(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_kernel_slider(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
     """
     Plot kernel
     """
@@ -176,9 +176,9 @@ def plot_diagonalized_kernel_slider_plotly(self,plotted_kernel="condensed linear
 
     Surfaces = []
     if with_radius:
-        Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius)
+        Surfaces=self.plot(Surfaces,factor=factor_radius,opacity=opacity_radius)
     for vec in range(len(XV)):
-        Surfaces=self.plot_vector_plotly(Surfaces,XV[:,vec],opacity=opacity,factor=factor)
+        Surfaces=self.plot_vector(Surfaces,XV[:,vec],opacity=opacity,factor=factor)
 
     fig = go.Figure(data=Surfaces)
     fig.update_traces(visible=False)
@@ -196,7 +196,7 @@ def plot_diagonalized_kernel_slider_plotly(self,plotted_kernel="condensed linear
     fig.update_layout(sliders=sliders)
     fig.write_html("plot.html", auto_open=True)
 
-def plot_cube_plotly(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=1):
+def plot_cube(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=1):
     """
     Plot cube
     """
@@ -204,8 +204,8 @@ def plot_cube_plotly(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_ra
     Surfaces = []
 
     if with_radius:
-        Surfaces=self.plot_plotly(Surfaces,factor=factor_radius,opacity=opacity_radius,show_bonds=False)
-    Surfaces=plot_plotly.plot_isodensity(Surfaces,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
+        Surfaces=self.plot(Surfaces,factor=factor_radius,opacity=opacity_radius,show_bonds=False)
+    Surfaces=plot.plot_isodensity(Surfaces,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
     fig = go.Figure(data=Surfaces)
     fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
 
@@ -213,12 +213,12 @@ def plot_cube_plotly(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_ra
 
 
 
-objects.molecule.plot_plotly = plot_plotly
-objects.molecule.plot_vector_plotly = plot_vector_plotly
-objects.molecule.plot_radius_plotly = plot_radius_plotly
-objects.molecule.plot_property_plotly = plot_property_plotly
-objects.molecule.plot_diagonalized_kernel_slider_plotly = plot_diagonalized_kernel_slider_plotly
-objects.molecule.plot_cube_plotly = plot_cube_plotly
+objects.molecule.plot = plot
+objects.molecule.plot_vector = plot_vector
+objects.molecule.plot_radius = plot_radius
+objects.molecule.plot_property = plot_property
+objects.molecule.plot_diagonalized_kernel_slider = plot_diagonalized_kernel_slider
+objects.molecule.plot_cube = plot_cube
 
 
 
@@ -426,7 +426,7 @@ def bonds_plotting(Surfaces,bonds,Pos,Vec,factor=1):
 
 
 
-def convert_color_to_plotly(color):
+def convert_color_to(color):
     """convert color to plotly"""
     c0,c1,c2 = color
     c3=max(c0-.2,0)
@@ -448,7 +448,7 @@ def plot_atom(Surfaces,atom,plotted_property="radius",opacity=1,factor=1):
     z=Norm*factor*(np.outer(np.ones(np.size(u)),np.cos(v)))+atom.pos[2]
 
 
-    Surfaces.append(go.Surface(x=x,y=y,z=z,showscale=False,opacity=opacity,colorscale=convert_color_to_plotly(atom.color),name=atom.name))
+    Surfaces.append(go.Surface(x=x,y=y,z=z,showscale=False,opacity=opacity,colorscale=convert_color_to(atom.color),name=atom.name))
     return Surfaces
 
 
