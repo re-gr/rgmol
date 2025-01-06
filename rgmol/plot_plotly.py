@@ -341,14 +341,19 @@ def orthonormal_basis(Pos,B,k):
                 z (ndarray dim(3)) z axis
                 y (ndarray dim(3)) y axis
     """
+
+
     ind=int(B[k][1])-1
     ind2=int(B[k][0])-1
-    # print(ind,ind2)
+
+
     Vec=(Pos[ind2]-Pos[ind])/np.linalg.norm((Pos[ind]-Pos[ind2]))
 
     #In order to create an orthonormal basis, the strategy is : taking two vectors linked to two adjacent atoms that are not colinear, one can claculate the cross product wihch gives a perpendicular vector. And by taking the cross product with the last vector and one of the two first, the result is an orthonormal basis that is centered on the atom of interest
     for j in B:
+
         if int(j[0])-1==ind and int(j[1])-1!=ind2:
+
             num=int(j[1])-1
             Dist=(Pos[ind]-Pos[num])/np.linalg.norm((Pos[ind]-Pos[num]))
             angl=find_angle(Dist,Vec)
@@ -359,8 +364,32 @@ def orthonormal_basis(Pos,B,k):
                 return per,np.cross(Vec,per)
 
         if int(j[1])-1==ind and int(j[0])-1!=ind2:
+
             num=int(j[0])-1
             Dist=(Pos[ind]-Pos[num])/np.linalg.norm((Pos[ind]-Pos[num]))
+            angl=find_angle(Dist,Vec)
+
+            if angl<0: Dist=-Dist
+            if abs(Dist.dot(Vec))<0.95:
+                per=np.cross(Vec,Dist)
+                return per,np.cross(Vec,per)
+
+
+        if int(j[0])-1==ind2 and int(j[1])-1!=ind:
+
+            num=int(j[1])-1
+            Dist=(Pos[ind2]-Pos[num])/np.linalg.norm((Pos[ind2]-Pos[num]))
+            angl=find_angle(Dist,Vec)
+
+            if angl<0: Dist=-Dist
+            if abs(Dist.dot(Vec))<0.95:
+                per=np.cross(Vec,Dist)
+                return per,np.cross(Vec,per)
+
+        if int(j[1])-1==ind2 and int(j[0])-1!=ind:
+
+            num=int(j[0])-1
+            Dist=(Pos[ind2]-Pos[num])/np.linalg.norm((Pos[ind2]-Pos[num]))
             angl=find_angle(Dist,Vec)
 
             if angl<0: Dist=-Dist
@@ -375,6 +404,7 @@ def orthonormal_basis(Pos,B,k):
     aVec/=np.linalg.norm(aVec)
     per=np.cross(Vec,aVec)
     return per,np.array([1,-1,-1.3])#linear
+
 
 
 
