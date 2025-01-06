@@ -4,7 +4,7 @@
 import numpy as np
 import pyvista
 import objects
-import calculate_mo
+import calculate_orbitals
 
 
 ########################################
@@ -167,7 +167,7 @@ def plot_AO(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radi
     plotter = pyvista.Plotter()
 
     if not "AO_calculated" in self.properties:
-        calculate_mo.calculate_AO(self,grid_points,delta=delta)
+        calculate_orbitals.calculate_AO(self,grid_points,delta=delta)
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
@@ -192,7 +192,7 @@ def plot_MO(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opaci
     plotter = pyvista.Plotter()
 
     if not calculate_on_the_fly and not "MO_calculated" in self.properties:
-        calculate_mo.calculate_MO(self,grid_points,delta=delta)
+        calculate_orbitals.calculate_MO(self,grid_points,delta=delta)
 
     if calculate_on_the_fly and not "MO_calculated" in self.properties:
         self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
@@ -224,9 +224,6 @@ def plot_transition_density(self,opacity=0.7,factor=1,with_radius=1,opacity_radi
 
     if not "MO_calculated" in self.properties:
         self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
-
-    if not "transition_density_list" in self.properties:
-        self.properties["transition_density_list"] = [[] for k in range(len(self.properties["transition_list"]))]
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
