@@ -12,14 +12,26 @@ from general_function import find_bonds
 ##########################
 
 
-def extract_molden_file(file):
+def _extract_molden_file(file):
     """
-    Extracts the global descriptors from an molden file format
+    _extract_molden_file(file)
 
-    Input : file (str)
+    Extracts the data from a molden file
 
-    Outputs :
+    Parameters :
+    ------------
+        file : str
+
+    Returns :
+    ---------
+        atom_names : list
+        atom_position : ndarray
+        AO_list : list
+        AO_type_list : list
+        MO_list : list
+        MO_energy : list
     """
+
     flag_atoms = 0
     flag_gto = 0
     flag_mo = 0
@@ -140,7 +152,23 @@ def extract_molden_file(file):
     return atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy
 
 def extract_transition_orca(file):
-    """Extract state"""
+    """
+    extract_transition_orca(file)
+
+    Extract the Excited states calculations from an ORCA output
+
+
+    Parameters :
+    ------------
+        file : str
+
+    Returns :
+    ---------
+        transition_energy : list
+        transition : list
+        transition_factor : list
+            All the lists are sorted by energy
+    """
 
     flag_states = 0
     flag_completing_state = 0
@@ -195,10 +223,10 @@ def extract_transition_orca(file):
         transition_list_sorted.append(transition_list[sorting])
         transition_factor_list_sorted.append(transition_factor_list[sorting])
 
-    return     transition_energy_sorted,transition_list_sorted,transition_factor_list_sorted
+    return transition_energy_sorted,transition_list_sorted,transition_factor_list_sorted
 
 
-def extract_test(file):
+def _extract_test(file):
     """test"""
     transition_list = []
     transition_factor_list = []
@@ -218,10 +246,26 @@ def extract_test(file):
     return transition_list, transition_factor_list
 
 
-def extract_molden(file,do_find_bonds=1):
-    """Extract from molden input and create molecule object"""
+def extract_molden(file,do_find_bonds=0):
+    """
+    extract_molden(file,do_find_bonds=0)
 
-    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy = extract_molden_file(file)
+    Extract from molden input and create molecule object
+    As the bonds are not defined in a molden file, one can use do_find_bonds to
+    use an algorithm that tries to find bonds. It is still in WIP
+
+    Parameters :
+    ------------
+        file : str
+        do_find_bonds : bool
+            if one wants an algorithm to find the bonds (WIP)
+
+    Returns :
+    ---------
+        mol : molecule
+    """
+
+    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy = _extract_molden_file(file)
 
 
     list_atoms = []
