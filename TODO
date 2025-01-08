@@ -6,4 +6,8 @@
 - Excited state extraction and plotting for Unrestricted calculations
 - Vibrations
 - Correct find bonds function
-
+- Reimplement write functions (already coded)
+- Finish implementing group-molecules objects in order to plot multiple molecules
+- Prettier interface
+- Clean output examples files
+- Add function to detect type of output and extract accordingly 
