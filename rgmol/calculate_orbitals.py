@@ -605,7 +605,7 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
         chosen_transition_density : int
         grid_points : list of 3
         delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
+            the length added on all directions of the box containing all atomic centers
 
     Returns :
     ---------
@@ -615,9 +615,6 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
     if not "transition_list" in self.properties:
         raise ValueError("No transitions were found, one should use rgmol.extract_excited_states.extract_transition to extract transition")
 
-    #Initialize transition density list
-    if not "transition_density_list" in self.properties:
-        self.properties["transition_density_list"] = [[] for k in range(len(self.properties["transition_list"]))]
 
     if type(self.properties["transition_density_list"][chosen_transition_density]) is not list:
         return self.properties["transition_density_list"][chosen_transition_density]
@@ -706,28 +703,21 @@ def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,d
     minx,miny,minz,maxx,maxy,maxz = 100,100,100,0,0,0
     for co in coordinates:
         x,y,z = np.unravel_index(co,(nx,ny,nz))
-        if x<minx:
-            minx=x
-        if y<miny:
-            miny=y
-        if z<minz:
-            minz=z
-        if x>maxx:
-            maxx=x
-        if y>maxy:
-            maxy=y
-        if z>maxz:
-            maxz=z
-
+        minx = min(x,minx)
+        maxx = max(x,maxx)
+        miny = min(y,miny)
+        maxy = max(y,maxy)
+        minz = min(z,minz)
+        maxz = max(z,maxz)
 
     new_nx,new_ny,new_nz = maxx-minx+1,maxy-miny+1,maxz-minz+1
 
     voxel_origin = self.properties["voxel_origin"]
     voxel_matrix = self.properties["voxel_matrix"]
 
-    voxel_origin[0] = voxel_origin[0] + new_nx * voxel_matrix[0][0]
-    voxel_origin[1] = voxel_origin[1] + new_ny * voxel_matrix[1][1]
-    voxel_origin[2] = voxel_origin[2] + new_nz * voxel_matrix[2][2]
+    voxel_origin[0] = voxel_origin[0] + minx * voxel_matrix[0][0]
+    voxel_origin[1] = voxel_origin[1] + miny * voxel_matrix[1][1]
+    voxel_origin[2] = voxel_origin[2] + minz * voxel_matrix[2][2]
 
     self.properties["voxel_origin"] = voxel_origin
 
@@ -760,10 +750,10 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total
         raise ValueError("Only linear response function implemented for now")
 
     if not "linear_response_function" in self.properties:
-        if method=="total":
+        if method.lower() == "total":
             self.calculate_linear_response_function(grid_points,delta=delta)
 
-        if method=="partial":
+        if method.lower() == "partial":
             linear_response_function,grid_points=self.calculate_linear_response_function_partial(grid_points,delta=delta)
             nx,ny,nz = grid_points
 
@@ -783,7 +773,7 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total
     reconstructed_eigenvectors = np.zeros((len(eigenvectors),nx,ny,nz))
 
     for eigenvector in range(len(eigenvectors)):
-        print(np.sum(eigenvectors[eigenvector]))
+        # print(np.sum(eigenvectors[eigenvector]))
         reconstructed_eigenvector = eigenvectors[eigenvector].reshape((nx,ny,nz))
         reconstructed_eigenvectors[eigenvector] = reconstructed_eigenvector
 

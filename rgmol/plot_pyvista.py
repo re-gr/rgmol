@@ -19,8 +19,8 @@ def plot(self,plotter,plotted_property="radius",opacity=1,factor=1):
 
     Plot a property of the atom on the plotter using pyvista
 
-    Parameters
-    ----------
+    Parameters :
+    ------------
         plotter : pyvista.plotter
             The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
         plotted_property : string, optional
@@ -30,12 +30,12 @@ def plot(self,plotter,plotted_property="radius",opacity=1,factor=1):
         factor : float, optional
             The factor by which the plotted_property will be multiplied. By default equals to 1
 
-    Returns
-    -------
+    Returns :
+    ---------
         None
             The atom is plotted on the plotter object
     """
-    plot_atom(plotter,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
+    _plot_atom(plotter,self,plotted_property=plotted_property,opacity=opacity,factor=factor)
 
 
 
@@ -45,8 +45,8 @@ def plot_vector(self,plotter,vector,opacity=1,factor=1):
 
     Plot a value of a vector on the position of the atom using pyvista
 
-    Parameters
-    ----------
+    Parameters :
+    ------------
         plotter : pyvista.plotter
             The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
         vector : float
@@ -56,12 +56,12 @@ def plot_vector(self,plotter,vector,opacity=1,factor=1):
         factor : float, optional
             The factor by which the plotted_property will be multiplied. By default equals to 1
 
-    Returns
-    -------
+    Returns :
+    ---------
         None
             The atom is plotted on the plotter object
     """
-    plot_vector_atom(plotter,self,vector,opacity=opacity,factor=factor)
+    _plot_vector_atom(plotter,self,vector,opacity=opacity,factor=factor)
 
 
 objects.atom.plot = plot
@@ -74,42 +74,123 @@ objects.atom.plot_vector = plot_vector
 
 
 
-def plot(self,plotter,plotted_property="radius",opacity=1,show_bonds=1,factor=1):
+def plot(self,plotter,plotted_property="radius",opacity=1,factor=1,show_bonds=True):
     """
-    Plot the entire molecule
+    plot(plotter,plotted_property="radius",opacity=1,factor=1,show_bonds=True)
+
+    Plot a property for the entire molecule
+
+    Parameters :
+    ------------
+        plotter : pyvista.plotter
+            The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
+        plotted_property : float, optional
+            The property to be plotted. By default the radius
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        show_bonds : bool, optional
+            Chose to show the bonds between the atoms or not. By default True
+
+    Returns :
+    ---------
+        None
+            The atom is plotted on the plotter object
     """
     for atom_x in self.atoms:
         atom_x.plot(plotter,plotted_property=plotted_property,opacity=opacity,factor=factor)
     if show_bonds:
-        bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
+        _bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property(plotted_property),factor=factor)
     return
+
+
 
 def plot_vector(self,plotter,vector,opacity=1,factor=1):
     """
-    Plot the entire molecule
+    plot_vector(plotter,vector,opacity=1,factor=1,show_bonds=True)
+
+    Plot a vector for the entire molecule
+
+    Parameters :
+    ------------
+        plotter : pyvista.plotter
+            The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
+        vector : list or ndarray
+            The vector to be plotted. The length should be equal to the number of atoms.
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        show_bonds : bool, optional
+            Chose to show the bonds between the atoms or not. By default True
+
+    Returns :
+    ---------
+        None
+            The atom is plotted on the plotter object
     """
     for atom_x in range(len(self.atoms)):
         self.atoms[atom_x].plot_vector(plotter,vector[atom_x],opacity=opacity,factor=factor)
     return
 
 
-def plot_radius(self,opacity=1,show_bonds=1,factor=.4):
+def plot_radius(self,opacity=1,factor=.4,show_bonds=True):
     """
-    Plot the entire molecule
+    plot_radius(self,opacity=1,factor=.4,show_bonds=True)
+
+    Plot the radius of the entire molecule
+
+    Parameters :
+    ------------
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        show_bonds : bool, optional
+            Chose to show the bonds between the atoms or not. By default True
+
+    Returns :
+    ---------
+        None
+            The plotter should display when using this function
     """
     plotter = pyvista.Plotter()
     for atom_x in self.atoms:
         atom_x.plot(plotter,opacity=opacity,factor=factor)
     if show_bonds:
-        bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
+        _bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=factor)
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
     plotter.show(full_screen=False)
+    return
 
 
-def plot_property(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity_radius=.8,factor_radius=.3):
+def plot_property(self,plotted_property,opacity=1,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    Plot the entire molecule
+    plot_property(plotted_property,opacity=1,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Plot a property for the entire molecule
+
+    Parameters :
+    ------------
+        plotted_property : float, optional
+            The property to be plotted. By default the radius
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns :
+    ---------
+        None
+            The plotter should display when using this function
     """
     X = self.properties[plotted_property]
     plotter = pyvista.Plotter()
@@ -120,12 +201,36 @@ def plot_property(self,plotted_property,opacity=1,factor=1,with_radius=1,opacity
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
     plotter.show(full_screen=False)
+    return
 
-def plot_diagonalized_kernel_slider(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+
+def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    Plot kernel
+    plot_diagonalized_condensed_kernel(kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Diagonalize and plot a condensed kernel for a molecule. One can navigate through the eigenmodes using a slider.
+
+    Parameters :
+    ------------
+        kernel : str
+            The kernel to be diagonalized and plotted
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns :
+    ---------
+        None
+            The plotter should display when using this function
     """
-    X = self.properties[plotted_kernel]
+    X = self.properties[kernel]
     Xvp,XV = np.linalg.eigh(X)
     ncols = len(X)
 
@@ -142,28 +247,79 @@ def plot_diagonalized_kernel_slider(self,plotted_kernel="condensed linear respon
     plotter.add_light(light)
     plotter.add_slider_widget(create_mesh_diagonalized_kernel, [1, len(XV)],value=1,title="Eigenvector", fmt="%1.0f")
     plotter.show(full_screen=False)
+    return
 
 
-def plot_cube(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5):
+def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    Plot cube
+    plot_isodensity(plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Plot an isodensity
+
+    Parameters :
+    ------------
+        plotted_isodensity : str, optional
+            The isodensity to be plotted. By default "cube"
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns :
+    ---------
+        None
+            The plotter should display when using this function
     """
     plotter = pyvista.Plotter()
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
-    plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
+    _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
     plotter.show(full_screen=False)
+    return
 
 
 
 
-def plot_AO(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
+def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    Plot kernel
+    plot_AO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Plot the Atomic Orbitals of a molecule
+    The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+    The order of the Atomic Orbitals is defined in the molden file
+
+    Parameters :
+    ------------
+        grid_points : list of 3, optional
+            The number of points for the grid in each dimension. By default (40,40,40)
+        delta : float, optional
+            The length added on all directions of the box containing all atomic centers. By default 3
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns :
+    ---------
+        None
+            The plotter should display when using this function
     """
+
     plotter = pyvista.Plotter()
 
     if not "AO_calculated" in self.properties:
@@ -172,7 +328,7 @@ def plot_AO(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radi
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
     def create_mesh_AO(value):
-        plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor)
         AO_number = int(round(value))
         # plotter.add_text(text=r"AO = "+'{:3.3f} (a.u.)'.format(),name="ao number")
 
@@ -180,21 +336,45 @@ def plot_AO(self,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radi
     plotter.add_light(light)
     plotter.add_slider_widget(create_mesh_AO, [1, len(self.properties["AO_calculated"])],value=1,title="Number", fmt="%1.0f")
     plotter.show(full_screen=False)
+    return
 
 
 
 
 
-def plot_MO(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.5,grid_points=(40,40,40),delta=3):
+def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    Plot kernel
+    plot_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Plot the Molecular Orbitals of a molecule
+    The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+
+    Parameters :
+    ------------
+        grid_points : list of 3, optional
+            The number of points for the grid in each dimension. By default (40,40,40)
+        delta : float, optional
+            The length added on all directions of the box containing all atomic centers. By default 3
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns :
+    ---------
+        None
+            The plotter should display when using this function
     """
+
     plotter = pyvista.Plotter()
 
-    if not calculate_on_the_fly and not "MO_calculated" in self.properties:
-        calculate_orbitals.calculate_MO(self,grid_points,delta=delta)
-
-    if calculate_on_the_fly and not "MO_calculated" in self.properties:
+    if not "MO_calculated" in self.properties:
         self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
 
     if with_radius:
@@ -203,7 +383,7 @@ def plot_MO(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opaci
         MO_number = int(round(value))
         MO_calculated = self.calculate_MO_chosen(MO_number-1,grid_points,delta=delta)
 
-        plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor)
 
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number-1]),name="mo energy")
 
@@ -212,14 +392,42 @@ def plot_MO(self,calculate_on_the_fly=1,opacity=0.7,factor=1,with_radius=1,opaci
     plotter.add_light(light)
     plotter.add_slider_widget(create_mesh_MO, [1, len(self.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
     plotter.show(full_screen=False)
+    return
 
 
 
-
-def plot_transition_density(self,opacity=0.7,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3,grid_points=(40,40,40),delta=3):
+def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    Plot kernel
+    plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+
+    Plot the Transition Densities of a molecule.
+    All the AO and the MO will be calculated on the grid if they were not calculated.
+    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+
+    Parameters :
+    ------------
+        grid_points : list of 3, optional
+            The number of points for the grid in each dimension. By default (40,40,40)
+        delta : float, optional
+            The length added on all directions of the box containing all atomic centers. By default 3
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns :
+    ---------
+        None
+            The plotter should display when using this function
     """
+
     plotter = pyvista.Plotter()
 
     #Initialize MO list
@@ -238,7 +446,7 @@ def plot_transition_density(self,opacity=0.7,factor=1,with_radius=1,opacity_radi
         transition_number = int(round(value))
         transition_density_calculated = self.calculate_chosen_transition_density(transition_number-1,grid_points,delta=delta)
 
-        plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],transition_density_calculated,opacity=opacity,factor=factor)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],transition_density_calculated,opacity=opacity,factor=factor)
 
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["transition_energy"][transition_number-1]),name="transition energy")
 
@@ -252,9 +460,44 @@ def plot_transition_density(self,opacity=0.7,factor=1,with_radius=1,opacity_radi
 
 
 
-def plot_diagonalized_kernel_isodensity_slider(self,grid_points,kernel="linear_response_function",method="total",number_eigenvectors=6,delta=3 ,opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    Plot kernel
+    plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
+    Only the first number_eigenvectors will be computed to limit the calculation time.
+    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+
+    Parameters :
+    ------------
+        kernel : str
+            The kernel to be diagonalized and plotted
+        method : str, optional
+            The method of calculation of the kernel, partial by default :
+                - partial : Remove the lowest density spaces that adds up to 1% of the density on the transition densities.
+                    This allows much faster and precise calculations as the main bottleneck is the memory
+                - total : Calculate it on the entire grid
+        number_eigenvectors : int, optional
+            The number of eigenvectors to be computed
+        grid_points : list of 3, optional
+            The number of points for the grid in each dimension. By default (40,40,40)
+        delta : float, optional
+            The length added on all directions of the box containing all atomic centers. By default 3
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns :
+    ---------
+        None
+            The plotter should display when using this function
     """
 
     if kernel != "linear_response_function":
@@ -271,7 +514,7 @@ def plot_diagonalized_kernel_isodensity_slider(self,grid_points,kernel="linear_r
 
     def create_mesh_diagonalized_kernel(value):
         vector_number = int(round(value))
-        plot_isodensity(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor)
         plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
 
@@ -287,12 +530,12 @@ objects.molecule.plot = plot
 objects.molecule.plot_vector = plot_vector
 objects.molecule.plot_radius = plot_radius
 objects.molecule.plot_property = plot_property
-objects.molecule.plot_diagonalized_kernel_slider = plot_diagonalized_kernel_slider
-objects.molecule.plot_cube = plot_cube
+objects.molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
+objects.molecule.plot_isodensity = plot_isodensity
 objects.molecule.plot_AO = plot_AO
 objects.molecule.plot_MO = plot_MO
 objects.molecule.plot_transition_density = plot_transition_density
-objects.molecule.plot_diagonalized_kernel_isodensity_slider = plot_diagonalized_kernel_isodensity_slider
+objects.molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
 
 
 ##############################
@@ -300,17 +543,17 @@ objects.molecule.plot_diagonalized_kernel_isodensity_slider = plot_diagonalized_
 ##############################
 
 
-def Rz(alpha):
+def _Rz(alpha):
     """3D Rotation matrix around the z axis"""
     return np.array([[np.cos(alpha),-np.sin(alpha),0],[np.sin(alpha),np.cos(alpha),0],[0,0,1]])
-def Ry(beta):
+def _Ry(beta):
     """3D Rotation matrix around the y axis"""
     return np.array([[np.cos(beta),0,np.sin(beta)],[0,1,0],[-np.sin(beta),0,np.cos(beta)]])
-def Rx(gamma):
+def _Rx(gamma):
     """3D Rotation matrix around the x axis"""
     return np.array([[1,0,0],[0,np.cos(gamma),-np.sin(gamma)],[0,np.sin(gamma),np.cos(gamma)]])
 
-def corr_angle(angle,x,y):
+def _corr_angle(angle,x,y):
     """Corrects the angle given by arctan to be the proper angle."""
     if x>0 and y<0:
         return -angle
@@ -322,7 +565,7 @@ def corr_angle(angle,x,y):
 
 
 
-def rota_bonds(Vec,x,y,z):
+def _rota_bonds(Vec,x,y,z):
     """
     Roates the bonds
     """
@@ -332,14 +575,14 @@ def rota_bonds(Vec,x,y,z):
         alpha = -np.pi/2
     else:
         alpha=np.arctan(np.abs(Vec[1]/Vec[0]))
-    alpha=corr_angle(alpha,Vec[0],Vec[1])
-    Vec2=Rz(-alpha).dot(Vec)
+    alpha=_corr_angle(alpha,Vec[0],Vec[1])
+    Vec2=_Rz(-alpha).dot(Vec)
     if Vec2[2] == 0:
         beta = -np.pi/2
     else:
         beta=np.arctan(abs(Vec2[0]/Vec2[2]))
-    beta=corr_angle(beta,Vec2[2],Vec2[0])
-    Rota=Rz(alpha).dot(Ry(beta))#The rotation matrix to convert to a vector of the x axis to a colinear vector of Vec the starting vector
+    beta=_corr_angle(beta,Vec2[2],Vec2[0])
+    Rota=_Rz(alpha).dot(_Ry(beta))#The rotation matrix to convert to a vector of the x axis to a colinear vector of Vec the starting vector
     #Rotates the bonds
     x2,y2,z2=[],[],[]
     for k in range(len(x)):
@@ -355,7 +598,7 @@ def rota_bonds(Vec,x,y,z):
     return np.array(x2),np.array(y2),np.array(z2)
 
 
-def find_angle(Vec1,Vec2):
+def _find_angle(Vec1,Vec2):
     """
     Finds the angle between two vectors
     """
@@ -367,7 +610,7 @@ def find_angle(Vec1,Vec2):
     if cosangle<-1: cosangle=-1
     return ( np.arccos(cosangle))*scross
 
-def rota_mol(Pos,Vec1,Vec2):
+def _rota_mol(Pos,Vec1,Vec2):
     """
     Roates the molecule
     """
@@ -376,29 +619,29 @@ def rota_mol(Pos,Vec1,Vec2):
     if Vec1[0]==0:
         alpha1=np.pi/2
     else: alpha1=np.arctan(np.abs(Vec1[1]/Vec1[0]))
-    alpha1=corr_angle(alpha1,Vec1[0],Vec1[1])
-    Vec12=Rz(-alpha1).dot(Vec1)
+    alpha1=_corr_angle(alpha1,Vec1[0],Vec1[1])
+    Vec12=_Rz(-alpha1).dot(Vec1)
     if Vec12[2]==0:
         beta1=np.pi/2
     else: beta1=np.arctan(abs(Vec12[0]/Vec12[2]))
-    beta1=corr_angle(beta1,Vec12[2],Vec12[0])
-    Vec13=Ry(-beta1).dot(Vec12)
+    beta1=_corr_angle(beta1,Vec12[2],Vec12[0])
+    Vec13=_Ry(-beta1).dot(Vec12)
 
     if Vec2[0]==0:
         alpha2=np.pi/2
     else: alpha2=np.arctan(np.abs(Vec2[1]/Vec2[0]))
-    alpha2=corr_angle(alpha2,Vec2[0],Vec2[1])
-    Vec22=Rz(-alpha2).dot(Vec2)
+    alpha2=_corr_angle(alpha2,Vec2[0],Vec2[1])
+    Vec22=_Rz(-alpha2).dot(Vec2)
     if Vec22[2]==0:
         beta2=np.pi/2
     else: beta2=np.arctan(abs(Vec22[0]/Vec22[2]))
-    beta2=corr_angle(beta2,Vec22[2],Vec22[0])
-    Vec23=Ry(-beta2).dot(Vec22)
+    beta2=_corr_angle(beta2,Vec22[2],Vec22[0])
+    Vec23=_Ry(-beta2).dot(Vec22)
 
-    #V2= Rz.Ry.v2 => v2= RyT.RzT.V2
-    #=> v = Rz1.Ry1.RyT.RzT.V2
-    Rota=Rz(alpha1).dot(Ry(beta1).dot(Ry(-beta2).dot(Rz(-alpha2))))
-    Rota_ax=Rz(alpha1).dot(Ry(beta1))
+    #V2= _Rz._Ry.v2 => v2= _RyT._RzT.V2
+    #=> v = _Rz1._Ry1._RyT._RzT.V2
+    Rota=_Rz(alpha1).dot(_Ry(beta1).dot(_Ry(-beta2).dot(_Rz(-alpha2))))
+    Rota_ax=_Rz(alpha1).dot(_Ry(beta1))
     x2,y2,z2=[],[],[]#Rotates the bonds
     # for k in range(len(Pos)):
     #     Pos[k]=Rota.dot(Pos[k])
@@ -407,7 +650,7 @@ def rota_mol(Pos,Vec1,Vec2):
 
 
 
-def orthonormal_basis(Pos,B,k):
+def _orthonormal_basis(Pos,B,k):
     """
     Creates an orthonormal basis centered on an atom with the "z" axis perpendicular to the surface created by the 3 atoms and the "y" axis perpendicular to the bond but on the same surface created by the 3 atoms
 
@@ -434,7 +677,7 @@ def orthonormal_basis(Pos,B,k):
 
             num=int(j[1])-1
             Dist=(Pos[ind]-Pos[num])/np.linalg.norm((Pos[ind]-Pos[num]))
-            angl=find_angle(Dist,Vec)
+            angl=_find_angle(Dist,Vec)
 
             if angl<0: Dist=-Dist
             if abs(Dist.dot(Vec))<0.95:
@@ -445,7 +688,7 @@ def orthonormal_basis(Pos,B,k):
 
             num=int(j[0])-1
             Dist=(Pos[ind]-Pos[num])/np.linalg.norm((Pos[ind]-Pos[num]))
-            angl=find_angle(Dist,Vec)
+            angl=_find_angle(Dist,Vec)
 
             if angl<0: Dist=-Dist
             if abs(Dist.dot(Vec))<0.95:
@@ -457,7 +700,7 @@ def orthonormal_basis(Pos,B,k):
 
             num=int(j[1])-1
             Dist=(Pos[ind2]-Pos[num])/np.linalg.norm((Pos[ind2]-Pos[num]))
-            angl=find_angle(Dist,Vec)
+            angl=_find_angle(Dist,Vec)
 
             if angl<0: Dist=-Dist
             if abs(Dist.dot(Vec))<0.95:
@@ -468,7 +711,7 @@ def orthonormal_basis(Pos,B,k):
 
             num=int(j[0])-1
             Dist=(Pos[ind2]-Pos[num])/np.linalg.norm((Pos[ind2]-Pos[num]))
-            angl=find_angle(Dist,Vec)
+            angl=_find_angle(Dist,Vec)
 
             if angl<0: Dist=-Dist
             if abs(Dist.dot(Vec))<0.95:
@@ -485,11 +728,10 @@ def orthonormal_basis(Pos,B,k):
 
 
 
-def bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
+def _bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
     """
     Plot the bonds
     """
-
     #initial values for the parameters of the bonds
     Radbond=0.05
     u=np.linspace(0,2*np.pi,30)#base of the cylinder
@@ -505,7 +747,7 @@ def bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
         x=Radbond*(np.outer(np.cos(u),np.ones(np.size(v))))
         y=Radbond*(np.outer(np.sin(u),np.ones(np.size(v))))
         z=(np.outer(np.ones(np.size(u)),np.linspace((abs(Vec[two]*factor)-1/20),(dist-abs(Vec[one]*factor)+1/20),np.size(v))))
-        x,y,z=rota_bonds(Vect,x,y,z)
+        x,y,z=_rota_bonds(Vect,x,y,z)
         x,y,z=x+Pos[two][0],y+Pos[two][1],z+Pos[two][2]
 
         if order==1:
@@ -514,7 +756,7 @@ def bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
 
 
         elif order==1.5:
-            zpe,pe=orthonormal_basis(Pos,bonds,k)#Get a orthonormal vector in order to distance the two cylinders
+            zpe,pe=_orthonormal_basis(Pos,bonds,k)#Get a orthonormal vector in order to distance the two cylinders
             pe=pe/np.linalg.norm(pe)/15
             grid = pyvista.StructuredGrid(x-pe[0],y-pe[1],z-pe[2])
             grid2 = pyvista.StructuredGrid(x+pe[0],y+pe[1],z+pe[2])
@@ -524,14 +766,14 @@ def bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
 
 
         elif order==2:
-            zpe,pe=orthonormal_basis(Pos,bonds,k)
+            zpe,pe=_orthonormal_basis(Pos,bonds,k)
             pe=pe/np.linalg.norm(pe)/15
             grid = pyvista.StructuredGrid(x-pe[0],y-pe[1],z-pe[2])
             grid2 = pyvista.StructuredGrid(x+pe[0],y+pe[1],z+pe[2])
             plotter.add_mesh(grid,name="bond_{}_{}_1".format(one,two),color="gray",pbr=True,roughness=.2,metallic=.7)
             plotter.add_mesh(grid2,name="bond_{}_{}_2".format(one,two),color="gray",pbr=True,roughness=.2,metallic=.7)
         else:
-            zpe,pe=orthonormal_basis(Pos,bonds,k)
+            zpe,pe=_orthonormal_basis(Pos,bonds,k)
             pe=pe/np.linalg.norm(pe)/12
             grid = pyvista.StructuredGrid(x,y,z)
             grid2 = pyvista.StructuredGrid(x-pe[0],y-pe[1],z-pe[2])
@@ -545,7 +787,7 @@ def bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
 
 
 
-def plot_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
+def _plot_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
     """plot atom as a sphere"""
     Norm = atom.properties[plotted_property]
     atom_sphere = pyvista.Sphere(radius=Norm*factor, phi_resolution=100, theta_resolution=100,center=atom.pos)
@@ -553,7 +795,7 @@ def plot_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
     return
 
 
-def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
+def _plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     """plot atom as a sphere"""
 
     colors=[[255,0,0],[255,255,255]]
@@ -563,7 +805,7 @@ def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     return
 
 
-def plot_isodensity(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1):
+def _plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1):
     """plot atom as a sphere"""
 
     nx,ny,nz = np.shape(cube)

@@ -151,9 +151,9 @@ def _extract_molden_file(file):
 
     return atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy
 
-def extract_transition_orca(file):
+def extract_transition_orca(file,mol=None):
     """
-    extract_transition_orca(file)
+    extract_transition_orca(file,mol=None)
 
     Extract the Excited states calculations from an ORCA output
 
@@ -161,6 +161,8 @@ def extract_transition_orca(file):
     Parameters :
     ------------
         file : str
+        mol : molecule object, optional
+            If defined, the lists will be put inside the molecule properties
 
     Returns :
     ---------
@@ -223,27 +225,13 @@ def extract_transition_orca(file):
         transition_list_sorted.append(transition_list[sorting])
         transition_factor_list_sorted.append(transition_factor_list[sorting])
 
+    if mol:
+        mol.properties["transition_energy"] = transition_energy_sorted
+        mol.properties["transition_list"] = transition_list_sorted
+        mol.properties["transition_factor_list"] = transition_factor_list_sorted
+
     return transition_energy_sorted,transition_list_sorted,transition_factor_list_sorted
 
-
-def _extract_test(file):
-    """test"""
-    transition_list = []
-    transition_factor_list = []
-    flag=0
-    for line in codecs.open(file, 'r',encoding="utf-8"):
-        if "STATE" in line:
-            if flag:
-                transition_list.append(transition_list_a)
-                transition_factor_list.append(transition_list_b)
-            flag=1
-            transition_list_a = []
-            transition_list_b = []
-        else:
-            transition_list_a.append([int(line.split()[0])-1,int(line.split()[1])-1])
-            transition_list_b.append([float(line.split()[2])])
-
-    return transition_list, transition_factor_list
 
 
 def extract_molden(file,do_find_bonds=0):
