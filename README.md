@@ -16,3 +16,20 @@ Installation :
 An example script can be found in "rgmol/example_script.py"
 
 A detailed tutorial will be implemented later.
+
+## Depedencies
+
+	numpy
+	scipy
+   	periodictable
+	graphics : 
+		- matplotlib
+		- pyvista
+		- plotly
+	
+
+## Contact
+
+Email : [Rg](mailto:remi.grincourt@ens-lyon.fr)
+
+
