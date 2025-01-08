@@ -1,13 +1,14 @@
-- Implementation mostly for pyvista : need to add matplotlib and plotly functions
-- Gaussian / Orca / xyz files extraction functions
-- Documentation / Tutorials / Comments
-- CI ?
 - README File
-- Excited state extraction and plotting for Unrestricted calculations
-- Vibrations
+- Documentation / Tutorials / Comments
+- Clean output examples files
+
+- Add function to detect type of output and extract accordingly
 - Correct find bonds function
 - Reimplement write functions (already coded)
+- Save linear response in "cube" file (6d)
+- Implementation mostly for pyvista : need to add matplotlib and plotly functions
+- Gaussian / Orca / xyz files extraction functions
+- Excited state extraction and plotting for Unrestricted calculations
+- Vibrations
 - Finish implementing group-molecules objects in order to plot multiple molecules
 - Prettier interface
-- Clean output examples files
-- Add function to detect type of output and extract accordingly 
