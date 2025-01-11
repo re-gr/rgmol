@@ -5,7 +5,7 @@ rgmol
 rgmol is a python package that intends to offer calculations and vizalisations of molecular properties.
 
 - **Github :** https://github.com/re-gr/rgmol
-- **Documentation :** TODO
+- **Documentation :** https://re-gr.github.io/rgmol_wiki/
 
 Installation :
 

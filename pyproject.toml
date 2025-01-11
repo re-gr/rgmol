@@ -1,26 +1,24 @@
 [project]
 name = "rgmol"
-version = "0.0.1"
+version = "0.1.0"
 authors = [
 	{name = "Rémi Grincourt", email = "remi.grincourt@ens-lyon.fr"},
 ]
-description = "Extraction and Representation of various chemical properties from DFT softwares"
+description = "Visualization and computation of various chemical properties from DFT softwares"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE"}
-keywords = ["molecule","representation","dft","cdft","graph","chemistry"]
+keywords = ["molecule","representation","dft","cdft","visualization","chemistry"]
 classifiers = [
-	"Development Status :: 1 - Planning",
+	"Development Status :: 4 - Beta",
 	"Programming Language :: Python :: 3.12",
 ]
 dependencies = [
 	"numpy",
+	"scipy",
 	"matplotlib",
-	"plotly",
 	"codecs",
-	"argparse",
  	"pyvista",
-  	"plotly",
    	"periodictable"
 ]
 [project.urls]
