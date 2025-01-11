@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Test
-"""
 
 
 import numpy as np
 import scipy as sp
-import objects
-
+from objects import *
 
 def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     """
@@ -537,9 +533,9 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
     return MO_chosen_calculated / np.sum(MO_chosen_calculated**2)
 
 
-objects.molecule.calculate_AO = calculate_AO
-objects.molecule.calculate_MO = calculate_MO
-objects.molecule.calculate_MO_chosen = calculate_MO_chosen
+molecule.calculate_AO = calculate_AO
+molecule.calculate_MO = calculate_MO
+molecule.calculate_MO_chosen = calculate_MO_chosen
 
 ####################
 ## EXCITED STATES ##
@@ -645,6 +641,9 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
     self.properties["transition_density_list"][chosen_transition_density] = transition_density
     return transition_density
 
+######################
+## CDFT descriptors ##
+######################
 
 def calculate_linear_response_function_total(self,grid_points,delta=3):
     """
@@ -797,11 +796,11 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total
 
 
 
-objects.molecule.calculate_transition_density = calculate_transition_density
-objects.molecule.calculate_chosen_transition_density = calculate_chosen_transition_density
-objects.molecule.calculate_linear_response_function_total = calculate_linear_response_function_total
-objects.molecule.calculate_linear_response_function_partial = calculate_linear_response_function_partial
-objects.molecule.diagonalize_kernel = diagonalize_kernel
+molecule.calculate_transition_density = calculate_transition_density
+molecule.calculate_chosen_transition_density = calculate_chosen_transition_density
+molecule.calculate_linear_response_function_total = calculate_linear_response_function_total
+molecule.calculate_linear_response_function_partial = calculate_linear_response_function_partial
+molecule.diagonalize_kernel = diagonalize_kernel
 
 
 

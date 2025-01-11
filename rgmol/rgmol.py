@@ -5,7 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 import os
-from write import *
+# from write import *
+from objects import *
 import extract_adf
 import extract_cube
 import extract_excited_states

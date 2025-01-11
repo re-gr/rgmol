@@ -3,8 +3,8 @@
 
 import numpy as np
 import pyvista
-import objects
-import calculate_orbitals
+from objects import *
+import molecular_calculations
 
 
 ########################################
@@ -64,8 +64,8 @@ def plot_vector(self,plotter,vector,opacity=1,factor=1):
     _plot_vector_atom(plotter,self,vector,opacity=opacity,factor=factor)
 
 
-objects.atom.plot = plot
-objects.atom.plot_vector = plot_vector
+atom.plot = plot
+atom.plot_vector = plot_vector
 
 
 ############################################
@@ -80,8 +80,8 @@ def plot(self,plotter,plotted_property="radius",opacity=1,factor=1,show_bonds=Tr
 
     Plot a property for the entire molecule
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         plotter : pyvista.plotter
             The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
         plotted_property : float, optional
@@ -93,8 +93,8 @@ def plot(self,plotter,plotted_property="radius",opacity=1,factor=1,show_bonds=Tr
         show_bonds : bool, optional
             Chose to show the bonds between the atoms or not. By default True
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The atom is plotted on the plotter object
     """
@@ -110,10 +110,10 @@ def plot_vector(self,plotter,vector,opacity=1,factor=1):
     """
     plot_vector(plotter,vector,opacity=1,factor=1,show_bonds=True)
 
-    Plot a vector for the entire molecule
+    Plot a vector on each atom for the entire molecule
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         plotter : pyvista.plotter
             The plotter object from pyvita on which the atom will be plotted. It can be easily defined using plotter = pyvista.Plotter()
         vector : list or ndarray
@@ -123,10 +123,10 @@ def plot_vector(self,plotter,vector,opacity=1,factor=1):
         factor : float, optional
             The factor by which the plotted_property will be multiplied. By default equals to 1
         show_bonds : bool, optional
-            Chose to show the bonds between the atoms or not. By default True
+            Choose to show the bonds between the atoms or not. By default True
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The atom is plotted on the plotter object
     """
@@ -137,23 +137,23 @@ def plot_vector(self,plotter,vector,opacity=1,factor=1):
 
 def plot_radius(self,opacity=1,factor=.4,show_bonds=True):
     """
-    plot_radius(self,opacity=1,factor=.4,show_bonds=True)
+    plot_radius(opacity=1,factor=.4,show_bonds=True)
 
     Plot the radius of the entire molecule
 
-    Parameters :
-    ------------
-        opacity : float, optional
-            The opacity of the plot. By default equals to 1
-        factor : float, optional
-            The factor by which the plotted_property will be multiplied. By default equals to 1
-        show_bonds : bool, optional
-            Chose to show the bonds between the atoms or not. By default True
+    Parameters
+    ----------
+    opacity : float, optional
+        The opacity of the plot. By default equals to 1
+    factor : float, optional
+        The factor by which the plotted_property will be multiplied. By default equals to 1
+    show_bonds : bool, optional
+        Choose to show the bonds between the atoms or not. By default True
 
-    Returns :
-    ---------
-        None
-            The plotter should display when using this function
+    Returns
+    -------
+    None
+        The plotter should display when using this function
     """
     plotter = pyvista.Plotter()
     for atom_x in self.atoms:
@@ -172,8 +172,8 @@ def plot_property(self,plotted_property,opacity=1,factor=1,with_radius=True,opac
 
     Plot a property for the entire molecule
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         plotted_property : float, optional
             The property to be plotted. By default the radius
         opacity : float, optional
@@ -187,8 +187,8 @@ def plot_property(self,plotted_property,opacity=1,factor=1,with_radius=True,opac
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The plotter should display when using this function
     """
@@ -210,8 +210,8 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
 
     Diagonalize and plot a condensed kernel for a molecule. One can navigate through the eigenmodes using a slider.
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         kernel : str
             The kernel to be diagonalized and plotted
         opacity : float, optional
@@ -225,8 +225,8 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The plotter should display when using this function
     """
@@ -250,16 +250,18 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
     return
 
 
-def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    plot_isodensity(plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_isodensity(plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
 
     Plot an isodensity
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         plotted_isodensity : str, optional
             The isodensity to be plotted. By default "cube"
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
         opacity : float, optional
             The opacity of the plot. By default equals to 1
         factor : float, optional
@@ -271,15 +273,15 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The plotter should display when using this function
     """
     plotter = pyvista.Plotter()
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
-    _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
+    _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor,cutoff=cutoff)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
@@ -289,20 +291,22 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
 
 
 
-def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_AO(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    plot_AO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_AO(grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
 
     Plot the Atomic Orbitals of a molecule
     The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
     The order of the Atomic Orbitals is defined in the molden file
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         grid_points : list of 3, optional
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -314,8 +318,8 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The plotter should display when using this function
     """
@@ -328,7 +332,7 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
     def create_mesh_AO(value):
-        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor,cutoff=cutoff)
         AO_number = int(round(value))
         # plotter.add_text(text=r"AO = "+'{:3.3f} (a.u.)'.format(),name="ao number")
 
@@ -342,19 +346,21 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
 
 
 
-def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    plot_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_MO(grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
 
     Plot the Molecular Orbitals of a molecule
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         grid_points : list of 3, optional
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -366,8 +372,8 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The plotter should display when using this function
     """
@@ -383,7 +389,7 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
         MO_number = int(round(value))
         MO_calculated = self.calculate_MO_chosen(MO_number-1,grid_points,delta=delta)
 
-        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor,cutoff=cutoff)
 
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number-1]),name="mo energy")
 
@@ -396,21 +402,23 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
 
 
 
-def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_transition_density(grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
 
 
     Plot the Transition Densities of a molecule.
     All the AO and the MO will be calculated on the grid if they were not calculated.
     The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         grid_points : list of 3, optional
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -422,8 +430,8 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The plotter should display when using this function
     """
@@ -446,7 +454,7 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
         transition_number = int(round(value))
         transition_density_calculated = self.calculate_chosen_transition_density(transition_number-1,grid_points,delta=delta)
 
-        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],transition_density_calculated,opacity=opacity,factor=factor)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],transition_density_calculated,opacity=opacity,factor=factor,cutoff=cutoff)
 
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["transition_energy"][transition_number-1]),name="transition energy")
 
@@ -460,29 +468,28 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
 
 
 
-def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_diagonalized_kernel(kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
 
     Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
     Only the first number_eigenvectors will be computed to limit the calculation time.
     The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         kernel : str
             The kernel to be diagonalized and plotted
         method : str, optional
-            The method of calculation of the kernel, partial by default :
-                - partial : Remove the lowest density spaces that adds up to 1% of the density on the transition densities.
-                    This allows much faster and precise calculations as the main bottleneck is the memory
-                - total : Calculate it on the entire grid
+            The method of calculation of the kernel, partial by default. More information can be found in the notes.
         number_eigenvectors : int, optional
             The number of eigenvectors to be computed
         grid_points : list of 3, optional
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -494,10 +501,16 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
 
-    Returns :
-    ---------
+    Returns
+    -------
         None
             The plotter should display when using this function
+
+
+    Notes
+    -----
+        Because the kernel are 6-dimensional, they scale up drastically in terms of memory used. That is why a partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/calculate_linear_response_partial>`.
+
     """
 
     if kernel != "linear_response_function":
@@ -514,7 +527,7 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
 
     def create_mesh_diagonalized_kernel(value):
         vector_number = int(round(value))
-        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
         plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
 
@@ -526,16 +539,16 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
 
 
 
-objects.molecule.plot = plot
-objects.molecule.plot_vector = plot_vector
-objects.molecule.plot_radius = plot_radius
-objects.molecule.plot_property = plot_property
-objects.molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
-objects.molecule.plot_isodensity = plot_isodensity
-objects.molecule.plot_AO = plot_AO
-objects.molecule.plot_MO = plot_MO
-objects.molecule.plot_transition_density = plot_transition_density
-objects.molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
+molecule.plot = plot
+molecule.plot_vector = plot_vector
+molecule.plot_radius = plot_radius
+molecule.plot_property = plot_property
+molecule.plot_diagonalized_condensed_kernel = plot_diagonalized_condensed_kernel
+molecule.plot_isodensity = plot_isodensity
+molecule.plot_AO = plot_AO
+molecule.plot_MO = plot_MO
+molecule.plot_transition_density = plot_transition_density
+molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
 
 
 ##############################

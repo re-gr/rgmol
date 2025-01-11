@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import objects
+from objects import *
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -62,8 +62,8 @@ def plot_vector(self,Surfaces,vector,opacity=1,factor=1):
     return plot.plot_vector_atom(Surfaces,self,vector,opacity=opacity,factor=factor)
 
 
-objects.atom.plot = plot
-objects.atom.plot_vector = plot_vector
+atom.plot = plot
+atom.plot_vector = plot_vector
 
 
 ############################################
@@ -162,7 +162,7 @@ def plot_diagonalized_kernel(self,plotted_kernel="condensed linear response",opa
     # fig.show()
 
 
-def plot_diagonalized_kernel_slider(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_condensed_kernel(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=.3):
     """
     Plot kernel
     """
@@ -196,7 +196,7 @@ def plot_diagonalized_kernel_slider(self,plotted_kernel="condensed linear respon
     fig.update_layout(sliders=sliders)
     fig.write_html("plot.html", auto_open=True)
 
-def plot_cube(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=1):
+def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,opacity_radius=1,factor_radius=1):
     """
     Plot cube
     """
@@ -205,7 +205,7 @@ def plot_cube(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,
 
     if with_radius:
         Surfaces=self.plot(Surfaces,factor=factor_radius,opacity=opacity_radius,show_bonds=False)
-    Surfaces=plot.plot_isodensity(Surfaces,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
+    Surfaces=plot.plot_cube(Surfaces,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor)
     fig = go.Figure(data=Surfaces)
     fig.update_layout(scene = {"xaxis": {"showticklabels":False,"title":"","showbackground":False},"yaxis": {"showticklabels":False,"title":"","showbackground":False},"zaxis": {"showticklabels":False,"title":"","showbackground":False},"dragmode":'orbit'})
 
@@ -213,12 +213,12 @@ def plot_cube(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=1,
 
 
 
-objects.molecule.plot = plot
-objects.molecule.plot_vector = plot_vector
-objects.molecule.plot_radius = plot_radius
-objects.molecule.plot_property = plot_property
-objects.molecule.plot_diagonalized_kernel_slider = plot_diagonalized_kernel_slider
-objects.molecule.plot_cube = plot_cube
+molecule.plot = plot
+molecule.plot_vector = plot_vector
+molecule.plot_radius = plot_radius
+molecule.plot_property = plot_property
+molecule.plot_diagonalized_condensed_kernel = plot_diagonalized_condensed_kernel
+molecule.plot_isodensity = plot_isodensity
 
 
 
@@ -497,7 +497,7 @@ def plot_vector_atom(Surfaces,atom,vector,opacity=1,factor=1):
 
 
 
-def plot_isodensity(Surfaces,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,factor=1):
+def plot_cube(Surfaces,voxel_origin,voxel_matrix,cube,cutoff=0.2,opacity=1,factor=1):
     """plot atom as a sphere"""
 
     nx,ny,nz = np.shape(cube)

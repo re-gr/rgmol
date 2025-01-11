@@ -14,13 +14,28 @@ from general_function import find_bonds
 
 
 
-def extract_cube(file):
+def _extract_cube(file):
     """
-    Extracts the global descriptors from an adf output
+    extract_cube(file)
 
-    Input : file (str)
+    Extracts the information from a cube file
 
-    Outputs :
+    Parameters
+    ----------
+        file : str
+
+    Outputs
+    -------
+        voxel_origin : list
+            the origin of the voxel
+        voxel_matrix : list
+            the voxel matrix
+        atomic_number : list
+            the list of the atomic number
+        atom_position : list
+            the list of the position of the atoms
+        cube : ndarray
+            the cube
     """
     #flag value correspond to the number of line for each part on the file
     flag_header = 2
@@ -87,13 +102,24 @@ def extract_cube(file):
     return voxel_origin,voxel_matrix,atom_number,atom_position,np.array(cube)
 
 
-def extract(file,do_find_bonds=1):
+def extract(file,do_find_bonds=0):
     """
-    Extracts the global descriptors from an adf output
+    extract(file,do_find_bonds=0)
 
-    Input : file (str)
+    Extracts a molecule from a cube file.
+    As the bonds are not defined in a cube file, one can use do_find_bonds to use an algorithm that tries to find bonds. It is still in WIP.
 
-    Outputs :
+    Parameters
+    ----------
+        file : str
+        do_find_bonds : bool, optional
+            if one wants to use an algorithm to find the bonds (WIP)
+
+    Returns
+    -------
+        mol : molecule
+            the molecule extracted form the cube file with the voxel_origin, voxel_matrix and cube as properties
+
     """
 
     voxel_origin,voxel_matrix,atom_number,atom_position,cube = extract_cube(file)

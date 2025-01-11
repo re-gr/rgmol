@@ -10,7 +10,7 @@ from objects import *
 ## Extraction functions ##
 ##########################
 
-def is_CDFT(file):
+def _is_CDFT(file):
     """
     Finds if the file contains CDFT
     """
@@ -21,27 +21,40 @@ def is_CDFT(file):
 
 
 
+def _rename(file):
+    """
+    Rename the file in order to have the .out and the .run files
+    """
+    if ".out" in file:
+        return file,file[:-3]+"run",file[:-4]
+    else: return file+".out", file+".run",file
+
+
+
 def extract_global_descriptors(file):
     """
     Extracts the global descriptors from an adf output
 
-    Input : file (str)
+    Parameters
+    ----------
+        file : str
 
-    Outputs :   List of descriptors :
-                    mu      (float)    electronic chemical potential
-                    mu+     (float)
-                    mu-     (float)
-                    chi     (float)    electronegativity (-mu)
-                    eta     (float)    Hardness
-                    S       (float)    Softness (1/eta)
-                    gamma   (float)    Hyperhardness
-                    w       (float)    Electrophilicity index
-                    DEn     (float)    Dissociation energy (nucleofuge) (eV)
-                    DEe     (float)    Dissociation energy (electrofuge) (eV)
-                    w-      (float)    Electrodonating power
-                    w+      (float)    Electroaccepting power
-                    NE      (float)    Net Electrophilicity
-                List of the name of the descriptors
+    Returns
+    -------
+        mu      (float)    electronic chemical potential
+        mu+     (float)
+        mu-     (float)
+        chi     (float)    electronegativity (-mu)
+        eta     (float)    Hardness
+        S       (float)    Softness (1/eta)
+        gamma   (float)    Hyperhardness
+        w       (float)    Electrophilicity index
+        DEn     (float)    Dissociation energy (nucleofuge) (eV)
+        DEe     (float)    Dissociation energy (electrofuge) (eV)
+        w-      (float)    Electrodonating power
+        w+      (float)    Electroaccepting power
+        NE      (float)    Net Electrophilicity
+        List of the name of the descriptors
     """
     flag,flag2=0,0
     global_desc_dict={}
@@ -82,15 +95,22 @@ def extract_global_descriptors(file):
 
     return L,global_desc_dict,Name
 
-def extract_ker(file):
+def extract_condensed_kernel(file):
     """
-    Extracts the kernel from an adf output
+    Extracts the condensed kernels from an adf output
 
-    Input : file (str)
+    Parameters
+    ----------
+        file : str
 
-    Outputs :   Linear response (ndarray)
-                Softness Kernel (ndarray)
-                Name of the atoms (list of str)
+    Returns
+    -------
+        Linear response : ndarray
+            The condensed linear response kernel
+        Softness Kernel : ndarray
+            The condensed softness kernel
+        Name : list of str
+            The name of the atoms
     """
     flag,flag2=0,0
     flag_long,flag_long2=0,0
@@ -144,11 +164,15 @@ def extract_pos(file):
     """
     Extracts the positions and the radius of the nucleus from an adf output
 
-    Input : file (str)
+    Parameters
+    ----------
+        file : str
 
-    Outputs :   Positions (ndarray, 2dim)
-                Radius (ndarray, 2dim)
-                Name of the atoms (list of str)
+    Returns
+    -------
+        Positions : ndarray
+        Radius : ndarray
+        Names : list of str
     """
     flag,flag2=0,0
     Pos,Rad=[],[]
@@ -169,18 +193,21 @@ def extract_pos(file):
     return np.array(Pos,dtype="float"),Name
 
 
-def extract_fukui(file,eta=1):
+def extract_fukui(file):
     """
     Extracts the fukui functions from an adf output
 
-    Input :     file    (str)
-                eta     (float,default=1)    square of the scaling factor used to do the comparison using the Parr-Berkowitz formula
+    Parameters
+    ----------
+        file : str
 
-    Outputs :   f+      (ndarray)
-                f-      (ndarray)
-                f0      (ndarray)
-                f2      (ndarray)
-                Name of the atoms (list of str)
+    Returns
+    -------
+        f+ : ndarray
+        f- : ndarray
+        f0 : ndarray
+        f2 : ndarray
+        Name : list of str
     """
     flag,flag2=0,0
     fp,fm,f0,f2=[],[],[],[]
@@ -204,17 +231,24 @@ def extract_fukui(file,eta=1):
             Name.append(line.split())
 
         elif flag==2: break
-    et=eta**(1/2)
-    return np.array(fp,dtype="float")/et,np.array(fm,dtype="float")/et,np.array(f0,dtype="float")/et,np.array(f2,dtype="float")/et,Name
+
+    return np.array(fp,dtype="float"),np.array(fm,dtype="float"),np.array(f0,dtype="float"),np.array(f2,dtype="float"),Name
+
 
 def extract_bonds(file):
     """
     Extracts the bonds from an adf input
 
-    Input :     file    (str)
+    Parameters
+    ----------
+        file : str
 
-    Outputs :   B       (list) list of bonds
-                O       (list) order of the bonds
+    Returns
+    -------
+        Bonds : list
+            List of bonds
+        Order_bonds : list
+            List of the order of bonds
     """
     flag,flag2=0,0
     list_bonds=[]
@@ -232,23 +266,28 @@ def extract_bonds(file):
     return list_bonds
 
 
-def extract_all(file):
+def extract(file):
     """
+    extract(file)
+
     Extracts all the implemented information from an adf output and input
 
     Parameters
     ----------
-        file (str)
+        file : str
 
-
+    Returns
+    -------
+        mol : molecule
+            molecule object
     """
 
-    fileout,filerun,file=rename(file)
+    fileout,filerun,file=_rename(file)
     list_atoms=[]
 
     pos,Name=extract_pos(fileout)
     list_bonds=extract_bonds(filerun)
-    if is_CDFT(fileout):
+    if _is_CDFT(fileout):
         L,global_desc_dict,Name=extract_global_descriptors(fileout)
         X,S,Name=extract_ker(fileout)
         fp,fm,f0,f2,Name=extract_fukui(fileout,eta=global_desc_dict["eta"])
@@ -262,9 +301,7 @@ def extract_all(file):
         global_desc_dict["fukui"]=f0
         global_desc_dict["dual"]=f2
 
-
         mol = molecule(list_atoms,list_bonds,properties=global_desc_dict)
-
 
     else:
         for prop in zip(Name,pos):
@@ -275,12 +312,3 @@ def extract_all(file):
 
     return mol
 
-
-
-def rename(file):
-    """
-    Rename the file in order to have the .out and the .run files
-    """
-    if ".out" in file:
-        return file,file[:-3]+"run",file[:-4]
-    else: return file+".out", file+".run",file

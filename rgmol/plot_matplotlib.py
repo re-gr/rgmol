@@ -3,7 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import objects
+from objects import *
 
 
 ########################################
@@ -61,8 +61,8 @@ def plot_vector(self,ax,vector,opacity=1,factor=1):
     plot.plot_vector_atom(ax,self,vector,opacity=opacity,factor=factor)
 
 
-objects.atom.plot = plot
-objects.atom.plot_vector = plot_vector
+atom.plot = plot
+atom.plot_vector = plot_vector
 
 
 ############################################
@@ -134,7 +134,7 @@ def plot_radius(self,opacity=1,show_bonds=1,factor=1):
     plt.show()
 
 
-def plot_diagonalized_kernel(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,factor_radius=.3,with_radius=1):
+def plot_diagonalized_condensed_kernel(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1,factor_radius=.3,with_radius=1):
     """
     Plot kernel
     """
@@ -184,10 +184,10 @@ def plot_diagonalized_kernel(self,plotted_kernel="condensed linear response",opa
 
 
 
-objects.molecule.plot = plot
-objects.molecule.plot_vector = plot_vector
-objects.molecule.plot_radius = plot_radius
-objects.molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
+molecule.plot = plot
+molecule.plot_vector = plot_vector
+molecule.plot_radius = plot_radius
+molecule.plot_diagonalized_condensed_kernel = plot_diagonalized_condensed_kernel
 
 
 ##############################

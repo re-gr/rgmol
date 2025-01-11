@@ -11,33 +11,48 @@ class atom(object):
     Atom object
     """
 
-    def __init__(self,name_or_atomic_number,pos,**kwargs):
+    def __init__(self,name_or_atomic_number,pos,properties={},**kwargs):
         """
-        atom(name_or_atomic_number,pos,**kwargs)
+        atom(name_or_atomic_number, pos, properties={}, **kwargs)
 
-        Constructs atom object from properties
+        Constructs atom object from its name or atomic number and positions.
+        Properties can also be added in a properties dictionnary.
+
+        Attributes
+        ----------
+            atomic_number : int
+                The atomic number of the atom
+            name : str
+                The name of the atom
+            pos : list
+                The position of the atom
+            nickname : str
+                The nickname of the atom
+            color : list
+                The color of the atom used in the representations
+            properties : list
+                The list of the properties of the atom
 
         Parameters
         ----------
-            name_or_atomic_number : int or float
-                The atomic number or the name of the element
-            pos : list or array_like of 3 elements
-                The position of the atom
+        name_or_atomic_number : int or str
+            The atomic number or the name of the element
+        pos : list
+            The position of the atom
+        properties : dict, optional
+            The properties of the atom, if the radius is not provided, it will be taken from an already defined dictionnary.
+        **kwargs :
+            nickname : str
+                The nickname of the atom
+            color : list
+                The color of the atom. If not provided, an already defined color will be used.
 
         Returns
         -------
-            atom
-                The atom object
+            atoms : atom
+                The atom object.
 
-        Other Parameters
-        ----------------
-            **kwargs :
-                nickname : str
-                    The nickname of the atom
-                color : list or array_like of 3 elements
-                    The color of the atom. If not provided, an already defined color will be used.
-                properties : dict
-                    The properties of the atom, if the radius is not provided, it will be taken from an already defined dictionnary.
+
         """
         if type(name_or_atomic_number) is int:
             self.atomic_number = name_or_atomic_number
@@ -85,23 +100,68 @@ class atom(object):
 
 class molecule(object):
     """
-    Molecule object
+    molecule(atoms,bonds,properties={},name=None)
+
+    Constructs a molecule from atoms.
+
+    Parameters
+    ----------
+        atoms : list
+            List of the atoms inside the molecule
+        bonds : list
+            List of the bonds
+        properties : dict
+            Dictionnary containing the properties of the molecules. By default : {}
+        name : str, optional
+            Name of the molecule
+
+    Returns
+    -------
+        molecule
+            molecule object
+
+    Attributes
+    ----------
+        name : str
+        atoms : list
+        bonds : list
+        properties : dict
     """
 
     def __init__(self,atoms,bonds,properties={},name=None):
         """
-        Constructs a molecule from atoms
+        molecule(atoms,bonds,properties={},name=None)
+
+        Constructs a molecule from atoms.
 
         Parameters
         ----------
+            atoms : list
+                List of the atoms inside the molecule
+            bonds : list
+                List of the bonds
+            properties : dict
+                Dictionnary containing the properties of the molecules. By default : {}
+            name : str, optional
+                Name of the molecule
 
-        atoms : list of atoms objects
-        bonds : list of
-        properties : dict of properties Default : {}
+        Returns
+        -------
+            molecule
+                molecule object
+
+        Attributes
+        ----------
+            name : str
+            atoms : list
+            bonds : list
+            properties : dict
         """
+
         self.name = name
         self.atoms = atoms
         self.bonds = bonds
+
         if type(properties) is not dict:
             raise TypeError("The properties should be listed in a dict")
         self.properties = properties
@@ -109,18 +169,50 @@ class molecule(object):
         for atom_x in atoms:
             Pos.append(atom_x.pos)
 
+    def list_properties(self):
+        """
+        list_properties()
+
+        Returns the list of the name of the properties of the molecule
+
+        Parameters
+        ----------
+            None
+
+        Returns
+        -------
+            list_properties
+                The list of the name of the properties
+        """
+        return list(self.properties.keys())
+
+
     def list_property(self,chosen_property):
         """
-        returns a list for a chosen property of all the atoms
+        list_property(chosen_property)
+
+        Returns the list of a chosen property for all atoms.
+        A list of the properties can be obtained using the list_properties() method.
+        If the chosen property is "pos", it will list the position of the atoms
+
+        Parameters
+        ----------
+            chosen_property : str
+                The name of the chosen property. Can be "pos" for the position
+
+        Returns
+        -------
+            list_property : list
+                The list of the chosen property
         """
-        L=[]
+        list_property=[]
         if chosen_property=="pos":
             for atom_x in self.atoms:
-                L.append(atom_x.pos)
-            return np.array(L)
+                list_property.append(atom_x.pos)
+            return np.array(list_property)
         for atom_x in self.atoms:
-            L.append(atom_x.properties[chosen_property])
-        return np.array(L)
+            list_property.append(atom_x.properties[chosen_property])
+        return np.array(list_property)
 
 
 
