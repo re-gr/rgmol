@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-import extrac_adf as eadf
+import rgmol.extrac_adf as eadf
 import os
 import argparse
 import matplotlib.pyplot as plt

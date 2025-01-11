@@ -3,7 +3,7 @@
 
 import periodictable as pt
 import numpy as np
-from dicts import *
+from rgmol.dicts import *
 
 
 class atom(object):

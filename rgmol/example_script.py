@@ -19,7 +19,7 @@ if __name__=="__main__":
 
 
 
-    mol = rgmol.extract_adf.extract_all(file)
+    # mol = rgmol.extract_adf.extract(file)
 
 
     # mol.plot_plt(ax,factor=.5)
@@ -37,10 +37,10 @@ if __name__=="__main__":
     # mol.plot_property(plotted_property="dual",opacity=0.3,factor=1,opacity_radius=.9)
 
 
-    file = "output_examples//formaldehyde_huge//H2CO.mo31a.cube"
-    file = "output_examples//formaldehyde_huge//H2CO.ao4.cube"
-    mol=rgmol.extract_cube.extract(file)
-    mol.plot_cube()
+    # file = "output_examples//formaldehyde_huge//H2CO.mo31a.cube"
+    # file = "output_examples//formaldehyde_huge//H2CO.ao4.cube"
+    # mol=rgmol.extract_cube.extract(file)
+    # mol.plot_cube()
 
     # file = "output_examples//br//br.molden.input"
     # file = "output_examples//hcl//hcl.molden.input"
@@ -52,17 +52,17 @@ if __name__=="__main__":
     # file = "output_examples//CH3Cl//CH3Cl-TD.molden"
     # file = "output_examples//n1_CNNH2//n1_CNNH2.molden.input"
     # file = "output_examples//acrolein//acrolein.molden.input"
-    # file = "output_examples//formaldehyde//H2CO.molden.input"
+    file = "output_examples//formaldehyde//H2CO.molden.input"
     # file = "output_examples//formaldehyde_pbepbe_all//H2CO.molden.input"
     # file = "output_examples//form_o//H2CO.molden.input"
-    file = "output_examples//formaldehyde_huge//H2CO.molden.input"
+    # file = "output_examples//formaldehyde_huge//H2CO.molden.input"
     # file = "output_examples//H2CO//H2CO.molden.input"
     # file = "output_examples//n1_CNNH2//n1_CNNH2.molden.input"
-    mol = rgmol.extract_excited_states.extract_molden(file)
-    # transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//formaldehyde//H2CO.out")
+    mol = rgmol.extract_excited_states.extract_molden(file,do_find_bonds=1)
+    rgmol.extract_excited_states.extract_transition_orca("output_examples//formaldehyde//H2CO.out",mol=mol)
     # transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//formaldehyde_pbepbe_all//H2CO.out")
     # transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//form_o//H2CO.out")
-    transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//formaldehyde_huge//H2CO.out")
+    # rgmol.extract_excited_states.extract_transition_orca("output_examples//formaldehyde_huge//H2CO.out",mol=mol)
     # transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//br//br.out")
 
     # transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//H2CO//H2CO.out")
@@ -71,17 +71,15 @@ if __name__=="__main__":
     # transition_energy,transition_list,transition_factor_list = rgmol.extract_excited_states.extract_transition_orca("output_examples//CH3Cl//CH3Cl_2.out")
     # transition_list,transition_factor_list = rgmol.extract_excited_states.extract_test("output_examples//CH3Cl//CH3Cl-TD.txt")
 
-    mol.properties["transition_energy"] = transition_energy
-    mol.properties["transition_list"] = transition_list
-    mol.properties["transition_factor_list"] = transition_factor_list
 
 
 
-    mol.plot_AO(delta=5,grid_points=(60,60,60),opacity_radius=.9,opacity=.8)
+
+    # mol.plot_AO(delta=5,grid_points=(60,60,60),opacity_radius=.9,opacity=.8)
     # mol.plot_MO(delta=8,grid_points=(80,80,80),opacity_radius=.9)
     # mol.plot_transition_density(delta=5,grid_points=(60,60,60),opacity_radius=.4)
-    # mol.plot_diagonalized_kernel_isodensity_slider(grid_points=(25,25,25),number_eigenvectors=40,delta=5)
-    # mol.plot_diagonalized_kernel_isodensity_slider(grid_points=(60,60,60),number_eigenvectors=40,delta=10,method="partial")
+    # mol.plot_diagonalized_kernel(grid_points=(25,25,25),number_eigenvectors=40,delta=5)
+    mol.plot_diagonalized_kernel(kernel="linear_response_function",grid_points=(50,50,50),number_eigenvectors=40,delta=10,cutoff=.05)
 
 
 

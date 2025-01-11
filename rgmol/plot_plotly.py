@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from objects import *
+from rgmol.objects import *
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 

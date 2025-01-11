@@ -4,7 +4,7 @@
 
 import numpy as np
 import scipy as sp
-from objects import *
+from rgmol.objects import *
 
 def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     """

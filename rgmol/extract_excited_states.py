@@ -3,8 +3,8 @@
 
 import codecs
 import numpy as np
-from objects import *
-from general_function import find_bonds
+from rgmol.objects import *
+from rgmol.general_function import find_bonds
 
 
 ##########################
@@ -18,12 +18,12 @@ def _extract_molden_file(file):
 
     Extracts the data from a molden file
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         file : str
 
-    Returns :
-    ---------
+    Returns
+    -------
         atom_names : list
         atom_position : ndarray
         AO_list : list
@@ -158,14 +158,14 @@ def extract_transition_orca(file,mol=None):
     Extract the Excited states calculations from an ORCA output
 
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         file : str
         mol : molecule object, optional
             If defined, the lists will be put inside the molecule properties
 
-    Returns :
-    ---------
+    Returns
+    -------
         transition_energy : list
         transition : list
         transition_factor : list
@@ -238,18 +238,18 @@ def extract_molden(file,do_find_bonds=0):
     """
     extract_molden(file,do_find_bonds=0)
 
-    Extract from molden input and create molecule object
+    Extract from molden input and create molecule object.
     As the bonds are not defined in a molden file, one can use do_find_bonds to
     use an algorithm that tries to find bonds. It is still in WIP
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         file : str
-        do_find_bonds : bool
-            if one wants an algorithm to find the bonds (WIP)
+        do_find_bonds : bool, optional
+            if one wants to use an algorithm to find the bonds (WIP)
 
-    Returns :
-    ---------
+    Returns
+    -------
         mol : molecule
     """
 

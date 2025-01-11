@@ -4,11 +4,11 @@
 import numpy as np
 import os
 # from write import *
-from objects import *
-import extract_adf
-import extract_cube
-import extract_excited_states
-import calculate_orbitals
+from rgmol.objects import *
+import rgmol.extract_adf
+import rgmol.extract_cube
+import rgmol.extract_excited_states
+import rgmol.calculate_orbitals
 
 def create_newS(L,f):
     """
@@ -22,6 +22,8 @@ def create_newS(L,f):
             s (ndarray)     local softness
     """
     return -L+f*f.reshape((len(f),1))
+
+__version__ = "0.1.0.4"
 
 
 ##

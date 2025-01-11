@@ -3,8 +3,8 @@
 
 import codecs
 import numpy as np
-from objects import *
-from general_function import find_bonds
+from rgmol.objects import *
+from rgmol.general_function import find_bonds
 
 
 ##########################

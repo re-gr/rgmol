@@ -3,8 +3,8 @@
 
 import numpy as np
 import pyvista
-from objects import *
-import molecular_calculations
+from rgmol.objects import *
+import rgmol.molecular_calculations
 
 
 ########################################

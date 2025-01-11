@@ -3,7 +3,7 @@
 
 import codecs
 import numpy as np
-from objects import *
+from rgmol.objects import *
 
 
 ##########################

@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Test
+"""
 
 
 import numpy as np
 import scipy as sp
-import objects
+import rgmol.objects
+
 
 def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     """
@@ -12,8 +16,8 @@ def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
 
     Returns the calculations for the gaussian s atomic orbital
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         r : 3d ndarray
             the volume on which the function is calculated
         contraction_coefficients : list
@@ -25,8 +29,8 @@ def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         voxel_matrix : 2D ndarray
             the voxel matrix used to calculated the volume
 
-    Returns :
-    ---------
+    Returns
+    -------
         s_orbital : ndarray same shape as r
 
     """
@@ -51,21 +55,21 @@ def gaussian_p(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     Returns the calculations for the gaussian p atomic orbital
     The order of the orbitals follows the molden format
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         r : 3d ndarray
             the volume on which the function is calculated
         contraction_coefficients : list
-            the contraction coefficient
+            the contraction coefficients
         exponent_primitives : list
-            the exponential factor
+            the exponential factors
         r0 : ndarray of length 3
             the center of the orbital
         voxel_matrix : 2D ndarray
             the voxel matrix used to calculated the volume
 
-    Returns :
-    ---------
+    Returns
+    -------
         p_x_orbital,
         p_y_orbital,
         p_z_orbital
@@ -102,21 +106,21 @@ def gaussian_d(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     Returns the calculations for the gaussian d atomic orbital
     The order of the orbitals follows the molden format
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         r : 3d ndarray
             the volume on which the function is calculated
         contraction_coefficients : list
-            the contraction coefficient
+            the contraction coefficients
         exponent_primitives : list
-            the exponential factor
+            the exponential factors
         r0 : ndarray of length 3
             the center of the orbital
         voxel_matrix : 2D ndarray
             the voxel matrix used to calculated the volume
 
-    Returns :
-    ---------
+    Returns
+    -------
         d_zz_orbital,
         d_xz_orbital,
         d_yz_orbital,
@@ -164,21 +168,21 @@ def gaussian_f(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     Returns the calculations for the gaussian f atomic orbital
     The order of the orbitals follows the molden format
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         r : 3d ndarray
             the volume on which the function is calculated
         contraction_coefficients : list
-            the contraction coefficient
+            the contraction coefficients
         exponent_primitives : list
-            the exponential factor
+            the exponential factors
         r0 : ndarray of length 3
             the center of the orbital
         voxel_matrix : 2D ndarray
             the voxel matrix used to calculated the volume
 
-    Returns :
-    ---------
+    Returns
+    -------
         f_zzz_zrr_orbital,
         f_xzz_xrr_orbital,
         f_yzz_yrr_orbital,
@@ -235,21 +239,21 @@ def gaussian_g(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     Returns the calculations for the gaussian g atomic orbital
     The order of the orbitals follows the molden format
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         r : 3d ndarray
             the volume on which the function is calculated
         contraction_coefficients : list
-            the contraction coefficient
+            the contraction coefficients
         exponent_primitives : list
-            the exponential factor
+            the exponential factors
         r0 : ndarray of length 3
             the center of the orbital
         voxel_matrix : 2D ndarray
             the voxel matrix used to calculated the volume
 
-    Returns :
-    ---------
+    Returns
+    -------
         g_zzzz_orbital,
         g_zzzx_orbital,
         g_zzzy_orbital,
@@ -313,16 +317,16 @@ def create_voxel_from_molecule(mol,grid_points,delta=5):
 
     Creates a voxel from the position of atoms in a molecule
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         mol : molecule_object
         grid_points : list of 3
             the number of points for each coordinates
         delta : float, optional
             the length added on all directiosn to the box containing all atomic centers
 
-    Returns :
-    ---------
+    Returns
+    -------
         voxel_origin : list of 3
             the origin of the voxel
         voxel_matrix : 2d list
@@ -351,14 +355,14 @@ def create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix):
 
     Creates coordinates from a voxel
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         grid_points : list of 3
         voxel_origin : list of 3
         voxel_matrix : 2d list
 
-    Return :
-    --------
+    Return
+    ------
         r : ndarray corresponding to the coordinates
     """
 
@@ -391,14 +395,14 @@ def calculate_AO(self,grid_points,delta=3):
     Calculate all atomic orbitals for a molecule and puts it in molecule.properties["AO_calculated"]
     If no voxel were associated with the molecule, it will automatically create a voxel
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         grid_points : list of 3
         delta : float, optional
             the length added on all directiosn to the box containing all atomic centers
 
-    Returns :
-    ---------
+    Returns
+    -------
         AO_calculated : list of ndarray
     """
 
@@ -458,14 +462,14 @@ def calculate_MO(self,grid_points,delta=3):
     If no voxel were associated with the molecule, it will automatically create a voxel
     If the AO were not calculated it will also calculate them
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         grid_points : list of 3
         delta : float, optional
             the length added on all directiosn to the box containing all atomic centers
 
-    Returns :
-    ---------
+    Returns
+    -------
         MO_calculated : list of ndarray
     """
 
@@ -496,16 +500,16 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
     If the AO were not calculated it will also calculate them
 
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         MO_chosen : int
             the number of the molecular orbital starting at 0
         grid_points : list of 3
         delta : float, optional
             the length added on all directiosn to the box containing all atomic centers
 
-    Returns :
-    ---------
+    Returns
+    -------
         MO_calculated : ndarray
     """
     if not "AO_calculated" in self.properties:
@@ -548,14 +552,14 @@ def calculate_transition_density(self,grid_points,delta=3):
 
     Calculates all the transition densities for a molecule
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         grid_points : list of 3
         delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
+            the length added on all directions to the box containing all atomic centers
 
-    Returns :
-    ---------
+    Returns
+    -------
         transition_density_list
     """
 
@@ -600,15 +604,15 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
 
     Calculates a chosen transition density for a molecule
 
-    Parameters :
-    ------------
+    Parameters
+    ----------
         chosen_transition_density : int
         grid_points : list of 3
         delta : float, optional
             the length added on all directions of the box containing all atomic centers
 
-    Returns :
-    ---------
+    Returns
+    -------
         transition_density
     """
 
@@ -642,8 +646,11 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
     return transition_density
 
 
-def calculate_linear_response_function(self,grid_points,delta=3):
-    """calculate the linear response function from the transition densities WIP"""
+def calculate_linear_response_function_total(self,grid_points,delta=3):
+    """
+    calculate the linear response function from the transition densities WIP
+
+    """
 
     nx,ny,nz = grid_points
 
@@ -669,7 +676,11 @@ def calculate_linear_response_function(self,grid_points,delta=3):
 
 
 def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,delta=3):
-    """calculate the linear response function from the transition densities WIP"""
+    """
+    calculate the linear response function from the transition densities WIP
+
+
+    """
 
     nx,ny,nz = grid_points
 
@@ -742,7 +753,10 @@ def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,d
 
 
 def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total",delta=3):
-    """diagonalize lineaar response function WIP"""
+    """
+    diagonalize lineaar response function WIP
+
+    """
 
     nx,ny,nz = grid_points
 
@@ -751,7 +765,7 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total
 
     if not "linear_response_function" in self.properties:
         if method.lower() == "total":
-            self.calculate_linear_response_function(grid_points,delta=delta)
+            self.calculate_linear_response_function_total(grid_points,delta=delta)
 
         if method.lower() == "partial":
             linear_response_function,grid_points=self.calculate_linear_response_function_partial(grid_points,delta=delta)
@@ -765,7 +779,7 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total
     linear_response_function_lin = linear_response_function.reshape((nx*ny*nz,nx*ny*nz))
 
     eigenvalues, eigenvectors = sp.sparse.linalg.eigsh(linear_response_function_lin,k=number_eigenvectors)
-    # eigenvalues, eigenvectors = np.linalg.eigh(linear_response_function_lin)
+    #The eigenvalues still need to be figured out as it depends on the number of points
     eigenvalues *= nx*ny*nz
 
     eigenvectors = eigenvectors.transpose()
@@ -783,11 +797,9 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total
 
 
 
-
-
 objects.molecule.calculate_transition_density = calculate_transition_density
 objects.molecule.calculate_chosen_transition_density = calculate_chosen_transition_density
-objects.molecule.calculate_linear_response_function = calculate_linear_response_function
+objects.molecule.calculate_linear_response_function_total = calculate_linear_response_function_total
 objects.molecule.calculate_linear_response_function_partial = calculate_linear_response_function_partial
 objects.molecule.diagonalize_kernel = diagonalize_kernel
 

@@ -3,7 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from objects import *
+from rgmol.objects import *
 
 
 ########################################
