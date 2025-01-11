@@ -8,7 +8,7 @@ from rgmol.objects import *
 import rgmol.extract_adf
 import rgmol.extract_cube
 import rgmol.extract_excited_states
-import rgmol.calculate_orbitals
+import rgmol.molecular_calculations
 
 def create_newS(L,f):
     """
@@ -23,7 +23,7 @@ def create_newS(L,f):
     """
     return -L+f*f.reshape((len(f),1))
 
-__version__ = "0.1.0.6"
+__version__ = "0.1.0.7"
 
 
 ##
