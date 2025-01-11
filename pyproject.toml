@@ -16,7 +16,8 @@ classifiers = [
 dependencies = [
 	"numpy",
 	"scipy",
-   	"periodictable"
+   	"periodictable",
+	"pyvista"
 ]
 [project.urls]
 Repository = "https://github.com/re-gr/rgmol"
