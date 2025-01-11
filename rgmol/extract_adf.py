@@ -74,7 +74,7 @@ def extract_global_descriptors(file):
             else:
                 L.append(float(a[-1]))
                 Name.append(a[:-2])
-        elif flag==2 and len(line)!=1:
+        elif flag==2 and len(line)>3:
             a=line.split()
             if a[-1]=="(eV)":
                 L.append(float(a[-2]))
@@ -124,10 +124,10 @@ def extract_condensed_kernel(file):
             flag=2
             Lin.append(line.split()[3:])
             Name.append(line.split()[:2])
-        elif flag==2 and len(line)!=1 and flag_long>0:
+        elif flag==2 and len(line)>3 and flag_long>0:
             Lin[-1]+=line.split()
             flag_long-=1
-        elif flag==2 and len(line)!=1:
+        elif flag==2 and len(line)>3:
             if int(line.split()[0])>10:
                 flag_long=(int(line.split()[0])-1)//10
             Lin.append(line.split()[3:])
@@ -139,10 +139,10 @@ def extract_condensed_kernel(file):
         elif flag2==1 and "1" in line:
             flag2=2
             Sof.append(line.split()[3:])
-        elif flag2==2 and len(line)!=1 and flag_long2>0:
+        elif flag2==2 and len(line)>3 and flag_long2>0:
             Sof[-1]+=line.split()
             flag_long2-=1
-        elif flag2==2 and len(line)!=1:
+        elif flag2==2 and len(line)>3:
             if int(line.split()[0])>10:
                 flag_long2=(int(line.split()[0])-1)//10
             Sof.append(line.split()[3:])
@@ -185,10 +185,11 @@ def extract_pos(file):
             flag=2
             Pos.append(line.split()[2:5])
             Name.append(line.split())
-        elif flag==2 and len(line)!=2:
+        elif flag==2 and len(line)>3:
             Pos.append(line.split()[2:5])
             Name.append(line.split())
         elif flag==2: flag=3
+    # print(Pos)
 
     return np.array(Pos,dtype="float"),Name
 
@@ -289,8 +290,8 @@ def extract(file):
     list_bonds=extract_bonds(filerun)
     if _is_CDFT(fileout):
         L,global_desc_dict,Name=extract_global_descriptors(fileout)
-        X,S,Name=extract_ker(fileout)
-        fp,fm,f0,f2,Name=extract_fukui(fileout,eta=global_desc_dict["eta"])
+        X,S,Name=extract_condensed_kernel(fileout)
+        fp,fm,f0,f2,Name=extract_fukui(fileout)
         for prop in zip(Name,pos,X,S,fp,fm,f0,f2):
             dict_properties = {"condensed linear response":prop[2],"softness kernel":prop[3],"fukui plus":prop[4],"fukui minus":prop[5],"fukui":prop[6],"dual":prop[7]}
             atom_x = atom(prop[0][1],prop[1],properties=dict_properties,nickname=prop[0][0]+prop[0][1])
