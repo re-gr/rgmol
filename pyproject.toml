@@ -16,7 +16,6 @@ classifiers = [
 dependencies = [
 	"numpy",
 	"scipy",
- 	"pyvista",
    	"periodictable"
 ]
 [project.urls]
