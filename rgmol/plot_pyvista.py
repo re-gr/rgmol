@@ -166,9 +166,9 @@ def plot_radius(self,opacity=1,factor=.4,show_bonds=True):
     return
 
 
-def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=.8,factor_radius=.3):
     """
-    plot_property(plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_property(plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=.8,factor_radius=.3)
 
     Plot a property for the entire molecule
 
@@ -204,9 +204,9 @@ def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opa
     return
 
 
-def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=.8,factor_radius=.3):
     """
-    plot_diagonalized_condensed_kernel(kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_diagonalized_condensed_kernel(kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=.8,factor_radius=.3)
 
     Diagonalize and plot a condensed kernel for a molecule. One can navigate through the eigenmodes using a slider.
 
@@ -250,9 +250,9 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
     return
 
 
-def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=.8,factor_radius=.3):
     """
-    plot_isodensity(plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_isodensity(plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=.8,factor_radius=.3)
 
     Plot an isodensity
 
@@ -327,7 +327,7 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,w
     plotter = pyvista.Plotter()
 
     if not "AO_calculated" in self.properties:
-        calculate_orbitals.calculate_AO(self,grid_points,delta=delta)
+        rgmol.molecular_calculations.calculate_AO(self,grid_points,delta=delta)
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)

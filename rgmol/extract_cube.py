@@ -122,7 +122,7 @@ def extract(file,do_find_bonds=0):
 
     """
 
-    voxel_origin,voxel_matrix,atom_number,atom_position,cube = extract_cube(file)
+    voxel_origin,voxel_matrix,atom_number,atom_position,cube = _extract_cube(file)
 
 
     list_atoms = []
