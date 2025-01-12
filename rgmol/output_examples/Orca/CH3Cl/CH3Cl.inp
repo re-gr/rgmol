@@ -1,0 +1,10 @@
+!B3LYP cc-pvTz
+%TDDFT
+NROOTS  50
+TPrint 0.00001
+TDA TRUE
+END
+* xyzfile 0 1 CH3Cl.xyz
+%scf
+MaxIter 100
+end

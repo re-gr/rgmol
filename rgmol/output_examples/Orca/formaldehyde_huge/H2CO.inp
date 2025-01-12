@@ -1,0 +1,16 @@
+!M06 aug-cc-pvqz Opt
+* xyzfile 0 1 H2CO.xyz
+%scf
+MaxIter 100
+end
+$new_job
+!M06 aug-cc-pvqz
+%TDDFT
+NROOTS  50
+TPrint 0.000001
+TDA TRUE
+END
+* xyzfile 0 1 H2CO.xyz
+%scf
+MaxIter 100
+end

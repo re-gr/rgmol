@@ -1,0 +1,10 @@
+!B3LYP def2-TZVP
+%TDDFT
+NROOTS  50
+TPrint 0.000001
+TDA TRUE
+END
+* xyzfile 0 1 H2CO.xyz
+%scf
+MaxIter 100
+end
