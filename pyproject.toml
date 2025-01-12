@@ -27,5 +27,5 @@ requires = ["setuptools","setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.package.find]
-where = ["rgmol/output_examples"]
+where = ["output_examples"]
 
