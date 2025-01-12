@@ -166,9 +166,9 @@ def plot_radius(self,opacity=1,factor=.4,show_bonds=True):
     return
 
 
-def plot_property(self,plotted_property,opacity=1,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    plot_property(plotted_property,opacity=1,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_property(plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
 
     Plot a property for the entire molecule
 
