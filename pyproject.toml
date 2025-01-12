@@ -25,7 +25,3 @@ Repository = "https://github.com/re-gr/rgmol"
 [build-system]
 requires = ["setuptools","setuptools-scm"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools.package.find]
-where = ["output_examples"]
-
