@@ -1,1 +1,3 @@
-include rgmol/rgmol/output_examples/*
+include rgmol/output_examples
+
+
