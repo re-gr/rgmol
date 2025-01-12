@@ -1,6 +1,6 @@
 [project]
 name = "rgmol"
-version = "0.1.0.13"
+version = "0.1.0.14"
 authors = [
 	{name = "Rémi Grincourt", email = "remi.grincourt@ens-lyon.fr"},
 ]
@@ -26,3 +26,5 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 [tool.setuptools.package.find]
 where = ["rgmol/output_examples"]
+[tool.setuptools]
+include-package-data = true
