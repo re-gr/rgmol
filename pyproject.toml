@@ -22,5 +22,9 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/re-gr/rgmol"
 
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [tool.setuptools.package.find]
 where = ["rgmol/output_examples"]
