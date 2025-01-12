@@ -29,5 +29,3 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.package.find]
 where = ["rgmol/output_examples"]
 
-[tool.setuptools]
-include-package-data = true
