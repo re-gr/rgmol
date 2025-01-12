@@ -1,6 +1,6 @@
 [project]
 name = "rgmol"
-version = "0.1.0.9"
+version = "0.1.0.10"
 authors = [
 	{name = "Rémi Grincourt", email = "remi.grincourt@ens-lyon.fr"},
 ]
