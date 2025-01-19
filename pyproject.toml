@@ -1,10 +1,10 @@
 [project]
 name = "rgmol"
-version = "0.1.0.14"
+version = "0.1.0.15"
 authors = [
 	{name = "Rémi Grincourt", email = "remi.grincourt@ens-lyon.fr"},
 ]
-description = "Visualization and computation of various chemical properties from DFT softwares"
+description = "Visualization and computation of various chemical properties from DFT softwares. Its main purpose is to compute and visualize the condensed and non-condensed linear response function from CDFT."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE"}
