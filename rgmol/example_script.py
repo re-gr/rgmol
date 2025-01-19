@@ -5,7 +5,7 @@ import rgmol
 import rgmol.plot_pyvista
 
 if __name__=="__main__":
-    ##For each of these examples, just change the False to True
+    ##For each of these examples, just change False to True
 
     ## Visualization of chloromethane from an ADF output
     if False:
