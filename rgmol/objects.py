@@ -17,6 +17,7 @@ class atom(object):
 
         Constructs atom object from its name or atomic number and positions.
         Properties can also be added in a properties dictionnary.
+        If not specified, a color and a radius will be automatically attributed for the atom depending on its atomic number.
 
         Attributes
         ----------
@@ -93,6 +94,22 @@ class atom(object):
             for prop in is_prop:
                 self.properties[prop] = is_prop[prop]
 
+    def list_properties(self):
+        """
+        list_properties()
+
+        Returns the list of the name of the properties of the atom
+
+        Parameters
+        ----------
+            None
+
+        Returns
+        -------
+            list_properties
+                The list of the name of the properties
+        """
+        return list(self.properties.keys())
 
 
 

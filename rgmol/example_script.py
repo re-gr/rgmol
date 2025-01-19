@@ -8,7 +8,7 @@ if __name__=="__main__":
     ##For each of these examples, just change False to True
 
     ## Visualization of chloromethane from an ADF output
-    if False:
+    if True:
 
         file = "output_examples//ADF//chloromethane//chloromethane.out"
         mol = rgmol.extract_adf.extract(file)
@@ -53,9 +53,9 @@ if __name__=="__main__":
 
 
     ## Visualization of Diagonalized Non-Condensed Kernel : Linear response function
-    if True:
+    if False:
         file = "output_examples//Orca//formaldehyde//H2CO.molden.input"
-        mol = rgmol.extract_molden.extract((file,do_find_bonds=1)
+        mol = rgmol.extract_molden.extract(file,do_find_bonds=1)
         gmol.extract_orca.extract_transition("output_examples//Orca//formaldehyde//H2CO.out",mol=mol)
         mol.plot_diagonalized_kernel(kernel="linear_response_function",grid_points=(60,60,60),number_eigenvectors=40,delta=10,cutoff=.05)
 
