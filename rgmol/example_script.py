@@ -56,7 +56,7 @@ if __name__=="__main__":
     if False:
         file = "output_examples//Orca//formaldehyde//H2CO.molden.input"
         mol = rgmol.extract_molden.extract(file,do_find_bonds=1)
-        gmol.extract_orca.extract_transition("output_examples//Orca//formaldehyde//H2CO.out",mol=mol)
+        rgmol.extract_orca.extract_transition("output_examples//Orca//formaldehyde//H2CO.out",mol=mol)
         mol.plot_diagonalized_kernel(kernel="linear_response_function",grid_points=(60,60,60),number_eigenvectors=40,delta=10,cutoff=.05)
 
 
