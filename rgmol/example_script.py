@@ -35,28 +35,29 @@ if __name__=="__main__":
     ## Visualization of Atomic Orbitals
     if False:
         file = "output_examples//Orca//formaldehyde//H2CO.molden.input"
-        mol = rgmol.extract_excited_states.extract_molden(file,do_find_bonds=1)
+        mol = rgmol.extract_molden.extract(file,do_find_bonds=1)
         mol.plot_AO(delta=5,grid_points=(80,80,80))
 
     ## Visualization of Molecular Orbitals
     if False:
         file = "output_examples//Orca//formaldehyde//H2CO.molden.input"
-        mol = rgmol.extract_excited_states.extract_molden(file,do_find_bonds=1)
+        mol = rgmol.extract_molden.extract(file,do_find_bonds=1)
         mol.plot_MO(delta=8,grid_points=(80,80,80))
 
     ## Visualization of Transition Densities
     if False:
         file = "output_examples//Orca//CH3Cl//CH3Cl.molden.input"
-        mol = rgmol.extract_excited_states.extract_molden(file,do_find_bonds=1)
-        rgmol.extract_excited_states.extract_transition_orca("output_examples//Orca//CH3Cl//CH3Cl.out",mol=mol)
+        mol = rgmol.extract_molden.extract(file,do_find_bonds=1)
+        rgmol.extract_orca.extract_transition("output_examples//Orca//CH3Cl//CH3Cl.out",mol=mol)
         mol.plot_transition_density(delta=5,grid_points=(60,60,60),opacity_radius=.4)
+
 
     ## Visualization of Diagonalized Non-Condensed Kernel : Linear response function
     if True:
         file = "output_examples//Orca//formaldehyde//H2CO.molden.input"
-        mol = rgmol.extract_excited_states.extract_molden(file,do_find_bonds=1)
-        rgmol.extract_excited_states.extract_transition_orca("output_examples//Orca//formaldehyde//H2CO.out",mol=mol)
-        mol.plot_diagonalized_kernel(kernel="linear_response_function",grid_points=(50,50,50),number_eigenvectors=40,delta=10,cutoff=.05)
+        mol = rgmol.extract_molden.extract((file,do_find_bonds=1)
+        gmol.extract_orca.extract_transition("output_examples//Orca//formaldehyde//H2CO.out",mol=mol)
+        mol.plot_diagonalized_kernel(kernel="linear_response_function",grid_points=(60,60,60),number_eigenvectors=40,delta=10,cutoff=.05)
 
 
 

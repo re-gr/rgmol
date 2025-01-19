@@ -10,9 +10,9 @@ from rgmol.objects import *
 ## Extraction functions ##
 ##########################
 
-def extract_transition_orca(file,mol=None):
+def extract_transition(file,mol=None):
     """
-    extract_transition_orca(file,mol=None)
+    extract_transition(file,mol=None)
 
     Extract the Excited states calculations from an ORCA output
 
