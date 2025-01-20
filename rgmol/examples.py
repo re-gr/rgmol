@@ -41,6 +41,6 @@ orca_H2CO_qz = (impresources.files(formaldehyde_huge) / "H2CO.out").__str__()
 molden_H2CO_qz = (impresources.files(formaldehyde_huge) / "H2CO.molden.input").__str__()
 
 cube_formaldehyde_MO8 = (impresources.files(Cube) / "H2CO.mo8a.cube").__str__()
-cube_formaldehyde_MO9 = (impresources.files(Cube) / "H2CO.mo9a.cube").__str__()
+cube_formaldehyde_MO59 = (impresources.files(Cube) / "H2CO.mo59a.cube").__str__()
 cube_H2CO_MO8 = (impresources.files(Cube) / "H2CO.mo8a.cube").__str__()
-cube_H2CO_MO9 = (impresources.files(Cube) / "H2CO.mo9a.cube").__str__()
+cube_H2CO_MO59 = (impresources.files(Cube) / "H2CO.mo59a.cube").__str__()
