@@ -434,6 +434,25 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacit
     -------
         None
             The plotter should display when using this function
+
+    Notes
+    -----
+    The transition densities are defined as :
+
+    | :math:`\\rho_0^k = \\sum_i c_i (Occ_i(r) * Virt_i(r))`
+    | With the sum being on all the transitions of the excitation, :math:`Occ_i(r)` and :math:`Virt_i(r)` being respectively the occupied and the virtual molecular orbitals considered in the transition, and :math:`c_i` the coefficient of the transition.
+
+    Examples
+    --------
+    For a TD-DFT calculation output :
+
+    STATE  1:  E=   0.148431 au      4.039 eV
+       | 18a ->  20a  :     0.5000 (c= 0.7071)
+       | 19a ->  21a  :     0.5000 (c= -0.7071)
+
+    The transition density will be :
+        | :math:`\\rho_0^1 =  c_1 (\\psi_{18}(r) * \\psi_{20}(r)) + c_2 (\\psi_{19}(r) * \\psi_{21}(r))`
+        | with :math:`c_1 = 0.7071` and :math:`c_2 = -0.7071`
     """
 
     plotter = pyvista.Plotter()
@@ -509,7 +528,7 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
 
     Notes
     -----
-        Because the kernel are 6-dimensional, they scale up drastically in terms of memory used. That is why a partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/calculate_linear_response_partial>`.
+        Because the kernels are 6-dimensional, they scale up drastically in terms of memory used. That is why a partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/calculate_linear_response>`.
 
     """
 

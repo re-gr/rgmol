@@ -28,7 +28,7 @@ if __name__=="__main__":
 
     ## Visualization of a cube file
     if False:
-        file = rgmol.examples.cube_H2CO_MO8
+        file = rgmol.examples.cube_H2CO_MO59
         mol = rgmol.extract_cube.extract(file,do_find_bonds=1)
         mol.plot_isodensity()
 
@@ -58,9 +58,3 @@ if __name__=="__main__":
         mol = rgmol.extract_molden.extract(file,do_find_bonds=1)
         rgmol.extract_orca.extract_transition(rgmol.examples.orca_H2CO,mol=mol)
         mol.plot_diagonalized_kernel(kernel="linear_response_function",grid_points=(50,50,50),number_eigenvectors=40,delta=10,cutoff=.2)
-
-
-
-
-
-        # mol.plot_MO(grid_points=(60,60,60))

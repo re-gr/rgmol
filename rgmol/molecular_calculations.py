@@ -634,7 +634,7 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
 
     Notes
     -----
-    The transition densities are defined as
+    The transition densities are defined as :
 
     | :math:`\\rho_0^k = \\sum_i c_i (Occ_i(r) * Virt_i(r))`
     | With the sum being on all the transitions of the excitation, :math:`Occ_i(r)` and :math:`Virt_i(r)` being respectively the occupied and the virtual molecular orbitals considered in the transition, and :math:`c_i` the coefficient of the transition.
@@ -689,10 +689,30 @@ def calculate_linear_response_function_total(self,grid_points,delta=3):
     """
     calculate_linear_response_function_total(grid_points,delta=3)
 
-    Calculate the linear response function from the transition densities
+    Calculates the linear response function from the transition densities.
 
+    This method calculates the linear response function on all the space.
 
+    Parameters
+    ----------
+    grid_points : list of 3
+    delta : float, optional
+        the length added on all directions of the box containing all atomic centers
 
+    Returns
+    -------
+    linear_response_function
+        The 6-dimensional kernel
+
+    Notes
+    -----
+    The linear response function kernel can be computed as :
+
+    :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
+
+    With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
+
+    Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
     """
 
     nx,ny,nz = grid_points
@@ -720,9 +740,35 @@ def calculate_linear_response_function_total(self,grid_points,delta=3):
 
 def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,delta=3):
     """
-    calculate the linear response function from the transition densities WIP
+    calculate_linear_response_function_partial(grid_points,threshold=0.99,delta=3)
+
+    Calculates the linear response function from the transition densities.
+
+    This method calculates the linear response only on the part of space where the transition density makes up to 99% (by default). In practice, this can remove as much as 90% of the space.
 
 
+    Parameters
+    ----------
+    grid_points : list of 3
+    threshold : float, optional
+        the threshold for the total transition density that should be kept
+    delta : float, optional
+        the length added on all directions of the box containing all atomic centers
+
+    Returns
+    -------
+    linear_response_function
+        The 6-dimensional kernel
+
+    Notes
+    -----
+    The linear response function kernel can be computed as :
+
+    :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
+
+    With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
+
+    Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
     """
 
     nx,ny,nz = grid_points
@@ -795,10 +841,42 @@ def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,d
     return linear_response_function,(nx,ny,nz)
 
 
-def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total",delta=3):
+def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="partial",delta=3):
     """
-    diagonalize lineaar response function WIP
+    diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="partial",delta=3)
 
+    Calculate and diagonalize the linear response function from the transition densities.
+
+    This methods calls on the methods :doc:`molecule.calculate_linear_response_function_total<calculate_linear_response_total>` or :doc:`molecule.calculate_linear_response_function_partial<calculate_linear_response_partial>` in order to calculate the linear response function. Then it does the diagonalization using the `scipy.sparse.linalg.eigsh <https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.eigsh.html>`_ function.
+
+    Parameters
+    ----------
+    kernel : str
+        the name of the kernel, only the "linear_response_function" has been implemented yet.
+    number_eigenvectors : int
+        the number of eigenvectors to be computed
+    grid_points : list of 3
+    method : str, optional
+        the method used, either "partial" or "total"
+    delta : float, optional
+        the length added on all directions of the box containing all atomic centers
+
+    Returns
+    -------
+    eigenvalues,
+    eigenvectors
+
+    Notes
+    -----
+    The linear response function kernel can be computed as :
+
+    :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
+
+    With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
+
+    Therefore, the linear response function kernel can be computed using the MO calculated from molden file combined with the extraction of the coefficients from a TD-DFT calculation.
+
+    For now, the eigenvalues are dependent on the number of points used in the grid, which is mathematically expected. This needs to be tackled in the near future.
     """
 
     nx,ny,nz = grid_points
@@ -838,7 +916,7 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="total
     self.properties["linear_response_eigenvalues"] = eigenvalues
     self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
 
-
+    return eigenvalues, reconstructed_eigenvectors
 
 molecule.calculate_transition_density = calculate_transition_density
 molecule.calculate_chosen_transition_density = calculate_chosen_transition_density

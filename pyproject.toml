@@ -1,6 +1,6 @@
 [project]
 name = "rgmol"
-version = "0.1.0.16"
+version = "0.1.0.17"
 authors = [
 	{name = "Rémi Grincourt", email = "remi.grincourt@ens-lyon.fr"},
 ]
@@ -21,6 +21,7 @@ dependencies = [
 ]
 [project.urls]
 Repository = "https://github.com/re-gr/rgmol"
+Documentation = "https://re-gr.github.io/re-gr/rgmol_wiki"
 
 [build-system]
 requires = ["setuptools","setuptools-scm"]

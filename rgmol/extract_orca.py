@@ -14,7 +14,7 @@ def extract_transition(file,mol=None):
     """
     extract_transition(file,mol=None)
 
-    Extract the Excited states calculations from an ORCA output
+    Extract the Excited states calculations from an ORCA output and adds the properties to a molecule.
 
 
     Parameters
