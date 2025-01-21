@@ -24,7 +24,7 @@ import rgmol.extract_molden
 import rgmol.extract_orca
 import rgmol.molecular_calculations
 
-__version__ = "0.1.0.17"
+__version__ = "0.1.1"
 
 
 ##
