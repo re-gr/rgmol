@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Notes
+-----
+
+This script contains the functions used to extract data from molden files.
+"""
+
 
 import codecs
 import numpy as np

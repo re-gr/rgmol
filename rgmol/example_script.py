@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Notes
+-----
+
+This script contains the examples presented throughout the tutorial.
+"""
 
 import rgmol
 import rgmol.plot_pyvista

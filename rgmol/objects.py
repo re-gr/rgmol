@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Notes
+-----
+
+This script contains the definitions of the classes used in the whole package.
+"""
+
 
 import periodictable as pt
 import numpy as np

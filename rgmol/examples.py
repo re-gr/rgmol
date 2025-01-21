@@ -1,4 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+Notes
+-----
+
 File to import that gives the path to output files used as examples.
 """
 

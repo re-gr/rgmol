@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Notes
+-----
+
+This script defines the dict_color and dict_radius variables that are used for the default plotting of atoms.
+"""
 
 import numpy as np
 

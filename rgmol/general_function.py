@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Notes
+-----
 
+This script adds the function that allows to automatically find the bonds for a molecule.
+WIP
+"""
 
 
 import numpy as np
@@ -94,6 +100,7 @@ def is_phenyl(mol,atoms_near):
 def find_bonds(mol):
     """
     Function that tries to find the bonds of a molecule
+    This script is still in WIP
     """
 
     bonds = []

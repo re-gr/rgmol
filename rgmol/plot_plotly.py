@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Notes
+-----
+
+This script adds functions, and methods to the molecule objects.
+These methods allow the plotting of chemical properties using plotly.
+"""
 
 import numpy as np
 from rgmol.objects import *

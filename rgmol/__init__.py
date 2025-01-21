@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+rgmol
+=====
+
+This package provides visualization and computation of various chemical properties from DFT softwares.
+Its main purpose is to compute and visualize the condensed and non-condensed linear response function from CDFT.
+
+Documentation
+-------------
+
+The documentation can be found on `rgmol wiki <re-gr.github.io/rgmol_wiki>`_
+"""
+
 
 import numpy as np
 import os
@@ -10,19 +23,6 @@ import rgmol.extract_cube
 import rgmol.extract_molden
 import rgmol.extract_orca
 import rgmol.molecular_calculations
-
-def create_newS(L,f):
-    """
-    Compute the condensed local softness using the Parr-Berkowitz formula : s(r,r') = -X(r,r') + f(r)f(r')/eta
-    With s local softness, X the linear response, f fukui function and eta the global softness
-
-    Input : L (ndarray)     condensed linear response kernel (2D)
-            f (ndarray)     fukui function (1D) contains the square root of the global softness term
-
-    Outputs :
-            s (ndarray)     local softness
-    """
-    return -L+f*f.reshape((len(f),1))
 
 __version__ = "0.1.0.17"
 

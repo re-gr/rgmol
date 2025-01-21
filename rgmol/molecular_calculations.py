@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Notes
+-----
 
+This script adds functions, and methods to the molecule objects.
+These methods allow the calculation of various chemical properties such as AO, MO, Transition densities or linear response function.
+"""
 
 import numpy as np
 import scipy as sp
