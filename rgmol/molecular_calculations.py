@@ -674,6 +674,7 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
     transition_factor_list /= np.sum(transition_factor_list**2)
 
     nx,ny,nz = grid_points
+    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
 
     transition_density = np.zeros((nx,ny,nz))
 
@@ -847,6 +848,117 @@ def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,d
     return linear_response_function,(nx,ny,nz)
 
 
+
+def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
+    """
+    calculate_linear_response_function_partial(grid_points,,delta=3)
+
+    Calculates the linear response function from the transition densities.
+
+    DOSCTRING TODO
+
+
+    Parameters
+    ----------
+    grid_points : list of 3
+    threshold : float, optional
+        the threshold for the total transition density that should be kept
+    delta : float, optional
+        the length added on all directions of the box containing all atomic centers
+
+    Returns
+    -------
+    linear_response_function
+        The 6-dimensional kernel
+
+    Notes
+    -----
+    The linear response function kernel can be computed as :
+
+    :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
+
+    With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
+
+    Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
+    """
+
+    nx,ny,nz = grid_points
+
+    if not "transition_density_list" in self.properties:
+        self.calculate_transition_density(grid_points,delta=delta)
+
+    #Dummy implementation for now
+    transition_density_list = self.properties["transition_density_list"]
+    transition_energy = self.properties['transition_energy']
+
+    number_transition = len(transition_density_list)
+
+    voxel_matrix = self.properties["voxel_matrix"]
+    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+
+
+    transition_matrix = np.zeros((number_transition,number_transition))
+    for first_transition in range(len(transition_density_list)):
+        for second_transition in range(first_transition+1):
+            overlap_integral = np.sum(transition_density_list[first_transition] * transition_density_list[second_transition]) * dV
+            transition_matrix[first_transition,second_transition] = overlap_integral
+            transition_matrix[second_transition,first_transition] = overlap_integral
+
+    LR_matrix_in_TDB = np.zeros((number_transition,number_transition))
+    #linear response matrix in transition densities basis
+
+    for first_transition in range(number_transition):
+        for second_transition in range(first_transition+1):
+            sum_term = 0
+            for third_transition in zip(range(number_transition),transition_energy):
+                sum_term += -2/third_transition[1] * transition_matrix[first_transition,third_transition[0]] * transition_matrix[third_transition[0],second_transition]
+            LR_matrix_in_TDB[first_transition,second_transition] = sum_term
+            LR_matrix_in_TDB[second_transition,first_transition] = sum_term
+
+
+    transition_matrix_inv = np.linalg.inv(transition_matrix)
+
+    diag_matrix = transition_matrix_inv.dot(LR_matrix_in_TDB)
+
+    # eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
+
+    eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
+    eigenvectors = eigenvectors.transpose()
+
+
+    # print(eigenvalues)
+
+
+    # print(np.sum(transition_matrix))
+    # print(np.linalg.det(transition_matrix))
+
+    # print(transition_matrix)
+    # print(np.linalg.eigh(transition_matrix)[0])
+    # print(np.linalg.inv(transition_matrix).dot(transition_matrix))
+
+    reconstructed_eigenvectors = []
+
+    for eigenvector in zip(eigenvectors,eigenvalues):
+
+        reconstructed_eigenvector = np.zeros((nx,ny,nz))
+
+        # print(np.max(diag_matrix.dot(eigenvector[0]) - eigenvector[1] * eigenvector[0]), np.max(diag_matrix.dot(eigenvector[0])),np.max(eigenvector[1] * eigenvector[0]))
+
+        for transition in range(len(eigenvector[0])):
+            reconstructed_eigenvector += eigenvector[0][transition] * transition_density_list[transition]
+
+        # print(np.sum(reconstructed_eigenvector),np.max(reconstructed_eigenvector))
+
+        reconstructed_eigenvectors.append(reconstructed_eigenvector)
+
+
+
+    self.properties["linear_response_eigenvalues"] = eigenvalues
+    self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
+
+    return eigenvalues, reconstructed_eigenvectors
+
+
 def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="partial",delta=3):
     """
     diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="partial",delta=3)
@@ -901,13 +1013,13 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="parti
     linear_response_function = self.properties["linear_response_function"]
 
     voxel_matrix = self.properties["voxel_matrix"]
-    dV = voxel_matrix[0][0]*nx * voxel_matrix[1][1]*ny * voxel_matrix[2][2]*nz
+    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
 
     linear_response_function_lin = linear_response_function.reshape((nx*ny*nz,nx*ny*nz))
 
     eigenvalues, eigenvectors = sp.sparse.linalg.eigsh(linear_response_function_lin,k=number_eigenvectors)
-    #The eigenvalues still need to be figured out as it depends on the number of points
-    eigenvalues *= nx*ny*nz
+
+    eigenvalues /= dV
 
     eigenvectors = eigenvectors.transpose()
 
@@ -928,6 +1040,7 @@ molecule.calculate_transition_density = calculate_transition_density
 molecule.calculate_chosen_transition_density = calculate_chosen_transition_density
 molecule.calculate_linear_response_function_total = calculate_linear_response_function_total
 molecule.calculate_linear_response_function_partial = calculate_linear_response_function_partial
+molecule.calculate_eigenmodes_linear_response_function = calculate_eigenmodes_linear_response_function
 molecule.diagonalize_kernel = diagonalize_kernel
 
 

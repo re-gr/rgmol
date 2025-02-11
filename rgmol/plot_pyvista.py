@@ -295,6 +295,44 @@ def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=
     plotter.show(full_screen=False)
     return
 
+def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+    """
+    plot_isodensity(plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Plot an isodensity
+
+    Parameters
+    ----------
+        plotted_isodensity : str, optional
+            The isodensity to be plotted. By default "cube"
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+    """
+    plotter = pyvista.Plotter()
+    if with_radius:
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
+    _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor,cutoff=cutoff)
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.show(full_screen=False)
+    return
+
 
 
 
@@ -542,7 +580,11 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
     if kernel != "linear_response_function":
         raise ValueError("Only linear response function implemented for now")
 
-    self.diagonalize_kernel(kernel,number_eigenvectors,grid_points,method=method,delta=delta)
+    if method == "only eigenmodes":
+        self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
+
+    else:
+        self.diagonalize_kernel(kernel,number_eigenvectors,grid_points,method=method,delta=delta)
 
     eigenvectors = self.properties["linear_response_eigenvectors"]
     eigenvalues = self.properties["linear_response_eigenvalues"]
