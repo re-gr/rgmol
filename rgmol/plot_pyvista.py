@@ -337,8 +337,9 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
     def open_isodensity(value):
         value = int(round(value))
         splitted_name = base_name_file.split(delimiter)
-        file = splitted_name[0] + str(list_files[value]) + splitted_name[1]
+        file = splitted_name[0] + str(value) + splitted_name[1]
         mol = rgmol.extract_cube.extract(file,do_find_bonds=1)
+        print(np.sum(mol.properties["cube"]),np.sum(mol.properties["cube"]**2))
 
         if with_radius:
             mol.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
@@ -346,7 +347,7 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
-    plotter.add_slider_widget(open_isodensity, [0,len(list_files)],value=0,title="Number", fmt="%1.0f")
+    plotter.add_slider_widget(open_isodensity, [int(list_files[0]),len(list_files)],value=int(list_files[0]),title="Number", fmt="%1.0f")
     plotter.show(full_screen=False)
     return
 

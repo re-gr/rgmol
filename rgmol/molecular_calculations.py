@@ -413,6 +413,11 @@ def calculate_AO(self,grid_points,delta=3):
         self.properties["voxel_origin"] = voxel_origin
         self.properties["voxel_matrix"] = voxel_matrix
 
+        # self.properties["voxel_origin"] = np.array([ -8.904567 , -10.829626  , -7.000010])
+        # self.properties["voxel_matrix"] = np.array([[      0.295444 ,   0.000000 ,   0.000000],[0.000000  ,  0.298502  ,  0.000000],[0.000000   , 0.000000 ,   0.237289]])
+
+
+
     voxel_origin = self.properties["voxel_origin"]
     voxel_matrix = self.properties["voxel_matrix"]
 
@@ -483,10 +488,14 @@ def calculate_MO(self,grid_points,delta=3):
     MO_calculated = []
     MO_list = np.array(self.properties["MO_list"])
 
+    voxel_matrix = self.properties["voxel_matrix"]
+    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+
+
     for MO in MO_list:
         AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
         MO_not_normalized = np.sum(AO_calculated*AO_contribution_reshaped,axis=0)
-        MO_calculated.append(MO_not_normalized / np.sum(MO_not_normalized**2))
+        MO_calculated.append(MO_not_normalized / (np.sum(MO_not_normalized**2*dV)**(1/2)))
 
     self.properties["MO_calculated"] = np.array(MO_calculated)
     return np.array(MO_calculated)
@@ -527,6 +536,8 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
     if type(MO_chosen_calculated) is not list:
         return MO_chosen_calculated
 
+    voxel_matrix = self.properties["voxel_matrix"]
+    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
 
     MO = np.array(self.properties["MO_list"][MO_chosen])
 
@@ -534,9 +545,9 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
 
     MO_chosen_calculated = np.sum(AO_calculated*AO_contribution_reshaped,axis=0)
 
-    self.properties["MO_calculated"][MO_chosen] = MO_chosen_calculated / np.sum(MO_chosen_calculated**2)
+    self.properties["MO_calculated"][MO_chosen] = MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV)**(1/2))
 
-    return MO_chosen_calculated / np.sum(MO_chosen_calculated**2)
+    return MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV)**(1/2))
 
 
 molecule.calculate_AO = calculate_AO
@@ -671,20 +682,21 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
 
 
     transition_factor_list = np.array(transition_factor_list)
-    transition_factor_list /= np.sum(transition_factor_list**2)
+    # transition_factor_list /= np.sum(transition_factor_list**2)
+
 
     nx,ny,nz = grid_points
-    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
-
     transition_density = np.zeros((nx,ny,nz))
 
     for transition_MO in zip(transition_list, transition_factor_list):
-
+        # print(transition_MO)
         MO_OCC = calculate_MO_chosen(self,transition_MO[0][0],grid_points,delta=delta)
         MO_VIRT = calculate_MO_chosen(self,transition_MO[0][1],grid_points,delta=delta)
 
         transition_density += transition_MO[1][0] * MO_OCC * MO_VIRT
 
+
+    print(np.sum(transition_density),np.sum(transition_density**2))
     self.properties["transition_density_list"][chosen_transition_density] = transition_density
     return transition_density
 
@@ -920,21 +932,12 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
 
     diag_matrix = transition_matrix_inv.dot(LR_matrix_in_TDB)
 
-    # eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
-
     eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     eigenvectors = eigenvectors.transpose()
+    # eigenvalues /= dV
 
 
-    # print(eigenvalues)
 
-
-    # print(np.sum(transition_matrix))
-    # print(np.linalg.det(transition_matrix))
-
-    # print(transition_matrix)
-    # print(np.linalg.eigh(transition_matrix)[0])
-    # print(np.linalg.inv(transition_matrix).dot(transition_matrix))
 
     reconstructed_eigenvectors = []
 
@@ -942,12 +945,8 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
 
         reconstructed_eigenvector = np.zeros((nx,ny,nz))
 
-        # print(np.max(diag_matrix.dot(eigenvector[0]) - eigenvector[1] * eigenvector[0]), np.max(diag_matrix.dot(eigenvector[0])),np.max(eigenvector[1] * eigenvector[0]))
-
         for transition in range(len(eigenvector[0])):
             reconstructed_eigenvector += eigenvector[0][transition] * transition_density_list[transition]
-
-        # print(np.sum(reconstructed_eigenvector),np.max(reconstructed_eigenvector))
 
         reconstructed_eigenvectors.append(reconstructed_eigenvector)
 
@@ -1018,15 +1017,12 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="parti
     linear_response_function_lin = linear_response_function.reshape((nx*ny*nz,nx*ny*nz))
 
     eigenvalues, eigenvectors = sp.sparse.linalg.eigsh(linear_response_function_lin,k=number_eigenvectors)
-
     eigenvalues /= dV
 
     eigenvectors = eigenvectors.transpose()
 
     reconstructed_eigenvectors = np.zeros((len(eigenvectors),nx,ny,nz))
-
     for eigenvector in range(len(eigenvectors)):
-        # print(np.sum(eigenvectors[eigenvector]))
         reconstructed_eigenvector = eigenvectors[eigenvector].reshape((nx,ny,nz))
         reconstructed_eigenvectors[eigenvector] = reconstructed_eigenvector
 
