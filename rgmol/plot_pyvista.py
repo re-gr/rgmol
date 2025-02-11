@@ -295,16 +295,24 @@ def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=
     plotter.show(full_screen=False)
     return
 
-def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cube",delimiter="&",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    plot_isodensity(plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_multiple_isodensities(range_files,plotted_isodensity="cube",delimiter=" ",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
 
-    Plot an isodensity
+    Plot multiple isodensities, each one can be selected using a slider. The delimiter is replaced in the name file by number in the range_file to load multiple files
+    Only one delimiter should be used in the base_name_file
 
     Parameters
     ----------
+        base_name_file : str
+            The base name of the files. If one wants to view files called H2CO.mo0a.cube, H2CO.mo1a.cube ...
+            One should set the base_name_file as H2CO.mo&a.cube
+        list_files : tuple
+            The list of strings to replace the delimiter with
         plotted_isodensity : str, optional
             The isodensity to be plotted. By default "cube"
+        delimiter : str, optional
+            The
         cutoff : float, optional
             The cutoff of the isodensity plot. By default .2
         opacity : float, optional
@@ -323,13 +331,22 @@ def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=
         None
             The plotter should display when using this function
     """
+
     plotter = pyvista.Plotter()
-    if with_radius:
-        self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
-    _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor,cutoff=cutoff)
+
+    def open_isodensity(value):
+        value = int(round(value))
+        splitted_name = base_name_file.split(delimiter)
+        file = splitted_name[0] + str(list_files[value]) + splitted_name[1]
+        mol = rgmol.extract_cube.extract(file,do_find_bonds=1)
+
+        if with_radius:
+            mol.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
+        _plot_cube(plotter,mol.properties["voxel_origin"],mol.properties["voxel_matrix"],mol.properties["cube"],opacity=opacity,factor=factor,cutoff=cutoff)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
+    plotter.add_slider_widget(open_isodensity, [0,len(list_files)],value=0,title="Number", fmt="%1.0f")
     plotter.show(full_screen=False)
     return
 
