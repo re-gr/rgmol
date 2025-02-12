@@ -924,6 +924,7 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
             sum_term = 0
             for third_transition in zip(range(number_transition),transition_energy):
                 sum_term += -2/third_transition[1] * transition_matrix[first_transition,third_transition[0]] * transition_matrix[third_transition[0],second_transition]
+
             LR_matrix_in_TDB[first_transition,second_transition] = sum_term
             LR_matrix_in_TDB[second_transition,first_transition] = sum_term
 
@@ -938,10 +939,10 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
 
 
 
-
     reconstructed_eigenvectors = []
 
     for eigenvector in zip(eigenvectors,eigenvalues):
+        # print( np.max(diag_matrix @ eigenvector[0]/dV - eigenvector[1] * eigenvector[0]))
 
         reconstructed_eigenvector = np.zeros((nx,ny,nz))
 
