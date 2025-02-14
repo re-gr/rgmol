@@ -529,7 +529,6 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
     if not "MO_calculated" in self.properties:
         self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
 
-
     AO_calculated = self.properties["AO_calculated"]
     N_AO = len(AO_calculated)
     MO_chosen_calculated = self.properties["MO_calculated"][MO_chosen]
@@ -840,7 +839,7 @@ def calculate_linear_response_function_partial(self,grid_points,threshold=0.99,d
 
     self.properties["voxel_origin"] = voxel_origin
 
-    print("Using the partial method, only {} indices are kept instead of {}".format(new_nx*new_ny*new_nz,nx*ny*nz))
+    print("Using the partial method, only {} indices are calculated for the linear response instead of {}".format((new_nx*new_ny*new_nz)**2,(nx*ny*nz)**2))
 
     nx,ny,nz = new_nx,new_ny,new_nz
 
@@ -900,8 +899,8 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
         self.calculate_transition_density(grid_points,delta=delta)
 
     #Dummy implementation for now
-    transition_density_list = self.properties["transition_density_list"]
-    transition_energy = self.properties['transition_energy']
+    transition_density_list = np.array(self.properties["transition_density_list"])
+    transition_energy = np.array(self.properties['transition_energy'])
 
     number_transition = len(transition_density_list)
 
@@ -909,7 +908,10 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
 
 
+    import time
+
     transition_matrix = np.zeros((number_transition,number_transition))
+
     for first_transition in range(len(transition_density_list)):
         for second_transition in range(first_transition+1):
             overlap_integral = np.sum(transition_density_list[first_transition] * transition_density_list[second_transition]) * dV
@@ -917,44 +919,74 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
             transition_matrix[second_transition,first_transition] = overlap_integral
 
     LR_matrix_in_TDB = np.zeros((number_transition,number_transition))
+
     #linear response matrix in transition densities basis
 
-    for first_transition in range(number_transition):
-        for second_transition in range(first_transition+1):
-            sum_term = 0
-            for third_transition in zip(range(number_transition),transition_energy):
-                sum_term += -2/third_transition[1] * transition_matrix[first_transition,third_transition[0]] * transition_matrix[third_transition[0],second_transition]
 
-            LR_matrix_in_TDB[first_transition,second_transition] = sum_term
-            LR_matrix_in_TDB[second_transition,first_transition] = sum_term
+    #following dimensions : i,k,j
+    #Calculates <rho_0^i|rho_0^k>
+    transition_matrix_reshaped = transition_matrix.reshape((number_transition,number_transition,1))
+    #Calculates <rho_0^k|rho_0^j>
+    transition_matrix_reshaped_2 = transition_matrix.reshape((1,number_transition,number_transition))
+    #Used to divide by the energy for k
+    transition_energy_reshaped = transition_energy.reshape(1,number_transition,1)
+
+    LR_matrix_in_TDB = np.sum(-2/transition_energy_reshaped * transition_matrix_reshaped * transition_matrix_reshaped_2,axis=1)
 
 
     transition_matrix_inv = np.linalg.inv(transition_matrix)
-
     diag_matrix = transition_matrix_inv.dot(LR_matrix_in_TDB)
 
-    eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
+    eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
+
+
+    # eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     eigenvectors = eigenvectors.transpose()
-    # eigenvalues /= dV
-
-
 
     reconstructed_eigenvectors = []
 
-    for eigenvector in zip(eigenvectors,eigenvalues):
-        # print( np.max(diag_matrix @ eigenvector[0]/dV - eigenvector[1] * eigenvector[0]))
+
+    for eigenvector in zip(eigenvectors,eigenvalues,range(len(eigenvectors))):
+        eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(eigenvectors[eigenvector[2]]**2)**(1/2)
 
         reconstructed_eigenvector = np.zeros((nx,ny,nz))
 
         for transition in range(len(eigenvector[0])):
             reconstructed_eigenvector += eigenvector[0][transition] * transition_density_list[transition]
-
+        reconstructed_eigenvector_norm = reconstructed_eigenvector/np.sum(reconstructed_eigenvector**2)**(1/2)
         reconstructed_eigenvectors.append(reconstructed_eigenvector)
+
+
+
+    # for eigenvector in zip(eigenvectors,eigenvalues,eigenvectors_2,eigenvalues_2):
+    #     # print( np.max(diag_matrix @ eigenvector[0]/dV - eigenvector[1] * eigenvector[0]))
+    #
+    #     reconstructed_eigenvector = np.zeros((nx,ny,nz))
+    #     reconstructed_eigenvector_2 = eigenvector[2].reshape((nx,ny,nz))
+    #
+    #     for transition in range(len(eigenvector[0])):
+    #         reconstructed_eigenvector += eigenvector[0][transition] * transition_density_list[transition]
+    #     reconstructed_eigenvector = reconstructed_eigenvector/np.sum(reconstructed_eigenvector**2)**(1/2)
+    #     reconstructed_eigenvector_lin = reconstructed_eigenvector.reshape(nx*ny*nz)
+    #
+    #     print("Without dV",np.max(np.sum(linear_response_function_lin * reconstructed_eigenvector_lin ,axis=1) - eigenvector[1]*reconstructed_eigenvector_lin ),np.max(linear_response),np.max(reconstructed_eigenvector))
+    #     print("With dV",np.max(np.sum(linear_response_function_lin * reconstructed_eigenvector_lin ,axis=1)*dV - eigenvector[1]*reconstructed_eigenvector_lin ),np.max(linear_response),np.max(reconstructed_eigenvector))
+    #
+    #     print("With good eigenvalue",np.max(np.sum(linear_response_function_lin * reconstructed_eigenvector_lin ,axis=1) - eigenvector[3]*reconstructed_eigenvector_lin ),np.max(linear_response),np.max(reconstructed_eigenvector))
+    #
+    #     print(eigenvector[1],eigenvector[3]*dV,eigenvector[1])
+    #
+    #
+    #     # print(np.max(abs(reconstructed_eigenvector-reconstructed_eigenvector_2)),np.max(abs(reconstructed_eigenvector)),np.max(abs(reconstructed_eigenvector_2)))
+    #     # print(np.sum(reconstructed_eigenvector**2),np.sum(reconstructed_eigenvector_2**2))
+    #
+    #     reconstructed_eigenvectors.append(reconstructed_eigenvector)
 
 
 
     self.properties["linear_response_eigenvalues"] = eigenvalues
     self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
+    self.properties["contibution_linear_response_eigenvectors"] = eigenvectors
 
     return eigenvalues, reconstructed_eigenvectors
 
@@ -1018,7 +1050,7 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="parti
     linear_response_function_lin = linear_response_function.reshape((nx*ny*nz,nx*ny*nz))
 
     eigenvalues, eigenvectors = sp.sparse.linalg.eigsh(linear_response_function_lin,k=number_eigenvectors)
-    eigenvalues /= dV
+    eigenvalues *= dV
 
     eigenvectors = eigenvectors.transpose()
 

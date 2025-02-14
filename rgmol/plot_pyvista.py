@@ -606,6 +606,7 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
 
     eigenvectors = self.properties["linear_response_eigenvectors"]
     eigenvalues = self.properties["linear_response_eigenvalues"]
+    contrib_eigenvectors = self.properties["contibution_linear_response_eigenvectors"]
 
     plotter = pyvista.Plotter()
     if with_radius:
@@ -615,11 +616,96 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
         vector_number = int(round(value))
         _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
         plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
+        plotter.add_text(text=r"Contribution of tranisiton densities",name="contrib_name",position=(0,plotter.window_size[1]-100))
+
+
+        array_sort = np.argsort(abs(contrib_eigenvectors[vector_number-1]))[::-1]
+        contrib_sorted = contrib_eigenvectors[vector_number-1][array_sort]
+        contrib_indices = np.arange(1,len(contrib_eigenvectors[vector_number-1])+1)[array_sort]
+
+        text_contrib = ""
+        for contrib in range(len(contrib_sorted)):
+            if abs(contrib_sorted[contrib])<0.01:
+                break
+            text_contrib += r"C_"+"{}".format(contrib_indices[contrib])+": {:3.3f}\n".format(contrib_sorted[contrib])
+        plotter.add_text(text=text_contrib,name="contrib",font_size=10,position=(20.0,plotter.window_size[1]-120-20*contrib))
 
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
     plotter.add_slider_widget(create_mesh_diagonalized_kernel, [1, len(eigenvectors)],value=1,title="Eigenvector", fmt="%1.0f")
+    plotter.show(full_screen=False)
+
+
+def plot_sum_eigenmodes_kernel(self,kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+    """
+    plot_diagonalized_kernel(kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
+    Only the first number_eigenvectors will be computed to limit the calculation time.
+    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+
+    Parameters
+    ----------
+        kernel : str
+            The kernel to be diagonalized and plotted
+        method : str, optional
+            The method of calculation of the kernel, partial by default. More information can be found in the notes.
+        number_eigenvectors : int, optional
+            The number of eigenvectors to be computed
+        grid_points : list of 3, optional
+            The number of points for the grid in each dimension. By default (40,40,40)
+        delta : float, optional
+            The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+
+
+    Notes
+    -----
+        Because the kernels are 6-dimensional, they scale up drastically in terms of memory used. That is why a partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/calculate_linear_response>`.
+
+    """
+
+    if kernel != "linear_response_function":
+        raise ValueError("Only linear response function implemented for now")
+
+    if method == "only eigenmodes":
+        self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
+
+    else:
+        self.diagonalize_kernel(kernel,number_eigenvectors,grid_points,method=method,delta=delta)
+
+    eigenvectors = np.array(self.properties["linear_response_eigenvectors"])
+    eigenvalues = self.properties["linear_response_eigenvalues"]
+
+    eigenvalues = np.reshape(eigenvalues,(len(eigenvalues),1,1,1))
+    # sum_eigenmodes = np.sum(eigenvectors**2 * eigenvalues,axis=0)
+    sum_eigenmodes = eigenvectors[0]**2 * eigenvalues[0]
+
+    plotter = pyvista.Plotter()
+    if with_radius:
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+    _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],sum_eigenmodes,opacity=opacity,factor=factor,cutoff=cutoff)
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
     plotter.show(full_screen=False)
 
 
@@ -635,6 +721,7 @@ molecule.plot_AO = plot_AO
 molecule.plot_MO = plot_MO
 molecule.plot_transition_density = plot_transition_density
 molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
+molecule.plot_sum_eigenmodes_kernel = plot_sum_eigenmodes_kernel
 
 
 ##############################
@@ -913,7 +1000,9 @@ def _plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,facto
     grid = pyvista.ImageData(dimensions=(nx,ny,nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=voxel_origin)
 
     #Calculate cube density
-    cube_density = cube_transposed**2 * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+    # cube_density = cube_transposed**2 * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+    cube_density = abs(cube_transposed) * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+
     #Calculate renormalization as for some reason some cube files are not normalized
     cube_density = cube_density / np.sum(cube_density)
 
