@@ -155,7 +155,8 @@ def _extract_molden_file(file):
                     MO_list.append(AO_contribution)
                 else:
                     AO_contribution.append(float(lsplit[1]))
-
+    if AO_contribution != MO_list[-1]:
+        MO_list.append(AO_contribution)
     return atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy
 
 

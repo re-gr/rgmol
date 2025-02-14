@@ -38,18 +38,20 @@ def extract_transition(file,mol=None):
             All the lists are sorted by energy
     """
 
+
     flag_states = 0
     flag_completing_state = 0
     flag_completed_state = 0
-
-    transition_factor_list = []
-    transition_list = []
-    transition_energy = []
-
-
     for line in codecs.open(file, 'r',encoding="utf-8"):
 
         if "EXCITED STATES" in line:
+            #This will ensure we only keep the last excited states calculations if there is a geom opt
+            flag_states = 0
+            flag_completing_state = 0
+            flag_completed_state = 0
+            transition_factor_list = []
+            transition_list = []
+            transition_energy = []
             flag_states = 1
 
         elif flag_states:
