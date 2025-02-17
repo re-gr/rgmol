@@ -550,9 +550,9 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacit
 
 
 
-def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
     """
-    plot_diagonalized_kernel(kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_diagonalized_kernel(kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
 
     Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
     Only the first number_eigenvectors will be computed to limit the calculation time.
@@ -563,7 +563,9 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
         kernel : str
             The kernel to be diagonalized and plotted
         method : str, optional
-            The method of calculation of the kernel, partial by default. More information can be found in the notes.
+            The method of calculation of the kernel, only eigenmodes by default. More information can be found in the notes.
+        plotting_method : str, optional
+            The method used for plotting. By default isodensity. The other methods are : "multiple isodensities", "volume"
         number_eigenvectors : int, optional
             The number of eigenvectors to be computed
         grid_points : list of 3, optional
@@ -571,7 +573,9 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
         cutoff : float, optional
-            The cutoff of the isodensity plot. By default .2
+            The cutoff of the isodensity plot for the isodensity plotting method. By default .2
+        number_isodensities : int, optional
+            The number of isodensities to be plotted if the method used is multiple isodensities
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -591,7 +595,9 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
 
     Notes
     -----
-        Because the kernels are 6-dimensional, they scale up drastically in terms of memory used. That is why a partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/calculate_linear_response>`.
+        Because the kernels are 6-dimensional, they scale up drastically in terms of memory used.
+        If one only wants to look at the eigenmodes, the "only eigenmodes" method is just that. It computes the eigenmodes without computing the total kernel.
+        Otherwise, the partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/calculate_linear_response>`.
 
     """
 
@@ -600,112 +606,50 @@ def plot_diagonalized_kernel(self,kernel,method="partial",number_eigenvectors=20
 
     if method == "only eigenmodes":
         self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
+        contrib_eigenvectors = self.properties["contibution_linear_response_eigenvectors"]
+
 
     else:
         self.diagonalize_kernel(kernel,number_eigenvectors,grid_points,method=method,delta=delta)
 
     eigenvectors = self.properties["linear_response_eigenvectors"]
     eigenvalues = self.properties["linear_response_eigenvalues"]
-    contrib_eigenvectors = self.properties["contibution_linear_response_eigenvectors"]
-
     plotter = pyvista.Plotter()
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
 
-    def create_mesh_diagonalized_kernel(value):
-        vector_number = int(round(value))
-        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
-        plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
-        plotter.add_text(text=r"Contribution of tranisiton densities",name="contrib_name",position=(0,plotter.window_size[1]-100))
+    if plotting_method == "isodensity":
 
+        def create_mesh_diagonalized_kernel(value):
+            vector_number = int(round(value))
+            _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
+            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
-        array_sort = np.argsort(abs(contrib_eigenvectors[vector_number-1]))[::-1]
-        contrib_sorted = contrib_eigenvectors[vector_number-1][array_sort]
-        contrib_indices = np.arange(1,len(contrib_eigenvectors[vector_number-1])+1)[array_sort]
+            if method == "only eigenmodes":
+                _print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors)
 
-        text_contrib = ""
-        for contrib in range(len(contrib_sorted)):
-            if abs(contrib_sorted[contrib])<0.01:
-                break
-            text_contrib += r"C_"+"{}".format(contrib_indices[contrib])+": {:3.3f}\n".format(contrib_sorted[contrib])
-        plotter.add_text(text=text_contrib,name="contrib",font_size=10,position=(20.0,plotter.window_size[1]-120-20*contrib))
+    elif plotting_method == "multiple isodensities":
+        def create_mesh_diagonalized_kernel(value):
+            vector_number = int(round(value))
+            _plot_cube_multiple_isodensities(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
+            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
+
+            if method == "only eigenmodes":
+                _print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors)
+
+    elif plotting_method == "volume":
+        def create_mesh_diagonalized_kernel(value):
+            vector_number = int(round(value))
+            _plot_cube_volume(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
+            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
+
+            if method == "only eigenmodes":
+                _print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors)
 
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
     plotter.add_slider_widget(create_mesh_diagonalized_kernel, [1, len(eigenvectors)],value=1,title="Eigenvector", fmt="%1.0f")
-    plotter.show(full_screen=False)
-
-
-def plot_sum_eigenmodes_kernel(self,kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
-    """
-    plot_diagonalized_kernel(kernel,method="partial",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
-
-    Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
-    Only the first number_eigenvectors will be computed to limit the calculation time.
-    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
-
-    Parameters
-    ----------
-        kernel : str
-            The kernel to be diagonalized and plotted
-        method : str, optional
-            The method of calculation of the kernel, partial by default. More information can be found in the notes.
-        number_eigenvectors : int, optional
-            The number of eigenvectors to be computed
-        grid_points : list of 3, optional
-            The number of points for the grid in each dimension. By default (40,40,40)
-        delta : float, optional
-            The length added on all directions of the box containing all atomic centers. By default 3
-        cutoff : float, optional
-            The cutoff of the isodensity plot. By default .2
-        opacity : float, optional
-            The opacity of the plot. By default .5
-        factor : float, optional
-            The factor by which the plotted_property will be multiplied. By default 1
-        with_radius : bool, optional
-            Chose to show the radius and the bonds between the atoms or not. By default True
-        opacity_radius : float, optional
-            The opacity of the radius plot. By default .8
-        factor_radius : float, optional
-            The factor by which the radius will be multiplied. By default .3
-
-    Returns
-    -------
-        None
-            The plotter should display when using this function
-
-
-    Notes
-    -----
-        Because the kernels are 6-dimensional, they scale up drastically in terms of memory used. That is why a partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/calculate_linear_response>`.
-
-    """
-
-    if kernel != "linear_response_function":
-        raise ValueError("Only linear response function implemented for now")
-
-    if method == "only eigenmodes":
-        self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
-
-    else:
-        self.diagonalize_kernel(kernel,number_eigenvectors,grid_points,method=method,delta=delta)
-
-    eigenvectors = np.array(self.properties["linear_response_eigenvectors"])
-    eigenvalues = self.properties["linear_response_eigenvalues"]
-
-    eigenvalues = np.reshape(eigenvalues,(len(eigenvalues),1,1,1))
-    # sum_eigenmodes = np.sum(eigenvectors**2 * eigenvalues,axis=0)
-    sum_eigenmodes = eigenvectors[0]**2 * eigenvalues[0]
-
-    plotter = pyvista.Plotter()
-    if with_radius:
-        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
-    _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],sum_eigenmodes,opacity=opacity,factor=factor,cutoff=cutoff)
-
-
-    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
-    plotter.add_light(light)
     plotter.show(full_screen=False)
 
 
@@ -721,7 +665,6 @@ molecule.plot_AO = plot_AO
 molecule.plot_MO = plot_MO
 molecule.plot_transition_density = plot_transition_density
 molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
-molecule.plot_sum_eigenmodes_kernel = plot_sum_eigenmodes_kernel
 
 
 ##############################
@@ -1024,6 +967,7 @@ def _plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,facto
     contour_positive = grid.contour(isosurfaces=2,scalars=cube_values_positive,rng=[0,1-cutoff])
     contour_negative = grid.contour(isosurfaces=2,scalars=cube_values_negative,rng=[0,1-cutoff])
 
+
     if len(contour_positive.point_data["Contour Data"]):
         plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="red")
     else:
@@ -1033,3 +977,130 @@ def _plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,facto
     else:
         plotter.remove_actor("isosurface_cube_negative")
 
+
+
+def _plot_cube_multiple_isodensities(plotter,voxel_origin,voxel_matrix,cube,number_isodensities=10,opacity=1,factor=1):
+    """plot multiple isodensities"""
+
+    nx,ny,nz = np.shape(cube)
+    cube_transposed = np.transpose(cube,(2,1,0))
+
+    grid = pyvista.ImageData(dimensions=(nx,ny,nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=voxel_origin)
+
+    #Calculate cube density
+    cube_density = abs(cube_transposed) * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+
+    #Calculate renormalization as for some reason some cube files are not normalized
+    cube_density = cube_density / np.sum(cube_density)
+
+    array_sort = np.argsort(cube_density,axis=None)[::-1]
+    cube_sorted = cube_density.flatten()[array_sort]
+    cube_values_sorted = np.cumsum(cube_sorted)
+
+    #Find how to unsort the array. There should be a more efficient way to do this
+    indexes = np.arange(len(array_sort),dtype=int)
+    array_unsort = np.zeros(len(array_sort),dtype=int)
+
+    for k in range(len(array_sort)):
+        array_unsort[array_sort[k]] = indexes[k]
+    cube_values = cube_values_sorted[array_unsort]
+
+    cube_values_positive = cube_values + (cube_transposed<0).flatten() * (1-cube_values)
+    cube_values_negative = cube_values + (cube_transposed>0).flatten() * (1-cube_values)
+
+    # for cutoff in cutoffs
+    contour_positive = grid.contour(isosurfaces=number_isodensities,scalars=cube_values_positive,rng=[0,0.9])
+    contour_negative = grid.contour(isosurfaces=number_isodensities,scalars=cube_values_negative,rng=[0,0.9])
+
+    import matplotlib.colors as mpc
+
+    empty = np.ones((256,3))
+    cmap_pos = mpc.ListedColormap(empty * np.array([1.,0.,0.]*np.linspace(.5,1,256).reshape((256,1))))
+    cmap_neg = mpc.ListedColormap(empty * np.array([0.,0.,1.]*np.linspace(.5,1,256).reshape((256,1))))
+
+
+    point_positive = contour_positive.points
+    point_negative = contour_negative.points
+
+    if len(contour_positive.point_data["Contour Data"]):
+
+        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=1-contour_positive["Contour Data"],scalars=contour_positive["Contour Data"],pbr=True,roughness=.5,metallic=.2,cmap=cmap_pos,show_scalar_bar=False)
+    else:
+        plotter.remove_actor("isosurface_cube_positive")
+    if len(contour_negative.point_data["Contour Data"]):
+        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=1-contour_negative["Contour Data"],scalars=contour_negative["Contour Data"],pbr=True,roughness=.5,metallic=.2,cmap=cmap_neg,show_scalar_bar=False)
+    else:
+        plotter.remove_actor("isosurface_cube_negative")
+
+
+
+def _plot_cube_volume(plotter,voxel_origin,voxel_matrix,cube,opacity=1,factor=1):
+    """plot multiple isodensities"""
+
+    nx,ny,nz = np.shape(cube)
+    cube_transposed = np.transpose(cube,(2,1,0))
+
+    coordinates_kept = np.zeros((nz,ny,nx),dtype="bool")
+    coordinates_ravelled = np.arange(nx*ny*nz)
+
+    cube_flatten = abs(cube_transposed).flatten()
+
+    sorting_array = np.argsort(cube_flatten,axis=None)[::-1]
+    norm_cube = np.sum(cube_flatten)
+    cube_cumsum = np.cumsum(cube_flatten[sorting_array])
+
+    coordinates_sorted = coordinates_ravelled[sorting_array]
+
+    coordinates_ravelled_kept = coordinates_sorted[cube_cumsum < (norm_cube*0.99)]
+
+    for coordinates in coordinates_ravelled_kept:
+        coordinates_kept[np.unravel_index(coordinates,(nx,ny,nz))] = True
+
+    coordinates = np.arange(nx*ny*nz)[coordinates_kept.flatten()]
+    minx,miny,minz,maxx,maxy,maxz = 100,100,100,0,0,0
+    for co in coordinates:
+        x,y,z = np.unravel_index(co,(nx,ny,nz))
+        minx = min(x,minx)
+        maxx = max(x,maxx)
+        miny = min(y,miny)
+        maxy = max(y,maxy)
+        minz = min(z,minz)
+        maxz = max(z,maxz)
+
+    new_nx,new_ny,new_nz = maxx-minx+1,maxy-miny+1,maxz-minz+1
+    # print(new_nx,new_ny,new_nz)
+
+    voxel_origin_0 = voxel_origin[0] + minx * voxel_matrix[0][0]
+    voxel_origin_1 = voxel_origin[1] + miny * voxel_matrix[1][1]
+    voxel_origin_2 = voxel_origin[2] + minz * voxel_matrix[2][2]
+
+    grid = pyvista.ImageData(dimensions=(new_nx,new_ny,new_nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=(voxel_origin_0,voxel_origin_1,voxel_origin_2))
+
+    cube_data = cube_flatten[coordinates_kept.flatten()]
+
+    cube = pyvista.Cube(x_length = voxel_matrix[0][0],y_length = voxel_matrix[1][1],z_length = voxel_matrix[2][2])
+    glyphs = grid.glyph(orient=False, geom=cube, scale=False)
+
+    scalars = abs((cube_transposed[minz:maxz+1,miny:maxy+1,minx:maxx+1]).reshape((new_nx,new_ny,new_nz,1)) * np.ones((1,1,1,6)))
+
+    plotter.add_mesh(glyphs,scalars=scalars,opacity="linear",show_scalar_bar=False,name="volume")
+
+
+
+
+
+def _print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors):
+    """Prints the contribution of each transition density for an eigenvector"""
+
+    plotter.add_text(text=r"Contribution of tranisiton densities",name="contrib_name",position=(0,plotter.window_size[1]-100))
+
+    array_sort = np.argsort(abs(contrib_eigenvectors[vector_number-1]))[::-1]
+    contrib_sorted = contrib_eigenvectors[vector_number-1][array_sort]
+    contrib_indices = np.arange(1,len(contrib_eigenvectors[vector_number-1])+1)[array_sort]
+
+    text_contrib = ""
+    for contrib in range(len(contrib_sorted)):
+        if abs(contrib_sorted[contrib])<0.01:
+            break
+        text_contrib += r"C_"+"{}".format(contrib_indices[contrib])+": {:3.3f}\n".format(contrib_sorted[contrib])
+    plotter.add_text(text=text_contrib,name="contrib",font_size=10,position=(20.0,plotter.window_size[1]-120-20*contrib))
