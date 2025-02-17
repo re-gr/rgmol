@@ -24,7 +24,7 @@ A detailed tutorial can be found in the documentation.
 	scipy
    	periodictable
 	pyvista
-	matplotlib (optional)
+	matplotlib
 	plotly (optional)
 	
 
