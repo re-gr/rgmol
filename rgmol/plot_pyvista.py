@@ -448,18 +448,125 @@ def plot_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,w
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+
     def create_mesh_MO(value):
         MO_number = int(round(value))
         MO_calculated = self.calculate_MO_chosen(MO_number-1,grid_points,delta=delta)
 
         _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor,cutoff=cutoff)
-
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number-1]),name="mo energy")
+        _print_occupancy(plotter,self.properties["MO_occupancy"],MO_number)
+
 
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
     plotter.add_slider_widget(create_mesh_MO, [1, len(self.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
+    plotter.show(full_screen=False)
+    return
+
+
+
+def plot_product_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+    """
+    plot_product_MO(grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+
+    Plot the Molecular Orbitals of a molecule
+    The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule.
+    The delta defines the length to be added to the extremities of the position of the atoms.
+
+    Parameters
+    ----------
+        grid_points : list of 3, optional
+            The number of points for the grid in each dimension. By default (40,40,40)
+        delta : float, optional
+            The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+    """
+
+    plotter = pyvista.Plotter(shape=(1,3),border=True)
+
+    if not "MO_calculated" in self.properties:
+        self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
+
+    if with_radius:
+        plotter.subplot(0,0)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+        plotter.subplot(0,1)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+        plotter.subplot(0,2)
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+
+    self.properties["MO_number_1"] = 1
+    self.properties["MO_number_2"] = 1
+
+
+    def create_mesh_MO_1(value):
+        plotter.subplot(0,0)
+        MO_number_1 = int(round(value))
+        self.properties["MO_number_1"] = MO_number_1
+        MO_calculated = self.calculate_MO_chosen(MO_number_1-1,grid_points,delta=delta)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor,cutoff=cutoff,add_name="1")
+        plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number_1-1]),name="mo energy")
+        _print_occupancy(plotter,self.properties["MO_occupancy"],MO_number_1)
+
+
+    def create_mesh_MO_2(value):
+        plotter.subplot(0,2)
+        MO_number_2 = int(round(value))
+        self.properties["MO_number_2"] = MO_number_2
+        MO_calculated = self.calculate_MO_chosen(MO_number_2-1,grid_points,delta=delta)
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor,cutoff=cutoff,add_name="2")
+        plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number_2-1]),name="mo energy")
+        _print_occupancy(plotter,self.properties["MO_occupancy"],MO_number_2)
+
+    def calculate_product_MO(MO_ind_1,MO_ind_2):
+        MO_1 = self.calculate_MO_chosen(MO_ind_1,grid_points,delta=delta)
+        MO_2 = self.calculate_MO_chosen(MO_ind_2,grid_points,delta=delta)
+        MO_prod = MO_1 * MO_2
+        _plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_prod,opacity=opacity,factor=factor,cutoff=cutoff,add_name="prod")
+        plotter.add_text(text=r"Product of {} and {}".format(MO_ind_1,MO_ind_2),name="mo prod")
+
+    def button_product_MO(value):
+        plotter.subplot(0,1)
+        calculate_product_MO(self.properties["MO_number_1"],self.properties["MO_number_2"])
+
+
+
+
+    plotter.subplot(0,0)
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_MO_1, [1, len(self.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
+
+    plotter.subplot(0,1)
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_checkbox_button_widget(button_product_MO,size=80,color_off="blue")
+    plotter.add_text(text="Calculate the product",name="calculate",position=(90.,20.))
+
+    plotter.subplot(0,2)
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_MO_2, [1, len(self.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
+
+
     plotter.show(full_screen=False)
     return
 
@@ -596,8 +703,8 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
     Notes
     -----
         Because the kernels are 6-dimensional, they scale up drastically in terms of memory used.
-        If one only wants to look at the eigenmodes, the "only eigenmodes" method is just that. It computes the eigenmodes without computing the total kernel.
-        Otherwise, the partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/calculate_linear_response>`.
+        If one only wants to look at the eigenmodes, the "only eigenmodes" method is just that. It computes the eigenmodes without computing the total kernel. More info can be found :doc:`here<../orbitals/calculate_eigenmodes_linear_response_function>`.
+        Otherwise, the partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/diagonalize_kernel>`.
 
     """
 
@@ -663,6 +770,7 @@ molecule.plot_diagonalized_condensed_kernel = plot_diagonalized_condensed_kernel
 molecule.plot_isodensity = plot_isodensity
 molecule.plot_AO = plot_AO
 molecule.plot_MO = plot_MO
+molecule.plot_product_MO = plot_product_MO
 molecule.plot_transition_density = plot_transition_density
 molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
 
@@ -934,7 +1042,7 @@ def _plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     return
 
 
-def _plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1):
+def _plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1,add_name=""):
     """plot atom as a sphere"""
 
     nx,ny,nz = np.shape(cube)
@@ -969,11 +1077,11 @@ def _plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,facto
 
 
     if len(contour_positive.point_data["Contour Data"]):
-        plotter.add_mesh(contour_positive,name="isosurface_cube_positive",opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="red")
+        plotter.add_mesh(contour_positive,name="isosurface_cube_positive"+add_name,opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="red")
     else:
         plotter.remove_actor("isosurface_cube_positive")
     if len(contour_negative.point_data["Contour Data"]):
-        plotter.add_mesh(contour_negative,name="isosurface_cube_negative",opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="blue")
+        plotter.add_mesh(contour_negative,name="isosurface_cube_negative"+add_name,opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="blue")
     else:
         plotter.remove_actor("isosurface_cube_negative")
 
@@ -1104,3 +1212,21 @@ def _print_contribution_transition_density(plotter,vector_number,contrib_eigenve
             break
         text_contrib += r"C_"+"{}".format(contrib_indices[contrib])+": {:3.3f}\n".format(contrib_sorted[contrib])
     plotter.add_text(text=text_contrib,name="contrib",font_size=10,position=(20.0,plotter.window_size[1]-120-20*contrib))
+
+
+def _print_occupancy(plotter,MO_occupancy,MO_number):
+    """Prints the contribution of each transition density for an eigenvector"""
+
+    LUMO = np.argmin(MO_occupancy)
+
+    plotter.add_text(text=r"Occupancy : "+'{:1.1f}'.format(MO_occupancy[MO_number-1]),name="mo occupancy",position=(20.0,plotter.window_size[1]-100))
+    if MO_number-1 < LUMO:
+        if MO_number-1 == LUMO-1:
+            plotter.add_text(text=r"HOMO",name="mo occupancy lumo",position=(20.0,plotter.window_size[1]-130))
+        else:
+            plotter.add_text(text=r"HOMO - {}".format(LUMO-MO_number),name="mo occupancy lumo",position=(20.0,plotter.window_size[1]-130))
+    else:
+        if MO_number-1 == LUMO:
+            plotter.add_text(text=r"LUMO",name="mo occupancy lumo",position=(20.0,plotter.window_size[1]-130))
+        else:
+            plotter.add_text(text=r"LUMO + {}".format(MO_number-1-LUMO),name="mo occupancy lumo",position=(20.0,plotter.window_size[1]-130))
