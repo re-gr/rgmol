@@ -562,6 +562,8 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
             eigenvalues = molecule.properties["linear_response_eigenvalues"]
+            contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
+
             plot_cube(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff,add_name=str(shape[1]*indexes[0]+indexes[1]))
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
@@ -574,6 +576,8 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
             eigenvalues = molecule.properties["linear_response_eigenvalues"]
+            contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
+
             plot_cube_multiple_isodensities(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor,add_name=str(shape[1]*indexes[0]+indexes[1]))
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
@@ -586,6 +590,8 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
             eigenvalues = molecule.properties["linear_response_eigenvalues"]
+            contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
+
             plot_cube_volume(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor,add_name=str(shape[1]*indexes[0]+indexes[1]))
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
@@ -605,7 +611,6 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
 
         if method == "only eigenmodes":
             molecule.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
-            contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
         else:
             molecule.diagonalize_kernel(kernel,number_eigenvectors,grid_points,method=method,delta=delta)
 
