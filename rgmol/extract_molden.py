@@ -53,7 +53,7 @@ def _extract_molden_file(file):
     MO_list = []
     MO_energy = []
     spin = []
-    occupancy = []
+    MO_occupancy = []
     D = np.arange(154)
 
     for line in codecs.open(file, 'r',encoding="utf-8"):
@@ -133,8 +133,8 @@ def _extract_molden_file(file):
                 if lsplit[0] == "Spin=" and lsplit[1] == "Beta":
                     raise ValueError("Unrestricted calculations not currently implemented")
                     # spin.append(lsplit[1])
-                if lsplit[0] == "Ocucp=":
-                    occupancy.append(float(lsplit[1]))
+                if lsplit[0] == "Occup=":
+                    MO_occupancy.append(float(lsplit[1]))
                 AO_contribution = []
 
                 flag_mo_lines -= 1
@@ -148,8 +148,8 @@ def _extract_molden_file(file):
                     if lsplit[0] == "Spin=" and lsplit[1] == "Beta":
                         raise ValueError("Unrestricted calculations not currently implemented")
                         # spin.append(lsplit[1])
-                    if lsplit[0] == "Ocucp=":
-                        occupancy.append(float(lsplit[1]))
+                    if lsplit[0] == "Occup=":
+                        MO_occupancy.append(float(lsplit[1]))
 
                     flag_mo_lines = 3
                     MO_list.append(AO_contribution)
@@ -157,7 +157,7 @@ def _extract_molden_file(file):
                     AO_contribution.append(float(lsplit[1]))
     if AO_contribution != MO_list[-1]:
         MO_list.append(AO_contribution)
-    return atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy
+    return atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy
 
 
 def extract(file,do_find_bonds=0):
@@ -179,7 +179,7 @@ def extract(file,do_find_bonds=0):
         mol : molecule
     """
 
-    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy = _extract_molden_file(file)
+    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy = _extract_molden_file(file)
 
 
     list_atoms = []
@@ -189,7 +189,7 @@ def extract(file,do_find_bonds=0):
         list_atoms.append(atom_x)
         nicknaming+=1
 
-    mol = molecule(list_atoms,[],properties={"AO_list":AO_list,"AO_type_list":AO_type_list,"MO_list":MO_list,"MO_energy":MO_energy})
+    mol = molecule(list_atoms,[],properties={"AO_list":AO_list,"AO_type_list":AO_type_list,"MO_list":MO_list,"MO_energy":MO_energy,"MO_occupancy":MO_occupancy})
 
     if do_find_bonds:
         mol.bonds = find_bonds(mol)
