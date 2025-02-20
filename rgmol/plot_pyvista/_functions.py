@@ -441,7 +441,7 @@ def plot_cube_volume(plotter,voxel_origin,voxel_matrix,cube,opacity=1,factor=1,a
 def print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,divy=1):
     """Prints the contribution of each transition density for an eigenvector"""
 
-    plotter.add_text(text=r"Contribution of tranisiton densities",name="contrib_name",position=(0,plotter.window_size[1]/divy-100))
+    plotter.add_text(text=r"Contribution of tranisiton densities",name="contrib_name",position=(0,(plotter.window_size[1]/divy-130)),font_size=18/divy)
 
     array_sort = np.argsort(abs(contrib_eigenvectors[vector_number-1]))[::-1]
     contrib_sorted = contrib_eigenvectors[vector_number-1][array_sort]
@@ -452,7 +452,8 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
         if abs(contrib_sorted[contrib])<0.1:
             break
         text_contrib += r"C_"+"{}".format(contrib_indices[contrib])+": {:3.3f}\n".format(contrib_sorted[contrib])
-    plotter.add_text(text=text_contrib,name="contrib",font_size=10,position=(20.0,plotter.window_size[1]/divy-120-20*contrib))
+    plotter.add_text(text=text_contrib,name="contrib",font_size=14/divy,position=(20.0,plotter.window_size[1]/divy-130-16*(contrib)))
+
 
 
 def print_occupancy(plotter,MO_occupancy,MO_number,divy=1):
@@ -461,14 +462,14 @@ def print_occupancy(plotter,MO_occupancy,MO_number,divy=1):
     LUMO = np.argmin(MO_occupancy)
 
     # plotter.add_text(text=r"Occupancy : "+'{:1.1f}'.format(MO_occupancy[MO_number-1]),name="mo occupancy",position=(plotter.window_size[0]*(divx) + 20,plotter.window_size[1]*(divy)-100))
-    plotter.add_text(text=r"Occupancy : "+'{:1.1f}'.format(MO_occupancy[MO_number-1]),name="mo occupancy",position=(20,plotter.window_size[1]/divy-100))
+    plotter.add_text(text=r"Occupancy : "+'{:1.1f}'.format(MO_occupancy[MO_number-1]),name="mo occupancy",position=(20,plotter.window_size[1]/divy-100),font_size=18/divy)
     if MO_number-1 < LUMO:
         if MO_number-1 == LUMO-1:
-            plotter.add_text(text=r"HOMO",name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130))
+            plotter.add_text(text=r"HOMO",name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130),font_size=18/divy)
         else:
-            plotter.add_text(text=r"HOMO - {}".format(LUMO-MO_number),name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130))
+            plotter.add_text(text=r"HOMO - {}".format(LUMO-MO_number),name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130),font_size=18/divy)
     else:
         if MO_number-1 == LUMO:
-            plotter.add_text(text=r"LUMO",name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130))
+            plotter.add_text(text=r"LUMO",name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130),font_size=18/divy)
         else:
-            plotter.add_text(text=r"LUMO + {}".format(MO_number-1-LUMO),name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130))
+            plotter.add_text(text=r"LUMO + {}".format(MO_number-1-LUMO),name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130),font_size=18/divy)

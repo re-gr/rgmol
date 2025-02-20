@@ -61,6 +61,24 @@ class _subplot:
         self.func(value,self.indexes,self.molecule)
 
 
+class _subplot_isodensity:
+    def __init__(self,indexes,plotter,cutoff,func,molecule,value):
+        self.indexes = indexes
+        self.plotter = plotter
+        self.cutoff = cutoff
+        self.func = func
+        self.molecule = molecule
+        self.value = value
+
+
+    def __call__(self, value):
+        self.value = value
+        self.func(self.value,self.indexes,self.molecule,self.cutoff)
+    def call_cutoff(self,cutoff):
+        self.cutoff = cutoff
+        self.func(self.value,self.indexes,self.molecule,self.cutoff)
+
+
 
 #####################################################
 ## Adding Plotting Methods for Groud of Molecules  ##
@@ -216,9 +234,9 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
     return
 
 
-def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
     """
-    plot_isodensity(plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_isodensity(plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
 
     Plot an isodensity
 
@@ -266,9 +284,9 @@ def plot_isodensity(self,plotted_isodensity="cube",cutoff=.2,opacity=0.5,factor=
 
 
 
-def plot_AO(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
     """
-    plot_AO(grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_AO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
 
     Plot the Atomic Orbitals of a molecule
     The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -280,8 +298,6 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,w
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
-        cutoff : float, optional
-            The cutoff of the isodensity plot. By default .2
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -292,6 +308,8 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,w
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot. By default .2
 
     Returns
     -------
@@ -303,13 +321,12 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,w
     shape = _subplotting(number_molecules)
     plotter = pyvista.Plotter(shape=shape,border=True)
 
-    def create_mesh_AO(value,indexes,molecule):
+    def create_mesh_AO(value,indexes,molecule,cutoff):
         plotter.subplot(indexes[0],indexes[1])
         AO_number = int(round(value))
         plot_cube(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],molecule.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor,cutoff=cutoff,add_name=str(shape[1]*indexes[0]+indexes[1]))
 
-
-    list_subpl = [_subplot(get_subplot(number_molecules,index_molecule),plotter,create_mesh_AO,self.molecules[index_molecule]) for index_molecule in range(number_molecules)]
+    list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_AO,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
         index = get_subplot(number_molecules,index_molecule)
@@ -326,6 +343,8 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,w
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(molecule.properties["AO_calculated"])],value=1,title="Number", fmt="%1.0f")
+        plotter.add_slider_widget(list_subpl[index_molecule].call_cutoff, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
+
     plotter.show(full_screen=False)
     return
 
@@ -333,9 +352,9 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,w
 
 
 
-def plot_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
     """
-    plot_MO(grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
 
     Plot the Molecular Orbitals of a molecule
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -346,8 +365,6 @@ def plot_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,w
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
-        cutoff : float, optional
-            The cutoff of the isodensity plot. By default .2
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -358,6 +375,8 @@ def plot_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,w
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot. By default .2
 
     Returns
     -------
@@ -369,7 +388,7 @@ def plot_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,w
     shape = _subplotting(number_molecules)
     plotter = pyvista.Plotter(shape=shape,border=True)
 
-    def create_mesh_MO(value,indexes,molecule):
+    def create_mesh_MO(value,indexes,molecule,cutoff):
         plotter.subplot(indexes[0],indexes[1])
         MO_number = int(round(value))
         MO_calculated = molecule.calculate_MO_chosen(MO_number-1,grid_points,delta=delta)
@@ -379,7 +398,7 @@ def plot_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,w
         print_occupancy(plotter,molecule.properties["MO_occupancy"],MO_number,divy=shape[1])
 
 
-    list_subpl = [_subplot(get_subplot(number_molecules,index_molecule),plotter,create_mesh_MO,self.molecules[index_molecule]) for index_molecule in range(number_molecules)]
+    list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_MO,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
         index = get_subplot(number_molecules,index_molecule)
@@ -397,15 +416,17 @@ def plot_MO(self,grid_points=(40,40,40),cutoff=.2,delta=3,opacity=0.5,factor=1,w
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(molecule.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
+        plotter.add_slider_widget(list_subpl[index_molecule].call_cutoff, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
+
     plotter.show(full_screen=False)
     return
 
 
 
 
-def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
     """
-    plot_transition_density(grid_points=(40,40,40),delta=3,cutoff=.2,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_transition_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
 
 
     Plot the Transition Densities of a molecule.
@@ -418,8 +439,6 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacit
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
-        cutoff : float, optional
-            The cutoff of the isodensity plot. By default .2
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -430,6 +449,8 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacit
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot. By default .2
 
     Returns
     -------
@@ -461,7 +482,7 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacit
     shape = _subplotting(number_molecules)
     plotter = pyvista.Plotter(shape=shape,border=True)
 
-    def create_mesh_transition_density(value,indexes,molecule):
+    def create_mesh_transition_density(value,indexes,molecule,cutoff):
         plotter.subplot(indexes[0],indexes[1])
         transition_number = int(round(value))
         transition_density_calculated = molecule.calculate_chosen_transition_density(transition_number-1,grid_points,delta=delta)
@@ -470,7 +491,7 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacit
 
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(molecule.properties["transition_energy"][transition_number-1]),name="transition energy")
 
-    list_subpl = [_subplot(get_subplot(number_molecules,index_molecule),plotter,create_mesh_transition_density,self.molecules[index_molecule]) for index_molecule in range(number_molecules)]
+    list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_transition_density,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
         index = get_subplot(number_molecules,index_molecule)
@@ -491,6 +512,7 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacit
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(molecule.properties["transition_density_list"])],value=1,title="Number", fmt="%1.0f")
+        plotter.add_slider_widget(list_subpl[index_molecule].call_cutoff, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
 
 
     plotter.show(full_screen=False)
@@ -499,9 +521,9 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,cutoff=.2,opacit
 
 
 
-def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
     """
-    plot_diagonalized_kernel(kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,cutoff=.2,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_diagonalized_kernel(kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
 
     Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
     Only the first number_eigenvectors will be computed to limit the calculation time.
@@ -522,7 +544,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
         cutoff : float, optional
-            The cutoff of the isodensity plot for the isodensity plotting method. By default .2
+            The initial cutoff of the isodensity plot for the isodensity plotting method. By default .2
         number_isodensities : int, optional
             The number of isodensities to be plotted if the method used is multiple isodensities
         opacity : float, optional
@@ -556,22 +578,21 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
 
 
     if plotting_method == "isodensity":
-
-        def create_mesh_diagonalized_kernel(value,indexes,molecule):
+        def create_mesh_diagonalized_kernel(value,indexes,molecule,cutoff):
             plotter.subplot(indexes[0],indexes[1])
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
             eigenvalues = molecule.properties["linear_response_eigenvalues"]
             contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
 
-            plot_cube(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff,add_name=str(shape[1]*indexes[0]+indexes[1]))
-            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
+            plot_cube(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff,add_name=str(shape[1]*indexes[0]+indexes[1]))
+            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
             if method == "only eigenmodes":
                 print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,divy=shape[1])
 
     elif plotting_method == "multiple isodensities":
-        def create_mesh_diagonalized_kernel(value,indexes,molecule):
+        def create_mesh_diagonalized_kernel(value,indexes,molecule,cutoff):
             plotter.subplot(indexes[0],indexes[1])
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
@@ -579,13 +600,13 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
 
             plot_cube_multiple_isodensities(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor,add_name=str(shape[1]*indexes[0]+indexes[1]))
-            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
+            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
 
             if method == "only eigenmodes":
                 print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,divy=shape[1])
 
     elif plotting_method == "volume":
-        def create_mesh_diagonalized_kernel(value,indexes,molecule):
+        def create_mesh_diagonalized_kernel(value,indexes,molecule,cutoff):
             plotter.subplot(indexes[0],indexes[1])
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
@@ -593,13 +614,13 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
 
             plot_cube_volume(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor,add_name=str(shape[1]*indexes[0]+indexes[1]))
-            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
+            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
 
             if method == "only eigenmodes":
                 print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,divy=shape[1])
 
-    list_subpl = [_subplot(get_subplot(number_molecules,index_molecule),plotter,create_mesh_diagonalized_kernel,self.molecules[index_molecule]) for index_molecule in range(number_molecules)]
 
+    list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_diagonalized_kernel,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
         index = get_subplot(number_molecules,index_molecule)
@@ -622,6 +643,8 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(eigenvalues)],value=1,title="Eigenvector", fmt="%1.0f")
+        if plotting_method == "isodensity":
+            plotter.add_slider_widget(list_subpl[index_molecule].call_cutoff, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
     plotter.show(full_screen=False)
 
 
