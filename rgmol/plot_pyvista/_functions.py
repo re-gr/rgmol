@@ -49,14 +49,19 @@ def rota_bonds(Vec,x,y,z):
     """
     #Gets the two angles alpha and beta of the vector
     Vec=Vec/np.linalg.norm(Vec)
-    if Vec[0]==0:
-        alpha = -np.pi/2
+    if Vec[0] == 0:
+        if Vec[0]>0:
+            alpha = np.pi/2
+        else:
+            alpha = -np.pi/2
     else:
         alpha=np.arctan(np.abs(Vec[1]/Vec[0]))
     alpha=corr_angle(alpha,Vec[0],Vec[1])
     Vec2=Rz(-alpha).dot(Vec)
     if Vec2[2] == 0:
-        beta = -np.pi/2
+        if Vec2[0]>0:
+            beta = np.pi/2
+        else: beta = -np.pi/2
     else:
         beta=np.arctan(abs(Vec2[0]/Vec2[2]))
     beta=corr_angle(beta,Vec2[2],Vec2[0])
@@ -452,7 +457,7 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
         if abs(contrib_sorted[contrib])<0.1:
             break
         text_contrib += r"C_"+"{}".format(contrib_indices[contrib])+": {:3.3f}\n".format(contrib_sorted[contrib])
-    plotter.add_text(text=text_contrib,name="contrib",font_size=14/divy,position=(20.0,plotter.window_size[1]/divy-130-16*(contrib)))
+    plotter.add_text(text=text_contrib,name="contrib",font_size=14/divy,position=(20.0,plotter.window_size[1]/divy-130-32/divy*(contrib)))
 
 
 
