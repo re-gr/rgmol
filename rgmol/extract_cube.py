@@ -143,7 +143,7 @@ def extract(file,do_find_bonds=0):
 
 
 
-    mol = molecule(list_atoms,[],properties={"voxel_origin":voxel_origin,"voxel_matrix":voxel_matrix,"cube":cube})
+    mol = molecule(list_atoms,[],file=file,properties={"voxel_origin":voxel_origin,"voxel_matrix":voxel_matrix,"cube":cube})
 
     if do_find_bonds:
         mol.bonds = find_bonds(mol)

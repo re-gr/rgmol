@@ -152,7 +152,7 @@ class molecule(object):
         properties : dict
     """
 
-    def __init__(self,atoms,bonds,properties={},name=None):
+    def __init__(self,atoms,bonds,properties={},name=None,file=None):
         """
         molecule(atoms,bonds,properties={},name=None)
 
@@ -185,6 +185,7 @@ class molecule(object):
         self.name = name
         self.atoms = atoms
         self.bonds = bonds
+        self.file = file
 
         if type(properties) is not dict:
             raise TypeError("The properties should be listed in a dict")
@@ -249,76 +250,6 @@ class group_molecules(object):
         self.molecules=list_molecules
 
 
-
-    def plot_kernel_plt(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1):
-        """
-        Plot kernel
-        """
-
-        nrows = len(self.molecules)
-
-        for mol in range(len(self.molecules)):
-            if len(self.molecules[mol].properties[plotted_kernel]) > ncols:
-                ncols = len(self.molecules[mol].properties[plotted_kernel])
-
-
-        fig=plt.figure(figsize=(3.1*ncols,2.8*nrows),dpi=200)
-        for mol in range(len(self.molecules)):
-
-
-            for vec in range(len(self.molecules[mol].atoms)):
-                ax=fig.add_subplot(nrows,ncols,mol*nrows+1,projection="3d",aspect="equal")
-
-
-    def plot_diagonalized_kernel_plt(self,plotted_kernel="condensed linear response",opacity=0.5,factor=1):
-        """
-        Plot kernel
-        """
-
-        nrows = len(self.molecules)
-        ncols = 0
-        for mol in range(len(self.molecules)):
-            if len(self.molecules[mol].properties[plotted_kernel]) > ncols:
-                ncols = len(self.molecules[mol].properties[plotted_kernel])
-
-        fig=plt.figure(figsize=(3.1*ncols,2.8*nrows),dpi=200)
-        plt.rcParams.update({'font.size': 13})
-        plt.rcParams['svg.fonttype'] = 'none'
-
-        #remove grid background
-        plt.rcParams['axes.edgecolor'] = 'none'
-        plt.rcParams['axes3d.xaxis.panecolor'] = 'none'
-        plt.rcParams['axes3d.yaxis.panecolor'] = 'none'
-        plt.rcParams['axes3d.zaxis.panecolor'] = 'none'
-
-        for mol in range(len(self.molecules)):
-            X = self.molecules[mol].properties[plotted_kernel]
-            Xvp,XV= np.linalg.eigh(X)
-
-            #Add box to the graph with a title
-            ax=fig.add_subplot(nrow,1,nrow+1)
-            if self.name:
-                title = self.name
-                ax.set_title("{}".format(title),fontsize=20)
-
-            ax.set_xticks([])
-            ax.set_yticks([])
-            ax.spines['bottom'].set_color('black') #add box
-            ax.spines['top'].set_color('black')
-            ax.spines['right'].set_color('black')
-            ax.spines['left'].set_color('black')
-            ax.set_facecolor("none")
-
-
-
-            for vec in range(len(XV)):
-                ax=fig.add_subplot(nrows,ncols,mol*nrows+vec+1,projection="3d",aspect="equal")
-                #Remove grid and ticks because prettier
-                ax.grid(False)
-                ax.set_xticks([])
-                ax.set_yticks([])
-                ax.set_zticks([])
-                self.molecules.plot_vector_plt(ax,XV,opacity=opacity,factor=factor)
 
 
 

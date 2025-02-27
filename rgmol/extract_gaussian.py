@@ -273,7 +273,7 @@ def extract_fchk(file,do_find_bonds=0):
         list_atoms.append(atom_x)
         nicknaming += 1
 
-    mol = molecule(list_atoms,[],properties={"AO_list":AO_list,"AO_type_list":AO_type_list,"MO_list":MO_list,"MO_energy":MO_energy,"MO_occupancy":MO_occupancy})
+    mol = molecule(list_atoms,[],file=file,properties={"AO_list":AO_list,"AO_type_list":AO_type_list,"MO_list":MO_list,"MO_energy":MO_energy,"MO_occupancy":MO_occupancy})
 
     if do_find_bonds:
         mol.bonds = find_bonds(mol)

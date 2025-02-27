@@ -309,7 +309,7 @@ def extract(file):
         global_desc_dict["fukui"]=f0
         global_desc_dict["dual"]=f2
 
-        mol = molecule(list_atoms,list_bonds,properties=global_desc_dict)
+        mol = molecule(list_atoms,list_bonds,file=file,properties=global_desc_dict)
 
     else:
         for prop in zip(Name,pos):
