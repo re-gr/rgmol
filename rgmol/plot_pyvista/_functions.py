@@ -443,21 +443,57 @@ def plot_cube_volume(plotter,voxel_origin,voxel_matrix,cube,opacity=1,factor=1,a
 
 
 
-def print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,divy=1):
+def print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=1):
     """Prints the contribution of each transition density for an eigenvector"""
 
-    plotter.add_text(text=r"Contribution of tranisiton densities",name="contrib_name",position=(0,(plotter.window_size[1]/divy-130)),font_size=18/divy)
+    plotter.add_text(text=r"Contribution of tranisition densities",name="contrib_name",position=(0,(plotter.window_size[1]/divy-130)),font_size=18/divy)
 
     array_sort = np.argsort(abs(contrib_eigenvectors[vector_number-1]))[::-1]
+    contributions = contrib_eigenvectors[vector_number-1]
     contrib_sorted = contrib_eigenvectors[vector_number-1][array_sort]
-    contrib_indices = np.arange(1,len(contrib_eigenvectors[vector_number-1])+1)[array_sort]
+    contrib_indices_sorted = np.arange(len(contrib_eigenvectors[vector_number-1]))[array_sort]
+
+
+    lin_transition = np.array([transition for transitions in transition_list for transi in transitions for transition in transi])
+
+    occ = lin_transition[::2]
+    virt = lin_transition[1::2]
+    max_occupied = np.max(occ)
+    max_virtual= np.max(virt)
+    transition_contrib = np.zeros((max_occupied+1,max_virtual+1))
 
     text_contrib = ""
+    compt_contrib = 0
     for contrib in range(len(contrib_sorted)):
         if abs(contrib_sorted[contrib])<0.1:
             break
-        text_contrib += r"C_"+"{}".format(contrib_indices[contrib])+": {:3.3f}\n".format(contrib_sorted[contrib])
-    plotter.add_text(text=text_contrib,name="contrib",font_size=14/divy,position=(20.0,plotter.window_size[1]/divy-130-32/divy*(contrib)))
+        text_contrib += r"C_"+"{}".format(contrib_indices_sorted[contrib]+1)+": {:3.3f}\n".format(contrib_sorted[contrib])
+        compt_contrib += 1
+
+    text_contrib += "Contribution of transitions\n"
+    for contrib in range(len(contributions)):
+        transitions = transition_list[contrib]
+        transition_factors = transition_factor_list[contrib]
+
+        for transi,transi_factor in zip(transitions,transition_factors):
+            # if transi[0] == 6 and transi[1] == 8 and contrib==9:
+                # print(contrib,contributions[contrib],transi_factor[0])
+            transition_contrib[transi[0],transi[1]] += contributions[contrib] * transi_factor[0]
+
+    transition_contrib = transition_contrib / np.sum(abs(transition_contrib))
+    compt = 0
+
+    array_sort = np.argsort(abs(transition_contrib).ravel())[::-1]
+
+    transition_contrib_sorted = (transition_contrib.ravel())[array_sort]
+
+    for trans in range(len(transition_contrib_sorted)):
+        occ,virt = np.unravel_index(array_sort[trans],np.shape(transition_contrib))
+        if abs(transition_contrib[occ,virt]) < 0.01:
+            break
+        text_contrib += "{} -> {}".format(occ,virt)+": {:3.3f}\n".format(transition_contrib[occ,virt])
+        compt += 1
+    plotter.add_text(text=text_contrib,name="contrib",font_size=14/divy,position=(20.0,plotter.window_size[1]/divy-130-30/divy*(compt_contrib + compt)))
 
 
 
