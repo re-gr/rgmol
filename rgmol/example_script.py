@@ -8,7 +8,6 @@ This script contains the examples presented throughout the tutorial.
 """
 
 import rgmol
-import rgmol.plot_pyvista
 import rgmol.examples
 
 if __name__=="__main__":
@@ -52,9 +51,9 @@ if __name__=="__main__":
 
     ## Visualization of Transition Densities
     if False:
-        file = rgmol.examples.molden_CH3Cl
+        file = rgmol.examples.molden_H2CO
         mol = rgmol.extract_molden.extract(file,do_find_bonds=1)
-        rgmol.extract_orca.extract_transition(rgmol.examples.orca_CH3Cl,mol=mol)
+        rgmol.extract_orca.extract_transition(rgmol.examples.orca_H2CO,mol=mol)
         mol.plot_transition_density(delta=5,grid_points=(60,60,60),opacity_radius=.4)
 
 
@@ -63,4 +62,6 @@ if __name__=="__main__":
         file = rgmol.examples.molden_H2CO
         mol = rgmol.extract_molden.extract(file,do_find_bonds=1)
         rgmol.extract_orca.extract_transition(rgmol.examples.orca_H2CO,mol=mol)
-        mol.plot_diagonalized_kernel(kernel="linear_response_function",grid_points=(50,50,50),number_eigenvectors=40,delta=10,cutoff=.2)
+        mol.plot_diagonalized_kernel(kernel="linear_response_function",method="only eigenmodes",grid_points=(60,60,60),delta=10,cutoff=.2)
+
+
