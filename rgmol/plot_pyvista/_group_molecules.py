@@ -87,9 +87,9 @@ class _subplot_isodensity:
 
 
 
-def plot_radius(self,opacity=1,factor=.4,show_bonds=True):
+def plot_radius(self,opacity=1,factor=.4,show_bonds=True,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_radius(opacity=1,factor=.4,show_bonds=True)
+    plot_radius(opacity=1,factor=.4,show_bonds=True,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the radius of the entire molecule
 
@@ -122,13 +122,15 @@ def plot_radius(self,opacity=1,factor=.4,show_bonds=True):
 
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
     plotter.show(full_screen=False)
     return
 
 
-def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_property(plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_property(plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot a property for the entire molecule
 
@@ -170,14 +172,15 @@ def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opa
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
 
-
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
     plotter.show(full_screen=False)
     return
 
 
-def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3):
+def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_diagonalized_condensed_kernel(kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3)
+    plot_diagonalized_condensed_kernel(kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Diagonalize and plot a condensed kernel for a molecule. One can navigate through the eigenmodes using a slider.
 
@@ -230,13 +233,15 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(XV)],value=1,title="Eigenvector", fmt="%1.0f")
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
     plotter.show(full_screen=False)
     return
 
 
-def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
+def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_isodensity(plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
+    plot_isodensity(plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot an isodensity
 
@@ -277,6 +282,8 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
 
         light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
         plotter.add_light(light)
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
     plotter.show(full_screen=False)
     return
 
@@ -284,9 +291,9 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
 
 
 
-def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
+def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_AO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
+    plot_AO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Atomic Orbitals of a molecule
     The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -345,6 +352,9 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(molecule.properties["AO_calculated"])],value=1,title="Number", fmt="%1.0f")
         plotter.add_slider_widget(list_subpl[index_molecule].call_cutoff, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
 
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+
     plotter.show(full_screen=False)
     return
 
@@ -352,9 +362,9 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
 
 
 
-def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
+def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
+    plot_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Molecular Orbitals of a molecule
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -395,7 +405,7 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
 
         plot_cube(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor,cutoff=cutoff,add_name=str(shape[1]*indexes[0]+indexes[1]))
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(molecule.properties["MO_energy"][MO_number-1]),name="mo energy")
-        print_occupancy(plotter,molecule.properties["MO_occupancy"],MO_number,divy=shape[1])
+        print_occupancy(plotter,molecule.properties["MO_occupancy"],MO_number,divy=shape[0])
 
 
     list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_MO,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
@@ -418,15 +428,18 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(molecule.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
         plotter.add_slider_widget(list_subpl[index_molecule].call_cutoff, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
 
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+
     plotter.show(full_screen=False)
     return
 
 
 
 
-def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
+def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_transition_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
+    plot_transition_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Transition Densities of a molecule.
@@ -514,6 +527,8 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(molecule.properties["transition_density_list"])],value=1,title="Number", fmt="%1.0f")
         plotter.add_slider_widget(list_subpl[index_molecule].call_cutoff, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
 
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
 
     plotter.show(full_screen=False)
 
@@ -521,9 +536,9 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
 
 
 
-def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2):
+def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_diagonalized_kernel(kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2)
+    plot_diagonalized_kernel(kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
     Only the first number_eigenvectors will be computed to limit the calculation time.
@@ -590,7 +605,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             plot_cube(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff,add_name=str(shape[1]*indexes[0]+indexes[1]))
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
             if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[1])
+                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[0])
 
     elif plotting_method == "multiple isodensities":
         def create_mesh_diagonalized_kernel(value,indexes,molecule,cutoff):
@@ -606,7 +621,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
 
             if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[1])
+                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[0])
 
     elif plotting_method == "volume":
         def create_mesh_diagonalized_kernel(value,indexes,molecule,cutoff):
@@ -623,7 +638,9 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
 
             if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[1])
+                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[0])
+
+
 
 
     list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_diagonalized_kernel,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
@@ -651,6 +668,10 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
         plotter.add_slider_widget(list_subpl[index_molecule], [1, len(eigenvalues)],value=1,title="Eigenvector", fmt="%1.0f")
         if plotting_method == "isodensity":
             plotter.add_slider_widget(list_subpl[index_molecule].call_cutoff, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
+
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+
     plotter.show(full_screen=False)
 
 

@@ -12,7 +12,7 @@ import numpy as np
 import pyvista
 from rgmol.objects import *
 import rgmol.molecular_calculations
-
+import os
 
 
 
@@ -274,7 +274,7 @@ def plot_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
     """plot atom as a sphere"""
     Norm = atom.properties[plotted_property]
     atom_sphere = pyvista.Sphere(radius=Norm*factor, phi_resolution=100, theta_resolution=100,center=atom.pos)
-    plotter.add_mesh(atom_sphere,name=atom.nickname,color=atom.color,pbr=False,roughness=0.0,metallic=0.0,diffuse=1,opacity=opacity)
+    plotter.add_mesh(atom_sphere,color=atom.color,pbr=False,roughness=0.0,metallic=0.0,diffuse=1,opacity=opacity,name="atom_{}".format(atom.nickname))
     return
 
 
@@ -283,7 +283,7 @@ def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
 
     colors=[[255,0,0],[255,255,255]]
     atom_sphere = pyvista.Sphere(radius=abs(vector)*factor, phi_resolution=100, theta_resolution=100,center=atom.pos)
-    plotter.add_mesh(atom_sphere,name=atom.nickname+"vector",color=colors[(vector>0)*1],pbr=True,roughness=.4,metallic=.4,diffuse=1,opacity=opacity)
+    plotter.add_mesh(atom_sphere,name="atom_"+atom.nickname+"_vector",color=colors[(vector>0)*1],pbr=True,roughness=.4,metallic=.4,diffuse=1,opacity=opacity)
 
     return
 
@@ -446,7 +446,12 @@ def plot_cube_volume(plotter,voxel_origin,voxel_matrix,cube,opacity=1,factor=1,a
 def print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=1):
     """Prints the contribution of each transition density for an eigenvector"""
 
-    plotter.add_text(text=r"Contribution of tranisition densities",name="contrib_name",position=(0,(plotter.window_size[1]/divy-130)),font_size=18/divy)
+
+    font_size_title = int(16/divy*plotter.window_size[1]/1000)
+    font_size = int(14/divy*plotter.window_size[1]/1000)
+    pos_y = plotter.window_size[1]/divy-200*plotter.window_size[1]/1000
+
+    plotter.add_text(text=r"Contribution of tranisition densities",name="contrib_name",position=(0,pos_y),font_size=font_size_title)
 
     array_sort = np.argsort(abs(contrib_eigenvectors[vector_number-1]))[::-1]
     contributions = contrib_eigenvectors[vector_number-1]
@@ -470,14 +475,14 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
         text_contrib += r"C_"+"{}".format(contrib_indices_sorted[contrib]+1)+": {:3.3f}\n".format(contrib_sorted[contrib])
         compt_contrib += 1
 
-    text_contrib += "Contribution of transitions\n"
+    plotter.add_text(text=text_contrib,name="contrib",font_size=font_size,position=(20.0,pos_y-2*font_size_title-2*font_size*compt_contrib))
+    plotter.add_text(text="Contribution of transitions",name="transi_title",font_size=font_size_title,position=(0.0,pos_y-3*font_size_title-2*font_size*(compt_contrib)))
+
     for contrib in range(len(contributions)):
         transitions = transition_list[contrib]
         transition_factors = transition_factor_list[contrib]
 
         for transi,transi_factor in zip(transitions,transition_factors):
-            # if transi[0] == 6 and transi[1] == 8 and contrib==9:
-                # print(contrib,contributions[contrib],transi_factor[0])
             transition_contrib[transi[0],transi[1]] += contributions[contrib] * transi_factor[0]
 
     transition_contrib = transition_contrib / np.sum(abs(transition_contrib))
@@ -487,13 +492,15 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
 
     transition_contrib_sorted = (transition_contrib.ravel())[array_sort]
 
+    text_contrib = ""
     for trans in range(len(transition_contrib_sorted)):
         occ,virt = np.unravel_index(array_sort[trans],np.shape(transition_contrib))
         if abs(transition_contrib[occ,virt]) < 0.01:
             break
         text_contrib += "{} -> {}".format(occ,virt)+": {:3.3f}\n".format(transition_contrib[occ,virt])
         compt += 1
-    plotter.add_text(text=text_contrib,name="contrib",font_size=14/divy,position=(20.0,plotter.window_size[1]/divy-130-30/divy*(compt_contrib + compt)))
+
+    plotter.add_text(text=text_contrib,name="transi",font_size=font_size,position=(20.0,pos_y-4*font_size_title-2*font_size*compt_contrib-2*font_size*compt))
 
 
 
@@ -503,14 +510,66 @@ def print_occupancy(plotter,MO_occupancy,MO_number,divy=1):
     LUMO = np.argmin(MO_occupancy)
 
     # plotter.add_text(text=r"Occupancy : "+'{:1.1f}'.format(MO_occupancy[MO_number-1]),name="mo occupancy",position=(plotter.window_size[0]*(divx) + 20,plotter.window_size[1]*(divy)-100))
-    plotter.add_text(text=r"Occupancy : "+'{:1.1f}'.format(MO_occupancy[MO_number-1]),name="mo occupancy",position=(20,plotter.window_size[1]/divy-100),font_size=18/divy)
+
+    font_size = int(18/divy*plotter.window_size[1]/1000)
+    pos_y = plotter.window_size[1]/divy-200*plotter.window_size[1]/1000
+
+    plotter.add_text(text=r"Occupancy : "+'{:1.1f}'.format(MO_occupancy[MO_number-1]),name="mo occupancy",position=(20,pos_y),font_size=font_size)
     if MO_number-1 < LUMO:
         if MO_number-1 == LUMO-1:
-            plotter.add_text(text=r"HOMO",name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130),font_size=18/divy)
+            plotter.add_text(text=r"HOMO",name="mo occupancy lumo",position=(20.0,pos_y-2*font_size),font_size=font_size)
         else:
-            plotter.add_text(text=r"HOMO - {}".format(LUMO-MO_number),name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130),font_size=18/divy)
+            plotter.add_text(text=r"HOMO - {}".format(LUMO-MO_number),name="mo occupancy lumo",position=(20.0,pos_y-2*font_size),font_size=font_size)
     else:
         if MO_number-1 == LUMO:
-            plotter.add_text(text=r"LUMO",name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130),font_size=18/divy)
+            plotter.add_text(text=r"LUMO",name="mo occupancy lumo",position=(20.0,pos_y-font_size),font_size=font_size)
         else:
-            plotter.add_text(text=r"LUMO + {}".format(MO_number-1-LUMO),name="mo occupancy lumo",position=(20.0,plotter.window_size[1]/divy-130),font_size=18/divy)
+            plotter.add_text(text=r"LUMO + {}".format(MO_number-1-LUMO),name="mo occupancy lumo",position=(20.0,pos_y-2*font_size),font_size=font_size)
+
+
+
+def add_screenshot_button(plotter,window_size):
+    """Adds a screenshot button"""
+
+    def button_screenshot(value):
+        for x in range(plotter.shape[0]):
+            for y in range(plotter.shape[1]):
+                plotter.subplot(x,y)
+                for actor,content in plotter.actors.items():
+                    if not "bond" in actor and not "isosurface" in actor and not "atom" in actor:
+                        content.SetVisibility(False)
+        #
+        for slider in plotter.slider_widgets:
+            repres = slider.GetRepresentation()
+            repres.VisibilityOff()
+            slider.SetRepresentation(repres)
+        for button in plotter.button_widgets:
+            repres = button.GetRepresentation()
+            repres.VisibilityOff()
+            button.SetRepresentation(repres)
+
+        List_files = os.listdir()
+        d = 0
+        while "rgmol_screenshot_{}.png".format(d) in List_files:
+            d+=1
+        plotter.screenshot(filename="rgmol_screenshot_{}.png".format(d),window_size=window_size)
+
+        for x in range(plotter.shape[0]):
+            for y in range(plotter.shape[1]):
+                plotter.subplot(x,y)
+                for actor,content in plotter.actors.items():
+                    content.SetVisibility(True)
+
+        for slider in plotter.slider_widgets:
+            repres = slider.GetRepresentation()
+            repres.VisibilityOn()
+            slider.SetRepresentation(repres)
+        for button in plotter.button_widgets:
+            repres = button.GetRepresentation()
+            repres.VisibilityOn()
+            button.SetRepresentation(repres)
+
+    plotter.add_text(text="Screenshot",name="screenshot",position=(90.,20.))
+    plotter.add_checkbox_button_widget(button_screenshot,size=80,color_off="blue")
+
+
