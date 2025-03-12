@@ -548,9 +548,10 @@ def plot_product_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,wit
     """
     plot_product_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Plot the Molecular Orbitals of a molecule
+    Plot the Molecular Orbitals of a molecule on the left and the right.
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule.
     The delta defines the length to be added to the extremities of the position of the atoms.
+    The center part represents the product of both sides which is calculated when pushing the button.
 
     Parameters
     ----------
@@ -880,6 +881,7 @@ molecule.plot_radius = plot_radius
 molecule.plot_property = plot_property
 molecule.plot_diagonalized_condensed_kernel = plot_diagonalized_condensed_kernel
 molecule.plot_isodensity = plot_isodensity
+molecule.plot_multiple_isodensities = plot_multiple_isodensities
 molecule.plot_AO = plot_AO
 molecule.plot_MO = plot_MO
 molecule.plot_product_MO = plot_product_MO
