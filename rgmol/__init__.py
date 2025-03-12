@@ -22,9 +22,11 @@ import rgmol.extract_adf
 import rgmol.extract_cube
 import rgmol.extract_molden
 import rgmol.extract_orca
+import rgmol.extract_gaussian
 import rgmol.molecular_calculations
+import rgmol.write
 
-__version__ = "0.1.1.6"
+__version__ = "0.1.1.8"
 
 
 ##
