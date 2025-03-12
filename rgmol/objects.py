@@ -242,10 +242,45 @@ class molecule(object):
 
 
 class group_molecules(object):
-    """ group of moelcules object"""
+    """
+    group_molecules(list_molecules)
+
+    Constructs a group of molecules objects in order to plot multiple molecules in one window
+
+    Parameters
+    ----------
+        list_molecules : list
+            The list containing all the molecules
+
+    Returns
+    -------
+        group_molecules
+            group_molecules object
+
+    Attributes
+    ----------
+        list_molecules
+    """
 
     def __init__(self,list_molecules):
-        """creates
+        """
+        group_molecules(list_molecules)
+
+        Constructs a group of molecules objects in order to plot multiple molecules in one window
+
+        Parameters
+        ----------
+            list_molecules : list
+                The list containing all the molecules
+
+        Returns
+        -------
+            group_molecules
+                group_molecules object
+
+        Attributes
+        ----------
+            list_molecules
         """
         self.molecules=list_molecules
 

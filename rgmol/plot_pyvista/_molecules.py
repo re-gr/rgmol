@@ -759,6 +759,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
     """
     plot_diagonalized_kernel(kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
+
     Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
     Only the first number_eigenvectors will be computed to limit the calculation time.
     The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -772,11 +773,13 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
         plotting_method : str, optional
             The method used for plotting. By default isodensity. The other methods are : "multiple isodensities", "volume"
         number_eigenvectors : int, optional
-            The number of eigenvectors to be computed
+            Only used in the methods "total" and "partial". The number of eigenvectors to be computed
         grid_points : list of 3, optional
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot for the isodensity plotting method. By default .2
         number_isodensities : int, optional
             The number of isodensities to be plotted if the method used is multiple isodensities
         opacity : float, optional
@@ -789,8 +792,6 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
-        cutoff : float, optional
-            The initial cutoff of the isodensity plot. By default .2
         screenshot_button : bool, optional
             Adds a screenshot button. True by default
         window_size_screenshot : tuple, optional
@@ -807,7 +808,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
         Because the kernels are 6-dimensional, they scale up drastically in terms of memory used.
         If one only wants to look at the eigenmodes, the "only eigenmodes" method is just that. It computes the eigenmodes without computing the total kernel. More info can be found :doc:`here<../orbitals/calculate_eigenmodes_linear_response_function>`.
         Otherwise, the partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/diagonalize_kernel>`.
-
+        The last method is "total" which is just the calculation of the linear response on the whole space
     """
 
     if kernel != "linear_response_function":

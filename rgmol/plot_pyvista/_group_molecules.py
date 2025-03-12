@@ -21,7 +21,19 @@ from ._functions import *
 
 def _subplotting(number_molecules):
     """
-    finds the proper number of subplots for group of molecules plotting
+    _subplotting(number_molecules)
+
+    Function that finds the proper number of subplots for group of molecules plotting
+
+    Parameters
+    ----------
+        number_molecules : int
+            The number of molecules
+
+    Returns
+    -------
+        tuple
+            The shape of the plotter
     """
 
     if number_molecules < 4:
@@ -33,11 +45,25 @@ def _subplotting(number_molecules):
         return (3,int(round(number_molecules/3)))
     else:
         print("Too much molecules, the graph will still be plotted, but it will not be good")
-        return (3,int(round(number_molecules)))
+        return (3,int(round(number_molecules/3)))
 
-def get_subplot(number_molecules,index):
+def _get_subplot(number_molecules,index):
     """
+    _get_subplot(number_molecules,index)
+
     Gets the 2d subplot index from the index and the number of molecules
+
+    Parameters
+    ----------
+        number_molecules : int
+            The number of molecules
+        index : int
+            The index of the molecule
+
+    Returns
+    -------
+        tuple
+            The position of the index on the subplots
     """
 
     if number_molecules < 4:
@@ -51,6 +77,7 @@ def get_subplot(number_molecules,index):
 
 
 class _subplot:
+    """small class used for sliders in subplots"""
     def __init__(self,indexes,plotter,func,molecule):
         self.indexes = indexes
         self.plotter = plotter
@@ -62,6 +89,7 @@ class _subplot:
 
 
 class _subplot_isodensity:
+    """small class used for sliders in subplots"""
     def __init__(self,indexes,plotter,cutoff,func,molecule,value):
         self.indexes = indexes
         self.plotter = plotter
@@ -91,27 +119,31 @@ def plot_radius(self,opacity=1,factor=.4,show_bonds=True,screenshot_button=True,
     """
     plot_radius(opacity=1,factor=.4,show_bonds=True,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Plot the radius of the entire molecule
+    Plot the radius of each molecules
 
     Parameters
     ----------
-    opacity : float, optional
-        The opacity of the plot. By default equals to 1
-    factor : float, optional
-        The factor by which the plotted_property will be multiplied. By default equals to 1
-    show_bonds : bool, optional
-        Choose to show the bonds between the atoms or not. By default True
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        show_bonds : bool, optional
+            Choose to show the bonds between the atoms or not. By default True
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
 
     Returns
     -------
-    None
-        The plotter should display when using this function
+        None
+            The plotter should display when using this function
     """
     number_molecules = len(self.molecules)
     shape = _subplotting(number_molecules)
     plotter = pyvista.Plotter(shape=shape,border=True)
     for index_molecule in range(number_molecules):
-        index = get_subplot(number_molecules,index_molecule)
+        index = _get_subplot(number_molecules,index_molecule)
         plotter.subplot(index[0],index[1])
 
         molecule = self.molecules[index_molecule]
@@ -132,7 +164,7 @@ def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opa
     """
     plot_property(plotted_property,opacity=.4,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Plot a property for the entire molecule
+    Plot a property for each molecule
 
     Parameters
     ----------
@@ -148,6 +180,10 @@ def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opa
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
 
     Returns
     -------
@@ -159,7 +195,7 @@ def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opa
     shape = _subplotting(number_molecules)
     plotter = pyvista.Plotter(shape=shape,border=True)
     for index_molecule in range(number_molecules):
-        index = get_subplot(number_molecules,index_molecule)
+        index = _get_subplot(number_molecules,index_molecule)
         plotter.subplot(index[0],index[1])
 
         molecule = self.molecules[index_molecule]
@@ -182,7 +218,7 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
     """
     plot_diagonalized_condensed_kernel(kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Diagonalize and plot a condensed kernel for a molecule. One can navigate through the eigenmodes using a slider.
+    Diagonalize and plot a condensed kernel for each molecule. One can navigate through the eigenmodes using a slider for each molecule.
 
     Parameters
     ----------
@@ -198,6 +234,10 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
 
     Returns
     -------
@@ -216,10 +256,10 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
         molecule.plot_vector(plotter,XV[:,vector_number-1],opacity=opacity,factor=factor)
         plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(Xvp[vector_number-1]),name="eigenvalue")
 
-    list_subpl = [_subplot(get_subplot(number_molecules,index_molecule),plotter,create_mesh_diagonalized_kernel,self.molecules[index_molecule]) for index_molecule in range(number_molecules)]
+    list_subpl = [_subplot(_get_subplot(number_molecules,index_molecule),plotter,create_mesh_diagonalized_kernel,self.molecules[index_molecule]) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
-        index = get_subplot(number_molecules,index_molecule)
+        index = _get_subplot(number_molecules,index_molecule)
         plotter.subplot(index[0],index[1])
 
         molecule = self.molecules[index_molecule]
@@ -243,7 +283,7 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
     """
     plot_isodensity(plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Plot an isodensity
+    Plot an isodensity for each molecule
 
     Parameters
     ----------
@@ -261,6 +301,10 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
 
     Returns
     -------
@@ -272,7 +316,7 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
     shape = _subplotting(number_molecules)
     plotter = pyvista.Plotter(shape=shape,border=True)
     for index_molecule in range(number_molecules):
-        index = get_subplot(number_molecules,index_molecule)
+        index = _get_subplot(number_molecules,index_molecule)
         plotter.subplot(index[0],index[1])
 
         molecule = self.molecules[index_molecule]
@@ -295,7 +339,7 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
     """
     plot_AO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Plot the Atomic Orbitals of a molecule
+    Plot the Atomic Orbitals of each molecule
     The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
     The order of the Atomic Orbitals is defined in the molden file
 
@@ -317,6 +361,10 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
             The factor by which the radius will be multiplied. By default .3
         cutoff : float, optional
             The initial cutoff of the isodensity plot. By default .2
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
 
     Returns
     -------
@@ -333,10 +381,10 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
         AO_number = int(round(value))
         plot_cube(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],molecule.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor,cutoff=cutoff,add_name=str(shape[1]*indexes[0]+indexes[1]))
 
-    list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_AO,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
+    list_subpl = [_subplot_isodensity(_get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_AO,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
-        index = get_subplot(number_molecules,index_molecule)
+        index = _get_subplot(number_molecules,index_molecule)
         plotter.subplot(index[0],index[1])
 
         molecule = self.molecules[index_molecule]
@@ -366,7 +414,7 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
     """
     plot_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Plot the Molecular Orbitals of a molecule
+    Plot the Molecular Orbitals of each molecule
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
 
     Parameters
@@ -387,6 +435,10 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
             The factor by which the radius will be multiplied. By default .3
         cutoff : float, optional
             The initial cutoff of the isodensity plot. By default .2
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
 
     Returns
     -------
@@ -408,10 +460,10 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
         print_occupancy(plotter,molecule.properties["MO_occupancy"],MO_number,divy=shape[0])
 
 
-    list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_MO,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
+    list_subpl = [_subplot_isodensity(_get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_MO,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
-        index = get_subplot(number_molecules,index_molecule)
+        index = _get_subplot(number_molecules,index_molecule)
         plotter.subplot(index[0],index[1])
 
         molecule = self.molecules[index_molecule]
@@ -442,7 +494,7 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
     plot_transition_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
-    Plot the Transition Densities of a molecule.
+    Plot the Transition Densities of each molecule.
     All the AO and the MO will be calculated on the grid if they were not calculated.
     The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
 
@@ -464,6 +516,10 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
             The factor by which the radius will be multiplied. By default .3
         cutoff : float, optional
             The initial cutoff of the isodensity plot. By default .2
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
 
     Returns
     -------
@@ -504,10 +560,10 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
 
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(molecule.properties["transition_energy"][transition_number-1]),name="transition energy")
 
-    list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_transition_density,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
+    list_subpl = [_subplot_isodensity(_get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_transition_density,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
-        index = get_subplot(number_molecules,index_molecule)
+        index = _get_subplot(number_molecules,index_molecule)
         plotter.subplot(index[0],index[1])
 
         molecule = self.molecules[index_molecule]
@@ -553,7 +609,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
         plotting_method : str, optional
             The method used for plotting. By default isodensity. The other methods are : "multiple isodensities", "volume"
         number_eigenvectors : int, optional
-            The number of eigenvectors to be computed
+            Only used in the methods "total" and "partial". The number of eigenvectors to be computed
         grid_points : list of 3, optional
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
@@ -572,6 +628,10 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
 
     Returns
     -------
@@ -584,6 +644,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
         Because the kernels are 6-dimensional, they scale up drastically in terms of memory used.
         If one only wants to look at the eigenmodes, the "only eigenmodes" method is just that. It computes the eigenmodes without computing the total kernel. More info can be found :doc:`here<../orbitals/calculate_eigenmodes_linear_response_function>`.
         Otherwise, the partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/diagonalize_kernel>`.
+        The last method is "total" which is just the calculation of the linear response on the whole space
 
     """
 
@@ -643,10 +704,10 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
 
 
 
-    list_subpl = [_subplot_isodensity(get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_diagonalized_kernel,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
+    list_subpl = [_subplot_isodensity(_get_subplot(number_molecules,index_molecule),plotter,cutoff,create_mesh_diagonalized_kernel,self.molecules[index_molecule],1) for index_molecule in range(number_molecules)]
 
     for index_molecule in range(number_molecules):
-        index = get_subplot(number_molecules,index_molecule)
+        index = _get_subplot(number_molecules,index_molecule)
         plotter.subplot(index[0],index[1])
 
         molecule = self.molecules[index_molecule]

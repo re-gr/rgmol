@@ -412,11 +412,7 @@ def calculate_AO(self,grid_points,delta=3):
         voxel_origin,voxel_matrix = create_voxel_from_molecule(self,grid_points,delta=delta)
         self.properties["voxel_origin"] = voxel_origin
         self.properties["voxel_matrix"] = voxel_matrix
-
-        # self.properties["voxel_origin"] = np.array([ -8.904567 , -10.829626  , -7.000010])
-        # self.properties["voxel_matrix"] = np.array([[      0.295444 ,   0.000000 ,   0.000000],[0.000000  ,  0.298502  ,  0.000000],[0.000000   , 0.000000 ,   0.237289]])
-
-
+        self.properties["grid_points"] = grid_points
 
     voxel_origin = self.properties["voxel_origin"]
     voxel_matrix = self.properties["voxel_matrix"]

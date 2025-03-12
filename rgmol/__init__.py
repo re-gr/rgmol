@@ -26,7 +26,7 @@ import rgmol.extract_gaussian
 import rgmol.molecular_calculations
 import rgmol.write
 
-__version__ = "0.1.1.8"
+__version__ = "0.1.2.0"
 
 
 ##

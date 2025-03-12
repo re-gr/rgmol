@@ -146,10 +146,8 @@ def orthonormal_basis(Pos,B,k):
                 y (ndarray dim(3)) y axis
     """
 
-
     ind=int(B[k][1])-1
     ind2=int(B[k][0])-1
-
 
     Vec=(Pos[ind2]-Pos[ind])/np.linalg.norm((Pos[ind]-Pos[ind2]))
 
@@ -271,7 +269,9 @@ def bonds_plotting(plotter,bonds,Pos,Vec,factor=1):
 
 
 def plot_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
-    """plot atom as a sphere"""
+    """
+    plot atom as a sphere
+    """
     Norm = atom.properties[plotted_property]
     atom_sphere = pyvista.Sphere(radius=Norm*factor, phi_resolution=100, theta_resolution=100,center=atom.pos)
     plotter.add_mesh(atom_sphere,color=atom.color,pbr=False,roughness=0.0,metallic=0.0,diffuse=1,opacity=opacity,name="atom_{}".format(atom.nickname))
@@ -279,7 +279,9 @@ def plot_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
 
 
 def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
-    """plot atom as a sphere"""
+    """
+    plot a vector as a sphere around an atom
+    """
 
     colors=[[255,0,0],[255,255,255]]
     atom_sphere = pyvista.Sphere(radius=abs(vector)*factor, phi_resolution=100, theta_resolution=100,center=atom.pos)
@@ -289,7 +291,9 @@ def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
 
 
 def plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1,add_name=""):
-    """plot atom as a sphere"""
+    """
+    Plots an isodensity
+    """
 
     nx,ny,nz = np.shape(cube)
     cube_transposed = np.transpose(cube,(2,1,0))
@@ -334,7 +338,9 @@ def plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor
 
 
 def plot_cube_multiple_isodensities(plotter,voxel_origin,voxel_matrix,cube,number_isodensities=10,opacity=1,factor=1,add_name=""):
-    """plot multiple isodensities"""
+    """
+    plot multiple isodensities
+    """
 
     nx,ny,nz = np.shape(cube)
     cube_transposed = np.transpose(cube,(2,1,0))
@@ -389,7 +395,9 @@ def plot_cube_multiple_isodensities(plotter,voxel_origin,voxel_matrix,cube,numbe
 
 
 def plot_cube_volume(plotter,voxel_origin,voxel_matrix,cube,opacity=1,factor=1,add_name=""):
-    """plot multiple isodensities"""
+    """
+    plot the cube as a volume
+    """
 
     nx,ny,nz = np.shape(cube)
     cube_transposed = np.transpose(cube,(2,1,0))
@@ -444,7 +452,9 @@ def plot_cube_volume(plotter,voxel_origin,voxel_matrix,cube,opacity=1,factor=1,a
 
 
 def print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=1):
-    """Prints the contribution of each transition density for an eigenvector"""
+    """
+    Prints the contribution of each transition density for an eigenvector
+    """
 
 
     font_size_title = int(16/divy*plotter.window_size[1]/1000)
@@ -505,7 +515,9 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
 
 
 def print_occupancy(plotter,MO_occupancy,MO_number,divy=1):
-    """Prints the contribution of each transition density for an eigenvector"""
+    """
+    Prints the contribution of each transition density for an eigenvector
+    """
 
     LUMO = np.argmin(MO_occupancy)
 
@@ -529,7 +541,9 @@ def print_occupancy(plotter,MO_occupancy,MO_number,divy=1):
 
 
 def add_screenshot_button(plotter,window_size):
-    """Adds a screenshot button"""
+    """
+    Adds a screenshot button on the plotter
+    """
 
     def button_screenshot(value):
         for x in range(plotter.shape[0]):
