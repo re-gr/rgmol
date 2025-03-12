@@ -22,7 +22,8 @@ def _write_vector_for_cube(file,vector):
 def _write_data_for_cube(file,vector):
     """Writes a vector in a file"""
     for elem in vector:
-        file.write("  ")
+        m = int(np.sign(elem)/2-1/2)
+        file.write(" "*(3+m))
         file.write("{:9.5e}".format(elem))
 
 def _get_file_location(file):
@@ -40,7 +41,23 @@ def _get_file_location(file):
 
 def write_cube(self,cube,file_name,description="cube"):
     """
-    Writes the cube files inside a folder called rgmol which will be located inside the folder containing the molecule
+    write_cube(cube,file_name,description="cube")
+
+    Writes a cube file of a 3D vector inside a folder called rgmol which will be located inside the folder containing the molecule.
+
+    Parameters
+    ----------
+        cube : ndarray
+            The 3D vector to be stored in the cube file
+        file_name : str
+            The name of the file
+        description : str
+            Description of the file inside the cube file
+
+    Returns
+    -------
+        None
+            The cube file is written
     """
 
     file_location = _get_file_location(self.file)
