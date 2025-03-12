@@ -1,5 +1,5 @@
 <h1 align="center">
-rgmol v0.1.2.0
+rgmol v0.1.2.1
 </h1>
 
 rgmol is a python package that intends to offer calculations and visualizations of molecular properties.
@@ -24,9 +24,6 @@ A detailed tutorial can be found in the documentation.
 	scipy
    	periodictable
 	pyvista
-	matplotlib
-	plotly (optional)
-	
 
 ## Contact
 

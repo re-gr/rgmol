@@ -1,6 +1,6 @@
 [project]
 name = "rgmol"
-version = "0.1.2.0"
+version = "0.1.2.1"
 authors = [
 	{name = "Rémi Grincourt", email = "remi.grincourt@ens-lyon.fr"},
 ]
@@ -17,8 +17,7 @@ dependencies = [
 	"numpy",
 	"scipy",
    	"periodictable",
-	"pyvista",
-	"matplotlib"
+	"pyvista"
 ]
 [project.urls]
 Repository = "https://github.com/re-gr/rgmol"

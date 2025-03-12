@@ -25,8 +25,9 @@ import rgmol.extract_orca
 import rgmol.extract_gaussian
 import rgmol.molecular_calculations
 import rgmol.write
+import rgmol.plot_pyvista
 
-__version__ = "0.1.2.0"
+__version__ = "0.1.2.1"
 
 
 ##
