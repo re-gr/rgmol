@@ -935,11 +935,15 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
     # eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     eigenvectors = eigenvectors.transpose()
 
+
+
     reconstructed_eigenvectors = []
 
 
     for eigenvector in zip(eigenvectors,eigenvalues,range(len(eigenvectors))):
-        eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(eigenvectors[eigenvector[2]]**2)**(1/2)
+        eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(abs(eigenvectors[eigenvector[2]]))
+        # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(eigenvectors[eigenvector[2]]**2)**(1/2)
+        # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(eigenvectors[eigenvector[2]]**2*overlap_integral)**(1/2)
 
         reconstructed_eigenvector = np.zeros((nx,ny,nz))
 

@@ -480,7 +480,7 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
     text_contrib = ""
     compt_contrib = 0
     for contrib in range(len(contrib_sorted)):
-        if abs(contrib_sorted[contrib])<0.1:
+        if abs(contrib_sorted[contrib])<0.05:
             break
         text_contrib += r"C_"+"{}".format(contrib_indices_sorted[contrib]+1)+": {:3.3f}\n".format(contrib_sorted[contrib])
         compt_contrib += 1
@@ -505,7 +505,7 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
     text_contrib = ""
     for trans in range(len(transition_contrib_sorted)):
         occ,virt = np.unravel_index(array_sort[trans],np.shape(transition_contrib))
-        if abs(transition_contrib[occ,virt]) < 0.01:
+        if abs(transition_contrib[occ,virt]) < 0.05:
             break
         text_contrib += "{} -> {}".format(occ,virt)+": {:3.3f}\n".format(transition_contrib[occ,virt])
         compt += 1
