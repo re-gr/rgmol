@@ -545,6 +545,42 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
     return MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV)**(1/2))
 
 
+def calculate_electron_density(self,grid_points,delta=5):
+    """
+    calculate_electron_density(grid_points,delta=5)
+
+    Calculates the electron density for a molecule and puts it in molecule.properties["electron_density"]
+
+    If no voxel were associated with the molecule, it will automatically create a voxel
+    If the MO were not calculated it will also calculate them
+
+
+    Parameters
+    ----------
+        grid_points : list of 3
+        delta : float, optional
+            the length added on all directiosn to the box containing all atomic centers
+
+    Returns
+    -------
+        electron_density : ndarray
+    """
+
+    if not "MO_calculated" in self.properties:
+        self.calculate_MO(grid_points,delta=delta)
+
+    MO = self.properties["MO_calculated"]
+    MO_occ = np.array(self.properties["MO_occupancy"])
+    MO_occ_index = MO_occ>0
+
+    MO_occ = MO_occ[MO_occ_index]
+    MO_occ = MO_occ.reshape(len(MO_occ),1,1,1)
+
+    electron_density = np.sum(MO_occ * MO[MO_occ_index]**2,axis=0)
+    self.properties["electron_density"] = electron_density
+    return electron_density
+
+
 molecule.calculate_AO = calculate_AO
 molecule.calculate_MO = calculate_MO
 molecule.calculate_MO_chosen = calculate_MO_chosen
@@ -694,6 +730,7 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
     print(np.sum(transition_density),np.sum(transition_density**2))
     self.properties["transition_density_list"][chosen_transition_density] = transition_density
     return transition_density
+
 
 ######################
 ## CDFT descriptors ##
@@ -1035,6 +1072,7 @@ def diagonalize_kernel(self,kernel,number_eigenvectors,grid_points,method="parti
 
 molecule.calculate_transition_density = calculate_transition_density
 molecule.calculate_chosen_transition_density = calculate_chosen_transition_density
+molecule.calculate_electron_density = calculate_electron_density
 molecule.calculate_linear_response_function_total = calculate_linear_response_function_total
 molecule.calculate_linear_response_function_partial = calculate_linear_response_function_partial
 molecule.calculate_eigenmodes_linear_response_function = calculate_eigenmodes_linear_response_function

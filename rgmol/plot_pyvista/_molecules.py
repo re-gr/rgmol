@@ -291,6 +291,9 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
     plotter.show(full_screen=False)
     return
 
+#########################
+## General 3D plotting ##
+#########################
 
 def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
@@ -328,7 +331,7 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
     def create_mesh_cube(value):
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["cube"],opacity=opacity,factor=factor,cutoff=value)
+        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties[plotted_isodensity],opacity=opacity,factor=factor,cutoff=value)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
@@ -406,8 +409,9 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
     plotter.show(full_screen=False)
     return
 
-
-
+############################################
+## Plotting Atomic / Molecular Properties ##
+############################################
 
 def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
@@ -658,6 +662,65 @@ def plot_product_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,wit
 
 
 
+def plot_electron_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+    """
+    plot_electron_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+
+
+    Plot the Electron Density of a molecule.
+    All the AO and the MO will be calculated on the grid if they were not calculated.
+    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+
+    Parameters
+    ----------
+        grid_points : list of 3, optional
+            The number of points for the grid in each dimension. By default (40,40,40)
+        delta : float, optional
+            The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot. By default .2
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+    """
+
+    plotter = pyvista.Plotter()
+
+    if not "electron_density" in self.properties:
+        self.calculate_electron_density(grid_points,delta=delta)
+
+    if with_radius:
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+
+    def create_mesh_cube(value):
+        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["electron_density"],opacity=opacity,factor=factor,cutoff=value)
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_cube, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+    plotter.show(full_screen=False)
+
+
 def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
     plot_transition_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
@@ -885,6 +948,7 @@ molecule.plot_multiple_isodensities = plot_multiple_isodensities
 molecule.plot_AO = plot_AO
 molecule.plot_MO = plot_MO
 molecule.plot_product_MO = plot_product_MO
+molecule.plot_electron_density = plot_electron_density
 molecule.plot_transition_density = plot_transition_density
 molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
 
