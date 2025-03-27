@@ -52,7 +52,7 @@ def _extract_molden_file(file):
 
     MO_list = []
     MO_energy = []
-    spin = []
+    MO_spin = []
     MO_occupancy = []
     D = np.arange(154)
 
@@ -130,9 +130,11 @@ def _extract_molden_file(file):
                 if lsplit[0]=="Ene=":
                     MO_energy.append(float(lsplit[1]))
 
-                if lsplit[0] == "Spin=" and lsplit[1] == "Beta":
-                    raise ValueError("Unrestricted calculations not currently implemented")
-                    # spin.append(lsplit[1])
+                if "Spin=" in line:
+                    if "Alpha" in line:
+                        MO_spin.append(1/2)
+                    else: MO_spin.append(-1/2)
+
                 if lsplit[0] == "Occup=":
                     MO_occupancy.append(float(lsplit[1]))
                 AO_contribution = []
@@ -145,9 +147,11 @@ def _extract_molden_file(file):
                     if lsplit[0]=="Ene=":
                         MO_energy.append(float(lsplit[1]))
 
-                    if lsplit[0] == "Spin=" and lsplit[1] == "Beta":
-                        raise ValueError("Unrestricted calculations not currently implemented")
-                        # spin.append(lsplit[1])
+                    if "Spin=" in line:
+                        if "Alpha" in line:
+                            MO_spin.append(1/2)
+                        else: MO_spin.append(-1/2)
+
                     if lsplit[0] == "Occup=":
                         MO_occupancy.append(float(lsplit[1]))
 
@@ -157,7 +161,17 @@ def _extract_molden_file(file):
                     AO_contribution.append(float(lsplit[1]))
     if AO_contribution != MO_list[-1]:
         MO_list.append(AO_contribution)
-    return atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy
+
+    array_sort = np.argsort(MO_energy)
+    MO_list_sorted = []
+    for index_sort in array_sort:
+        MO_list_sorted.append(MO_list[index_sort])
+
+    MO_energy = np.array(MO_energy)[array_sort]
+    MO_spin = np.array(MO_spin)[array_sort]
+    MO_occupancy = np.array(MO_occupancy)[array_sort]
+
+    return atom_names,atom_position,AO_list,AO_type_list,MO_list_sorted,MO_energy,MO_occupancy,MO_spin
 
 
 def extract(file,do_find_bonds=0):
@@ -179,7 +193,7 @@ def extract(file,do_find_bonds=0):
         mol : molecule
     """
 
-    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy = _extract_molden_file(file)
+    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy,MO_spin = _extract_molden_file(file)
 
 
     list_atoms = []
@@ -189,7 +203,7 @@ def extract(file,do_find_bonds=0):
         list_atoms.append(atom_x)
         nicknaming+=1
 
-    mol = molecule(list_atoms,[],file=file,properties={"AO_list":AO_list,"AO_type_list":AO_type_list,"MO_list":MO_list,"MO_energy":MO_energy,"MO_occupancy":MO_occupancy})
+    mol = molecule(list_atoms,[],file=file,properties={"AO_list":AO_list,"AO_type_list":AO_type_list,"MO_list":MO_list,"MO_energy":MO_energy,"MO_occupancy":MO_occupancy,"MO_spin":MO_spin})
 
     if do_find_bonds:
         mol.bonds = find_bonds(mol)

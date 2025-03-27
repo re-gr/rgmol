@@ -819,7 +819,7 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
 
 
 
-def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
     """
     plot_diagonalized_kernel(kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
@@ -832,12 +832,8 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
     ----------
         kernel : str
             The kernel to be diagonalized and plotted
-        method : str, optional
-            The method of calculation of the kernel, only eigenmodes by default. More information can be found in the notes.
         plotting_method : str, optional
             The method used for plotting. By default isodensity. The other methods are : "multiple isodensities", "volume"
-        number_eigenvectors : int, optional
-            Only used in the methods "total" and "partial". The number of eigenvectors to be computed
         grid_points : list of 3, optional
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
@@ -875,34 +871,39 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
         The last method is "total" which is just the calculation of the linear response on the whole space
     """
 
-    if kernel != "linear_response_function":
-        raise ValueError("Only linear response function implemented for now")
+    if kernel == "linear_response_function":
 
-    if method == "only eigenmodes":
         self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
-        contrib_eigenvectors = self.properties["contibution_linear_response_eigenvectors"]
 
+        eigenvectors = self.properties["linear_response_eigenvectors"]
+        eigenvalues = self.properties["linear_response_eigenvalues"]
+        contrib_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
+        transition_list = self.properties["transition_list"]
+        transition_factor_list = self.properties["transition_factor_list"]
+
+    elif kernel == "softness_kernel":
+        self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,grid_points=grid_points,delta=delta)
+        eigenvectors = self.properties["softness_kernel_eigenvectors"]
+        eigenvalues = self.properties["softness_kernel_eigenvalues"]
+        contrib_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
+        transition_list = self.properties["transition_list"] + [[[-1,-1]]]
+        transition_factor_list = self.properties["transition_factor_list"] + [[[1]]]
 
     else:
-        self.diagonalize_kernel(kernel,number_eigenvectors,grid_points,method=method,delta=delta)
+        raise TypeError("The kernel {} has not been implemented. The available kernels are : linear_response_function and softness_kernel".format(kernel))
 
-    eigenvectors = self.properties["linear_response_eigenvectors"]
-    eigenvalues = self.properties["linear_response_eigenvalues"]
-    transition_list = self.properties["transition_list"]
-    transition_factor_list = self.properties["transition_factor_list"]
     plotter = pyvista.Plotter()
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
 
-    if plotting_method == "isodensity":
 
+    if plotting_method == "isodensity":
         def create_mesh_diagonalized_kernel(value,cutoff):
             vector_number = int(round(value))
             plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
-            if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
+            print_contribution_transition_density(plotter,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
 
         slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
@@ -914,8 +915,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             plot_cube_multiple_isodensities(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
-            if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
+            print_contribution_transition_density(plotter,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
     elif plotting_method == "volume":
         def create_mesh_diagonalized_kernel(value,cutoff):
@@ -923,8 +923,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             plot_cube_volume(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
-            if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
+            print_contribution_transition_density(plotter,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
     slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))

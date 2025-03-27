@@ -24,6 +24,7 @@ import rgmol.extract_molden
 import rgmol.extract_orca
 import rgmol.extract_gaussian
 import rgmol.molecular_calculations
+import rgmol.calculate_CDFT
 import rgmol.write
 import rgmol.plot_pyvista
 

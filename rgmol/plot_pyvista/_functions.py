@@ -451,7 +451,7 @@ def plot_cube_volume(plotter,voxel_origin,voxel_matrix,cube,opacity=1,factor=1,a
 
 
 
-def print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=1):
+def print_contribution_transition_density(plotter,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=1):
     """
     Prints the contribution of each transition density for an eigenvector
     """
@@ -468,34 +468,45 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
     contrib_sorted = contrib_eigenvectors[vector_number-1][array_sort]
     contrib_indices_sorted = np.arange(len(contrib_eigenvectors[vector_number-1]))[array_sort]
 
-
     lin_transition = np.array([transition for transitions in transition_list for transi in transitions for transition in transi])
 
     occ = lin_transition[::2]
     virt = lin_transition[1::2]
     max_occupied = np.max(occ)
     max_virtual= np.max(virt)
-    transition_contrib = np.zeros((max_occupied+1,max_virtual+1))
+    if kernel=="softness_kernel":
+        #To add fukui function
+        transition_contrib = np.zeros((max_occupied+2,max_virtual+2))
+    else:
+        transition_contrib = np.zeros((max_occupied+1,max_virtual+1))
 
     text_contrib = ""
     compt_contrib = 0
     for contrib in range(len(contrib_sorted)):
         if abs(contrib_sorted[contrib])<0.05:
             break
-        text_contrib += r"C_"+"{}".format(contrib_indices_sorted[contrib]+1)+": {:3.3f}\n".format(contrib_sorted[contrib])
+        if contrib_indices_sorted[contrib] == len(contrib_sorted)-1 and kernel=="softness_kernel":
+            text_contrib +="f : {:3.3f}\n".format(contrib_sorted[contrib])
+        else:
+            text_contrib += r"C_"+"{}".format(contrib_indices_sorted[contrib]+1)+": {:3.3f}\n".format(contrib_sorted[contrib])
         compt_contrib += 1
+
 
     plotter.add_text(text=text_contrib,name="contrib",font_size=font_size,position=(20.0,pos_y-2*font_size_title-2*font_size*compt_contrib))
     plotter.add_text(text="Contribution of transitions",name="transi_title",font_size=font_size_title,position=(0.0,pos_y-3*font_size_title-2*font_size*(compt_contrib)))
 
+
     for contrib in range(len(contributions)):
+        #Do the sum of the transitions
         transitions = transition_list[contrib]
         transition_factors = transition_factor_list[contrib]
+
 
         for transi,transi_factor in zip(transitions,transition_factors):
             transition_contrib[transi[0],transi[1]] += contributions[contrib] * transi_factor[0]
 
     transition_contrib = transition_contrib / np.sum(abs(transition_contrib))
+
     compt = 0
 
     array_sort = np.argsort(abs(transition_contrib).ravel())[::-1]
@@ -507,7 +518,10 @@ def print_contribution_transition_density(plotter,vector_number,contrib_eigenvec
         occ,virt = np.unravel_index(array_sort[trans],np.shape(transition_contrib))
         if abs(transition_contrib[occ,virt]) < 0.05:
             break
-        text_contrib += "{} -> {}".format(occ,virt)+": {:3.3f}\n".format(transition_contrib[occ,virt])
+        if occ == max_occupied+1 and virt == max_virtual+1:
+            text_contrib += "f"+": {:3.3f}\n".format(transition_contrib[occ,virt])
+        else:
+            text_contrib += "{} -> {}".format(occ,virt)+": {:3.3f}\n".format(transition_contrib[occ,virt])
         compt += 1
 
     plotter.add_text(text=text_contrib,name="transi",font_size=font_size,position=(20.0,pos_y-4*font_size_title-2*font_size*compt_contrib-2*font_size*compt))
