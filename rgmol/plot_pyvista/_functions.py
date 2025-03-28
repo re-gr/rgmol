@@ -564,7 +564,7 @@ def add_screenshot_button(plotter,window_size):
             for y in range(plotter.shape[1]):
                 plotter.subplot(x,y)
                 for actor,content in plotter.actors.items():
-                    if not "bond" in actor and not "isosurface" in actor and not "atom" in actor:
+                    if not "bond" in actor and not "isosurface" in actor and not "atom" in actor and not "dipole moment" in actor:
                         content.SetVisibility(False)
         #
         for slider in plotter.slider_widgets:

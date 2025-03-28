@@ -31,6 +31,25 @@ class _slider:
             self.value = value
         self.func(self.value,self.cutoff)
 
+class _three_buttons:
+    def __init__(self,func,value,mode_D,mode_P,mode_M):
+        self.func = func
+        self.value = value
+        self.mode_D = mode_D
+        self.mode_P = mode_P
+        self.mode_M = mode_M
+
+    def __call__(self,mode,value):
+        if mode=="value":
+            self.value = value
+        elif mode=="d":
+            self.mode_D = value
+        elif mode=="p":
+            self.mode_P = value
+        elif mode=="m":
+            self.mode_M = value
+        self.func(self.value,self.mode_D,self.mode_P,self.mode_M)
+
 ########################################
 ## Adding Plotting Methods for Atoms  ##
 ########################################
@@ -721,6 +740,99 @@ def plot_electron_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor
     plotter.show(full_screen=False)
 
 
+
+
+def plot_dipole_moment(self,opacity=0.5,factor=1,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+    """
+    plot_transition_density(opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+
+
+    Plot the Transition Densities of a molecule.
+    All the AO and the MO will be calculated on the grid if they were not calculated.
+    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+
+    Parameters
+    ----------
+        opacity : float, optional
+            The opacity of the arrow. By default .5
+        factor : float, optional
+            The factor by which the norm of the arrow is multiplied. By default 1
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot. By default .2
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+    """
+
+    plotter = pyvista.Plotter()
+
+    center_of_mass = self.properties["center_of_mass"]
+    D = self.properties["D"]
+    P = self.properties["P"]
+    M = self.properties["M"]
+    state_transition = self.properties["state_transition"]
+
+    self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+
+    def create_mesh_dipole_moment(value,mode_D,mode_P,mode_M):
+        transition_number = int(round(value))
+        directions = [[],[],[]]
+        if mode_D: directions[0] = np.array(D[transition_number-1])
+        if mode_P: directions[1] = np.array(P[transition_number-1])
+        if mode_M: directions[2] = np.array(M[transition_number-1])
+        compt = 1
+        for direc in range(3):
+            direction = directions[direc]
+            if len(direction)>0:
+                norm = np.sum(direction**2)**(1/2)
+                dipole_moment = pyvista.Arrow(start=center_of_mass,direction=direction,scale=factor*norm)
+                if direc==0:
+                    plotter.add_mesh(dipole_moment,opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="blue",name="dipole moment{}".format(direc))
+                    plotter.add_text(text="Electric dipole\nNorm = "+'{:3.3f} (a.u.)'.format(norm),name="norm{}".format(direc),position=(0.05,0.8-.07*(2-direc)),viewport=True,font_size=int(15*plotter.window_size[1]/1000),color="blue")
+                elif direc==1:
+                    plotter.add_mesh(dipole_moment,opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="green",name="dipole moment{}".format(direc))
+                    plotter.add_text(text="Electric dipole velocity\nNorm = "+'{:3.3f} (a.u.)'.format(norm),name="norm{}".format(direc),position=(0.05,0.8-.07*(2-direc)),viewport=True,font_size=int(15*plotter.window_size[1]/1000),color="green")
+                else:
+                    plotter.add_mesh(dipole_moment,opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="red",name="dipole moment{}".format(direc))
+                    plotter.add_text(text="Magnetic dipole\nNorm = "+'{:3.3f} (a.u.)'.format(norm),name="norm{}".format(direc),position=(0.05,0.8-.07*(2-direc)),viewport=True,font_size=int(15*plotter.window_size[1]/1000),color="red")
+                compt+=1
+            else:
+                plotter.remove_actor("norm{}".format(direc))
+                plotter.remove_actor("dipole moment{}".format(direc))
+
+            plotter.add_text(text=r"Transition :"+ state_transition[transition_number-1] ,name="transi num",position=(0.05,.9),viewport=True)
+        plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["energy_transition_spectra"][transition_number-1]),name="transition energy")
+
+
+    three_buttons = _three_buttons(create_mesh_dipole_moment,1,0,0,0)
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+
+    plotter.add_slider_widget(lambda value: three_buttons("value",value), [1, len(D)],value=1,title="Transition number", fmt="%1.0f")
+    plotter.add_checkbox_button_widget(lambda value_d: three_buttons("d",value_d) ,size=80,position=(20.,150))
+    plotter.add_checkbox_button_widget(lambda value_p: three_buttons("p",value_p) ,size=80,position=(20.,250),color_on="green")
+    plotter.add_checkbox_button_widget(lambda value_m: three_buttons("m",value_m) ,size=80,position=(20.,350),color_on='red')
+
+
+
+    plotter.show(full_screen=False)
+
+
 def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
     plot_transition_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
@@ -814,6 +926,9 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
     plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(self.properties["transition_density_list"])],value=1,title="Number", fmt="%1.0f")
     plotter.add_slider_widget(lambda value: slider_function("cutoff",value), [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
     plotter.show(full_screen=False)
+
+
+
 
 
 
@@ -945,6 +1060,7 @@ molecule.plot_AO = plot_AO
 molecule.plot_MO = plot_MO
 molecule.plot_product_MO = plot_product_MO
 molecule.plot_electron_density = plot_electron_density
+molecule.plot_dipole_moment = plot_dipole_moment
 molecule.plot_transition_density = plot_transition_density
 molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
 

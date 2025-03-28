@@ -38,10 +38,13 @@ def extract_transition(file,mol=None):
             All the lists are sorted by energy
     """
 
-
     flag_states = 0
     flag_completing_state = 0
     flag_completed_state = 0
+
+    flag_spec = 0
+    flag_spec_in = 0
+
     for line in codecs.open(file, 'r',encoding="utf-8"):
 
         if "EXCITED STATES" in line:
@@ -84,6 +87,46 @@ def extract_transition(file,mol=None):
                 flag_states = 0
                 flag_completed_state = 0
 
+        elif "Center of mass = " in line:
+            lsplit = line.split()
+            center_of_mass = [float(lsplit[4][1:-1]),float(lsplit[5][:-1]),float(lsplit[6][:-1])]
+
+        elif "SPECTRUM VIA TRANSITION" in line:
+            flag_spec = 4
+
+            if "ABSORPTION" in line and "ELECTRIC DIPOLE" in line:
+                abs_ed,abs_vd,cd_ed,cd_vd = 1,0,0,0
+                D = []
+                state_transition = []
+                energy_transition_spectra = []
+            elif "ABSORPTION" in line and "VELOCITY DIPOLE" in line:
+                abs_ed,abs_vd,cd_ed,cd_vd = 0,1,0,0
+                P = []
+            elif "CD" in line and "ELECTRIC DIPOLE" in line:
+                abs_ed,abs_vd,cd_ed,cd_vd = 0,0,1,0
+                M = []
+            elif "CD" in line and "VELOCITY DIPOLE" in line:
+                abs_ed,abs_vd,cd_ed,cd_vd = 0,0,0,1
+
+        elif flag_spec:
+            flag_spec -=1
+            if flag_spec == 0: flag_spec_in = 1
+
+        elif flag_spec_in:
+            lsplit = line.split()
+            if len(line)<3: flag_spec_in = 0
+            else:
+                if abs_ed:
+                    state_transition.append(lsplit[0]+" "+lsplit[1]+" "+lsplit[2])
+                    energy_transition_spectra.append(float(lsplit[3]))
+                    D.append([float(lsplit[-3]),float(lsplit[-2]),float(lsplit[-1])])
+                elif abs_vd:
+                    P.append([float(lsplit[-3]),float(lsplit[-2]),float(lsplit[-1])])
+                elif cd_ed:
+                    M.append([float(lsplit[-3]),float(lsplit[-2]),float(lsplit[-1])])
+
+
+
     array_sort = np.argsort(transition_energy)
     transition_energy_sorted = []
     transition_list_sorted = []
@@ -98,6 +141,11 @@ def extract_transition(file,mol=None):
         mol.properties["transition_list"] = transition_list_sorted
         mol.properties["transition_factor_list"] = transition_factor_list_sorted
 
+        mol.properties["state_transition"] = state_transition
+        mol.properties["energy_transition_spectra"] = energy_transition_spectra
+        mol.properties["center_of_mass"] = center_of_mass
+        mol.properties["D"] = D
+        mol.properties["P"] = P
+        mol.properties["M"] = M
+
     return transition_energy_sorted,transition_list_sorted,transition_factor_list_sorted
-
-
