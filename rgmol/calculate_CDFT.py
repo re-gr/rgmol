@@ -13,9 +13,9 @@ import scipy as sp
 from rgmol.objects import *
 
 
-def calculate_fukui(self,mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10):
+def calculate_fukui_function(self,mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10):
     """
-    calculate_fukui(mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10)
+    calculate_fukui_function(mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10)
 
     Calculates the fukui function using finite differences between electron density.
     If mol_p is provided, f+ will be computed.
@@ -346,7 +346,7 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
 
 
 
-molecule.calculate_fukui = calculate_fukui
+molecule.calculate_fukui_function = calculate_fukui_function
 molecule.calculate_hardness = calculate_hardness
 molecule.calculate_eigenmodes_linear_response_function = calculate_eigenmodes_linear_response_function
 molecule.calculate_softness_kernel_eigenmodes = calculate_softness_kernel_eigenmodes
