@@ -1134,5 +1134,6 @@ molecule.plot_product_MO = plot_product_MO
 molecule.plot_electron_density = plot_electron_density
 molecule.plot_dipole_moment = plot_dipole_moment
 molecule.plot_transition_density = plot_transition_density
+molecule.plot_fukui_function = plot_fukui_function
 molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
 
