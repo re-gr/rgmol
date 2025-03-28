@@ -27,10 +27,10 @@ orca_CH3Cl = (impresources.files(CH3Cl) / "CH3Cl.out").__str__()
 molden_CH3Cl = (impresources.files(CH3Cl) / "CH3Cl.molden.input").__str__()
 
 
-orca_CHFClBr = (impresources.files(CH3Cl) / "chfclbr.out").__str__()
-molden_CHFClBr = (impresources.files(CH3Cl) / "chfclbr.molden.input").__str__()
-orca_bromochlorofluoromethane = (impresources.files(CH3Cl) / "chfclbr.out").__str__()
-molden_bromochlorofluoromethane = (impresources.files(CH3Cl) / "chfclbr.molden.input").__str__()
+orca_CHFClBr = (impresources.files(chfclbr) / "chfclbr.out").__str__()
+molden_CHFClBr = (impresources.files(chfclbr) / "chfclbr.molden.input").__str__()
+orca_bromochlorofluoromethane = (impresources.files(chfclbr) / "chfclbr.out").__str__()
+molden_bromochlorofluoromethane = (impresources.files(chfclbr) / "chfclbr.molden.input").__str__()
 
 
 orca_formaldehyde = (impresources.files(formaldehyde) / "H2CO.out").__str__()
