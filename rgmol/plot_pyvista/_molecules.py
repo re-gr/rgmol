@@ -791,12 +791,12 @@ def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(1
     plotter = pyvista.Plotter()
 
     if not fukui_type in self.properties:
-        self.calculate_fukui(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,grid_points=grid_points,delta=delta)
+        self.calculate_fukui_function(mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
 
     if not fukui_type in self.properties:
         raise TypeError("This fukui function could not be computed, did you give mol_m or mol_p ?")
 
-    fukui = self.properties["fukui_type"]
+    fukui = self.properties[fukui_type]
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
