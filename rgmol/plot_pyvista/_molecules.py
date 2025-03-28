@@ -432,9 +432,9 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
 ## Plotting Atomic / Molecular Properties ##
 ############################################
 
-def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_AO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_AO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_AO(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Atomic Orbitals of a molecule
     The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -499,9 +499,9 @@ def plot_AO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
 
 
 
-def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_MO(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Molecular Orbitals of a molecule
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -567,9 +567,9 @@ def plot_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius
 
 
 
-def plot_product_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_product_MO(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_product_MO(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Molecular Orbitals of a molecule on the left and the right.
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule.
@@ -681,9 +681,9 @@ def plot_product_MO(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,wit
 
 
 
-def plot_electron_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_electron_density(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_electron_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_electron_density(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Electron Density of a molecule.
@@ -741,15 +741,86 @@ def plot_electron_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor
 
 
 
+def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=10,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+    """
+    plot_fukui_function(mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=10,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+
+
+    Plots the fukui function desired.
+    The fukui functions are calculated using finite differences of electron density.
+    Thus, the molecule with one electron added (mol_p) or removed (mol_m) must be computed and added as argument to this function.
+
+
+    Parameters
+    ----------
+        mol_p : molecule, optional
+            The molecule with an electron added. Needed for calculating the softness kernel with a fukui_type of "0" or "+"
+        mol_n : molecule, optional
+            The molecule with an electron removed. Needed for calculating the softness kernel with a fukui_type of "0" or "-"
+        fukui_type : molecule, optional
+            The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
+        grid_points : list of 3, optional
+            The number of points for the grid in each dimension. By default (40,40,40)
+        delta : float, optional
+            The length added on all directions of the box containing all atomic centers. By default 3
+        cutoff : float, optional
+            The cutoff of the isodensity plot. By default .2
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot. By default .2
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+    """
+
+    plotter = pyvista.Plotter()
+
+    if not fukui_type in mol.properties:
+        self.calculate_fukui(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,grid_points=grid_points,delta=delta)
+
+    if not fukui_type in mol.properties:
+        raise TypeError("This fukui function could not be computed, did you give mol_m or mol_p ?")
+
+    fukui = mol.properties["fukui_type"]
+
+    if with_radius:
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+
+    def create_mesh_cube(value):
+        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],fukui,opacity=opacity,factor=factor,cutoff=value)
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_cube, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+    plotter.show(full_screen=False)
+
+
+
 
 def plot_dipole_moment(self,opacity=0.5,factor=1,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_transition_density(opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_dipole_moment(opacity=0.5,factor=1,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
-    Plot the Transition Densities of a molecule.
-    All the AO and the MO will be calculated on the grid if they were not calculated.
-    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+    Plots the electric and magnetic dipole moments of a molecule.
+    Data has to be extracted from an orca TDDFT calculation using :doc:`rgmol.extract_orca.extract_transition<../extract_orca>`.
 
     Parameters
     ----------
@@ -833,9 +904,9 @@ def plot_dipole_moment(self,opacity=0.5,factor=1,opacity_radius=1,factor_radius=
     plotter.show(full_screen=False)
 
 
-def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_transition_density(grid_points=(40,40,40),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_transition_density(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Transition Densities of a molecule.
@@ -933,15 +1004,17 @@ def plot_transition_density(self,grid_points=(40,40,40),delta=3,opacity=0.5,fact
 
 
 
-
-def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
+def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_points=(100,100,100),delta=10,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
     """
-    plot_diagonalized_kernel(kernel,method="only eigenmodes",plotting_method="isodensity",number_eigenvectors=20,grid_points=(20,20,20),delta=3,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_diagonalized_kernel(kernel,plotting_method="isodensity",grid_points=(100,100,100),delta=10,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
 
 
-    Calculate and diagonalize a kernel. Only the linear response function is implemented for now.
-    Only the first number_eigenvectors will be computed to limit the calculation time.
+    Calculate and diagonalize a kernel.
+    The available kernels are the linear_response_function and the softness_kernel
+    Only the eigenmodes are computed using a method that does not calculate the whole kernel.
     The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+
+    For the softness kernel as it is calculated using the Parr-Berkowitz relation, the fukui functions need to be computed. For that, a calculation adding (mol_p) or removing an electron (mol_m) needs to be done with the same geometry.
 
     Parameters
     ----------
@@ -971,19 +1044,18 @@ def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_point
             Adds a screenshot button. True by default
         window_size_screenshot : tuple, optional
             The size of the screenshots. By default (1000,1000)
+        mol_p : molecule, optional
+            The molecule with an electron added. Needed for calculating the softness kernel with a fukui_type of "0" or "+"
+        mol_n : molecule, optional
+            The molecule with an electron removed. Needed for calculating the softness kernel with a fukui_type of "0" or "-"
+        fukui_type : molecule, optional
+            The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
+
 
     Returns
     -------
         None
             The plotter should display when using this function
-
-
-    Notes
-    -----
-        Because the kernels are 6-dimensional, they scale up drastically in terms of memory used.
-        If one only wants to look at the eigenmodes, the "only eigenmodes" method is just that. It computes the eigenmodes without computing the total kernel. More info can be found :doc:`here<../orbitals/calculate_eigenmodes_linear_response_function>`.
-        Otherwise, the partial method has been implemented which allows to remove the part of the space where the transition densities are almost zero. For each transition density, the space is sorted and the lower dense part that makes up to less than 1% is removed. In practice this removes as much as 90% of the space. More details on this method can be found :doc:`here<../orbitals/diagonalize_kernel>`.
-        The last method is "total" which is just the calculation of the linear response on the whole space
     """
 
     if kernel == "linear_response_function":

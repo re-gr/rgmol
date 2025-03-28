@@ -13,8 +13,39 @@ import scipy as sp
 from rgmol.objects import *
 
 
-def calculate_fukui(self,mol_p=None,mol_m=None,grid_points=(100,100,100),delta=5):
-    """Calculates fukui function"""
+def calculate_fukui(self,mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10):
+    """
+    calculate_fukui(mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10)
+
+    Calculates the fukui function using finite differences between electron density.
+    If mol_p is provided, f+ will be computed.
+    If mol_m is provided, f- will be computed.
+    If both are provided, f+, f- and f0 will be computed.
+    The fukui functions are automatically added to the molecule.properties with the keys : f0 f+ and f-
+
+    Parameters
+    ----------
+    grid_points : list of 3
+    delta : float, optional
+        the length added on all directions of the box containing all atomic centers
+
+    Returns
+    -------
+    f0
+        the f0 fukui function
+    fp
+        the f+ fukui function
+    fm
+        the f- fukui function
+
+
+    Notes
+    -----
+
+    :math:`f^+ = \\rho(N+1)-\\rho(N)`
+    :math:`f^- = \\rho(N)-\\rho(N-1)`
+    :math:`f^0 = (f^+ + f^-)/2`
+    """
 
     if not(mol_p) and not(mol_m):
         raise TypeError("Need at least the molecule with N+1 or N-1 number of electrons")
@@ -59,7 +90,21 @@ def calculate_fukui(self,mol_p=None,mol_m=None,grid_points=(100,100,100),delta=5
 
 def calculate_hardness(self):
     """
-    Calculates hardness using Koopmans theorem
+    calculate_hardness()
+
+    This method calculates the global hardness using Koopmans theorem.
+    The hardness is therefore just the difference LUMO - HOMO
+    The hardness is directly added into the molecule.properties with the key "hardness"
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    hardness
+        the hardness of the molecule
+
     """
 
     if not "MO_energy" in self.properties:
@@ -76,9 +121,9 @@ def calculate_hardness(self):
     return hardness
 
 
-def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
+def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100),delta=10):
     """
-    calculate_eigenmodes_linear_response_function(grid_points,delta=3)
+    calculate_eigenmodes_linear_response_function(grid_points=(100,100,100),delta=10)
 
     Calculates the linear response function from the transition densities.
     This method does not calculate directly the linear response, but only the eigenmodes.
@@ -88,15 +133,15 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
     Parameters
     ----------
     grid_points : list of 3
-    threshold : float, optional
-        the threshold for the total transition density that should be kept
     delta : float, optional
         the length added on all directions of the box containing all atomic centers
 
     Returns
     -------
-    linear_response_function
-        The 6-dimensional kernel
+    linear_response_eigenvalues
+        the eigenvalues of the linear response function
+    linear_response_eigenvectors
+        the eigenvectors of the linear response function
 
     Notes
     -----
@@ -180,8 +225,45 @@ def calculate_eigenmodes_linear_response_function(self,grid_points,delta=3):
 
 
 def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10):
-    """Calculates the softness kernel eigenmodes"""
+    """
+    calculate_softness_kernel_eigenmodes(fukui_type="0",mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10)
 
+    Calculates the softness kernel from the transition densities and the fukui function using the Parr-Berkowitz relation.
+    For that, a calculation adding (mol_p) or removing an electron (mol_m) needs to be done with the same geometry.
+    This method does not calculate directly the softness kernel, but only the eigenmodes.
+    The mathematics behind this function will soon be available somewhere...
+
+
+    Parameters
+    ----------
+    mol_p : molecule, optional
+        The molecule with an electron added. Needed for calculating the softness kernel with a fukui_type of "0" or "+"
+    mol_n : molecule, optional
+        The molecule with an electron removed. Needed for calculating the softness kernel with a fukui_type of "0" or "-"
+    fukui_type : molecule, optional
+        The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
+    grid_points : list of 3
+    delta : float, optional
+        the length added on all directions of the box containing all atomic centers
+
+    Returns
+    -------
+
+    linear_response_eigenvalues
+        the eigenvalues of the linear response function
+    linear_response_eigenvectors
+        the eigenvectors of the linear response function
+
+    Notes
+    -----
+    The linear response function kernel can be computed as :
+
+    :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
+
+    With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
+
+    Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
+    """
 
     nx,ny,nz = grid_points
 
@@ -191,7 +273,7 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     transition_density_list = self.properties["transition_density_list"]
     transition_energy = np.array(self.properties['transition_energy'])
 
-    if not "f+" in self.properties and not "f-" in self.properties:
+    if fukui_type in self.properties:
         self.calculate_fukui(mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
 
     if "0" in fukui_type:

@@ -89,7 +89,13 @@ def extract_transition(file,mol=None):
 
         elif "Center of mass = " in line:
             lsplit = line.split()
-            center_of_mass = [float(lsplit[4][1:-1]),float(lsplit[5][:-1]),float(lsplit[6][:-1])]
+            num_1,num_2,num_3 = lsplit[-3:]
+            num_1, num_2, num_3 = num_1.replace("(",""), num_2.replace("(",""), num_3.replace("(","")
+            num_1, num_2, num_3 = num_1.replace(")",""), num_2.replace(")",""), num_3.replace(")","")
+            num_1, num_2, num_3 = num_1.replace(",",""), num_2.replace(",",""), num_3.replace(",","")
+            num_1,num_2,num_3 = float(num_1),float(num_2),float(num_3)
+
+            center_of_mass = [num_1,num_2,num_3]
 
         elif "SPECTRUM VIA TRANSITION" in line:
             flag_spec = 4
