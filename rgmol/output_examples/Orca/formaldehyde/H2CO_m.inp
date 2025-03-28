@@ -1,0 +1,5 @@
+!B3LYP cc-PVTZ
+* xyzfile 1 2 H2CO.xyz
+%scf
+MaxIter 100
+end
