@@ -1,5 +1,5 @@
 <h1 align="center">
-rgmol v0.1.2.3
+rgmol v0.1.2.4
 </h1>
 
 rgmol is a python package that intends to offer calculations and visualizations of molecular properties.
