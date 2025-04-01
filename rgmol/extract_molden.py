@@ -19,7 +19,7 @@ from rgmol.general_function import find_bonds
 ##########################
 
 
-def extract_orbitals(file,,mol=None):
+def extract_orbitals(file,mol=None):
     """
     extract_orbitals(file,mol=None)
 
