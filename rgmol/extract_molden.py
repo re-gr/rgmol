@@ -204,7 +204,7 @@ def extract(file,do_order_bonds=0):
         mol : molecule
     """
 
-    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy,MO_spin = extract_MO(file)
+    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy,MO_spin = extract_orbitals(file)
 
 
     list_atoms = []
