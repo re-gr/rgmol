@@ -11,11 +11,41 @@ This script contains the functions used to extract data from orca files.
 import codecs
 import numpy as np
 from rgmol.objects import *
+from rgmol.general_function import find_bonds
 
 
 ##########################
 ## Extraction functions ##
 ##########################
+
+
+def extract_mol(file):
+    """
+    extract molecule
+    """
+    flag_coords = 0
+    flag_getting_coords = 0
+
+    for line in codecs.open(file,'r',encoding="utf-8"):
+        if "CARTESIAN COORDINATES (A.U.)" in line:
+            Pos = []
+            Names = []
+            flag_coords = 2
+        elif flag_coords:
+            flag_coords -= 1
+            if not(flag_coords):
+                flag_getting_coords = 1
+
+        elif flag_getting_coords:
+            if len(line)<3:
+                flag_getting_coords = 0
+            else:
+                lsplit = line.split()
+                Pos.append([float(lsplit[5]),float(lsplit[6]),float(lsplit[7])])
+                Names.append(lsplit[1])
+    return Names,Pos
+
+
 
 def extract_transition(file,mol=None):
     """
@@ -45,10 +75,13 @@ def extract_transition(file,mol=None):
     flag_spec = 0
     flag_spec_in = 0
 
+    flag_excited_states = 0
+
     for line in codecs.open(file, 'r',encoding="utf-8"):
 
         if "EXCITED STATES" in line:
             #This will ensure we only keep the last excited states calculations if there is a geom opt
+            flag_excited_states = 1
             flag_states = 0
             flag_completing_state = 0
             flag_completed_state = 0
@@ -131,7 +164,7 @@ def extract_transition(file,mol=None):
                 elif cd_ed:
                     M.append([float(lsplit[-3]),float(lsplit[-2]),float(lsplit[-1])])
 
-
+    if not(flag_excited_states): return None
 
     array_sort = np.argsort(transition_energy)
     transition_energy_sorted = []
@@ -155,3 +188,24 @@ def extract_transition(file,mol=None):
         mol.properties["M"] = M
 
     return transition_energy_sorted,transition_list_sorted,transition_factor_list_sorted
+
+def extract(file,do_order_bonds=0):
+    """extracts from orca and creates molecule"""
+
+    atom_names,atom_position = extract_mol(file)
+
+
+    list_atoms = []
+    nicknaming = 0
+    for name,pos in zip(atom_names,atom_position):
+        atom_x = atom(name,pos,nickname=str(nicknaming))
+        list_atoms.append(atom_x)
+        nicknaming+=1
+
+    mol = molecule(list_atoms,[],file=file)
+    extract_transition(file,mol=mol)
+
+    mol.bonds = find_bonds(mol,do_order_bonds=do_order_bonds)
+
+    return mol
+

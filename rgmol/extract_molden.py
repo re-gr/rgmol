@@ -174,9 +174,9 @@ def _extract_molden_file(file):
     return atom_names,atom_position,AO_list,AO_type_list,MO_list_sorted,MO_energy,MO_occupancy,MO_spin
 
 
-def extract(file,do_find_bonds=0):
+def extract(file,do_order_bonds=0):
     """
-    extract(file,do_find_bonds=0)
+    extract(file,do_order_bonds=0)
 
     Extract from molden input and create molecule object.
     As the bonds are not defined in a molden file, one can use do_find_bonds to
@@ -205,8 +205,7 @@ def extract(file,do_find_bonds=0):
 
     mol = molecule(list_atoms,[],file=file,properties={"AO_list":AO_list,"AO_type_list":AO_type_list,"MO_list":MO_list,"MO_energy":MO_energy,"MO_occupancy":MO_occupancy,"MO_spin":MO_spin})
 
-    if do_find_bonds:
-        mol.bonds = find_bonds(mol)
+    mol.bonds = find_bonds(mol,do_order_bonds=do_order_bonds)
 
     return mol
 
