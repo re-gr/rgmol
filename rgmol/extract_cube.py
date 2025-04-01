@@ -20,15 +20,18 @@ from rgmol.general_function import find_bonds
 
 
 
-def _extract_cube(file):
+def extract_properties(file,mol=None,keyword="cube"):
     """
-    extract_cube(file)
+    extract_properties(file)
 
-    Extracts the information from a cube file
+    Extracts the information from a cube file.
+    If a molecule is specified, the cube file will be added to the properties.
 
     Parameters
     ----------
         file : str
+        mol : molecule, optional
+            The molecule to which the cube will be added
 
     Outputs
     -------
@@ -108,30 +111,35 @@ def _extract_cube(file):
                     cube.append(square)
                     square = []
                     count_square = 0
+    if mol:
+        mol.properties["voxel_origin"] = voxel_origin
+        mol.properties["voxel_matrix"] = voxel_matrix
+        mol.properties[keyword] = np.array(cube)
+
     return voxel_origin,voxel_matrix,atom_number,atom_position,np.array(cube)
 
 
-def extract(file,do_find_bonds=0):
+def extract(file,do_order_bonds=0):
     """
-    extract(file,do_find_bonds=0)
+    extract(file,do_order_bonds=0)
 
     Extracts a molecule from a cube file.
-    As the bonds are not defined in a cube file, one can use do_find_bonds to use an algorithm that tries to find bonds. It is still in WIP.
+    As the bonds are not defined in a cube file, one can use do_order_bonds to use an algorithm that tries to find bonds. It is still in WIP.
 
     Parameters
     ----------
         file : str
-        do_find_bonds : bool, optional
-            if one wants to use an algorithm to find the bonds (WIP)
+        do_order_bonds : bool, optional
+            if one wants to use an algorithm to find the order of the bonds
 
     Returns
     -------
         mol : molecule
-            the molecule extracted form the cube file with the voxel_origin, voxel_matrix and cube as properties
+            the molecule extracted from the cube file with the voxel_origin, voxel_matrix and cube as properties
 
     """
 
-    voxel_origin,voxel_matrix,atom_number,atom_position,cube = _extract_cube(file)
+    voxel_origin,voxel_matrix,atom_number,atom_position,cube = extract_properties(file)
 
 
     list_atoms = []
@@ -145,7 +153,6 @@ def extract(file,do_find_bonds=0):
 
     mol = molecule(list_atoms,[],file=file,properties={"voxel_origin":voxel_origin,"voxel_matrix":voxel_matrix,"cube":cube})
 
-    if do_find_bonds:
-        mol.bonds = find_bonds(mol)
+    mol.bonds = find_bonds(mol,do_order_bonds=do_order_bonds)
 
     return mol
