@@ -74,6 +74,10 @@ def calculate_fukui_function(self,mol_p=None,mol_m=None,grid_points=(100,100,100
 
         fm = rhoN - rhoNm1
 
+        v = self.properties["voxel_matrix"]
+        dV = v[0][0] * v[1][1] * v[2][2]
+
+
     else:
         fm = None
 
@@ -273,8 +277,8 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     transition_density_list = self.properties["transition_density_list"]
     transition_energy = np.array(self.properties['transition_energy'])
 
-    if fukui_type in self.properties:
-        self.calculate_fukui(mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
+    if not fukui_type in self.properties:
+        self.calculate_fukui_function(mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
 
     if "0" in fukui_type:
         fukui = self.properties["f0"]
