@@ -19,9 +19,9 @@ from rgmol.general_function import find_bonds
 ##########################
 
 
-def extract_orbitals(file,mol=None):
+def extract_properties(file,mol=None):
     """
-    extract_orbitals(file,mol=None)
+    extract_properties(file,mol=None)
 
     Extracts the data from a molden file.
     If a molecule is specified, the orbitals information will be added to the molecule.
@@ -204,7 +204,7 @@ def extract(file,do_order_bonds=0):
         mol : molecule
     """
 
-    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy,MO_spin = extract_orbitals(file)
+    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy,MO_spin = extract_properties(file)
 
 
     list_atoms = []

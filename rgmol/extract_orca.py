@@ -47,9 +47,9 @@ def _extract_mol(file):
 
 
 
-def extract_transition(file,mol=None):
+def extract_propertires(file,mol=None):
     """
-    extract_transition(file,mol=None)
+    extract_properties(file,mol=None)
 
     Extract the Excited states calculations from an ORCA output and adds the properties to a molecule.
 
@@ -220,7 +220,7 @@ def extract(file,do_order_bonds=0):
         nicknaming+=1
 
     mol = molecule(list_atoms,[],file=file)
-    extract_transition(file,mol=mol)
+    extract_properties(file,mol=mol)
 
     mol.bonds = find_bonds(mol,do_order_bonds=do_order_bonds)
 
