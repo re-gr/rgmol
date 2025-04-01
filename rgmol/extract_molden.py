@@ -19,15 +19,18 @@ from rgmol.general_function import find_bonds
 ##########################
 
 
-def _extract_molden_file(file):
+def extract_orbitals(file,,mol=None):
     """
-    _extract_molden_file(file)
+    extract_orbitals(file,mol=None)
 
-    Extracts the data from a molden file
+    Extracts the data from a molden file.
+    If a molecule is specified, the orbitals information will be added to the molecule.
 
     Parameters
     ----------
         file : str
+        mol : molecule, optional
+            If a moleccule
 
     Returns
     -------
@@ -54,7 +57,6 @@ def _extract_molden_file(file):
     MO_energy = []
     MO_spin = []
     MO_occupancy = []
-    D = np.arange(154)
 
     for line in codecs.open(file, 'r',encoding="utf-8"):
         lsplit = line.split()
@@ -171,6 +173,15 @@ def _extract_molden_file(file):
     MO_spin = np.array(MO_spin)[array_sort]
     MO_occupancy = np.array(MO_occupancy)[array_sort]
 
+
+    if mol:
+        mol.properties["AO_list"] = AO_list
+        mol.properties["AO_type_list"] = AO_type_list
+        mol.properties["MO_list_sorted"] = MO_list_sorted
+        mol.properties["MO_energy"] = MO_energy
+        mol.properties["MO_occupancy"] = MO_occupancy
+        mol.properties["MO_spin"] = MO_spin
+
     return atom_names,atom_position,AO_list,AO_type_list,MO_list_sorted,MO_energy,MO_occupancy,MO_spin
 
 
@@ -193,7 +204,7 @@ def extract(file,do_order_bonds=0):
         mol : molecule
     """
 
-    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy,MO_spin = _extract_molden_file(file)
+    atom_names,atom_position,AO_list,AO_type_list,MO_list,MO_energy,MO_occupancy,MO_spin = extract_MO(file)
 
 
     list_atoms = []

@@ -19,9 +19,9 @@ from rgmol.general_function import find_bonds
 ##########################
 
 
-def extract_mol(file):
+def _extract_mol(file):
     """
-    extract molecule
+    extracts position and names of atoms
     """
     flag_coords = 0
     flag_getting_coords = 0
@@ -190,9 +190,26 @@ def extract_transition(file,mol=None):
     return transition_energy_sorted,transition_list_sorted,transition_factor_list_sorted
 
 def extract(file,do_order_bonds=0):
-    """extracts from orca and creates molecule"""
+    """
+    extract(file,do_order_bonds=0)
 
-    atom_names,atom_position = extract_mol(file)
+    Extracts and creates a molecule from an orca output.
+    If there is TD-DFT calculations, the molecule will also have the transitions and the dipole moments in its properties.
+
+    Parameters
+    ----------
+        file : str
+            the name of the file
+        do_order_bonds : bool, optional
+            If the algorithm that finds bonds tries to find the order of the bonds.
+
+    Retruns
+    -------
+        mol : molecule
+            The moelcule
+    """
+
+    atom_names,atom_position = _extract_mol(file)
 
 
     list_atoms = []
