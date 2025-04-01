@@ -37,6 +37,8 @@ orca_formaldehyde = (impresources.files(formaldehyde) / "H2CO.out").__str__()
 molden_formaldehyde = (impresources.files(formaldehyde) / "H2CO.molden.input").__str__()
 orca_H2CO = (impresources.files(formaldehyde) / "H2CO.out").__str__()
 molden_H2CO = (impresources.files(formaldehyde) / "H2CO.molden.input").__str__()
+orca_formaldehyde_m = (impresources.files(formaldehyde) / "H2CO_m.out").__str__()
+molden_formaldehyde_m = (impresources.files(formaldehyde) / "H2CO_m.molden.input").__str__()
 orca_H2CO_m = (impresources.files(formaldehyde) / "H2CO_m.out").__str__()
 molden_H2CO_m = (impresources.files(formaldehyde) / "H2CO_m.molden.input").__str__()
 
