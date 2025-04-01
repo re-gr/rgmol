@@ -787,7 +787,6 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
         transition_density += transition_MO[1][0] * MO_OCC * MO_VIRT
 
 
-    print(np.sum(transition_density),np.sum(transition_density**2))
     self.properties["transition_density_list"][chosen_transition_density] = transition_density
     return transition_density
 
