@@ -64,6 +64,30 @@ def find_atom_near(molecule,pos,factor_threshold=1.4):
     min_distance = np.min(distance)
     return distance < (min_distance * factor_threshold)
 
+def find_nearest_atoms(molecule,pos,number_bonds):
+    """
+    function that returns the atoms that are near the one of interest
+    """
+
+    positions = []
+
+    for atom_x in molecule.atoms:
+        positions.append(atom_x.pos)
+
+    positions = np.array(positions)
+    distance = np.linalg.norm(positions - pos,axis=1)
+
+    #remove the atom itself
+    distance = distance + (distance==0.0)*1e9
+
+    dist_argsort = np.argsort(distance)
+
+    nearest = np.zeros((len(molecule.atoms)))
+    for index in dist_argsort[:number_bonds]:
+        nearest[index] = 1
+
+    return nearest
+
 
 def are_bonded(bonds,atom_1,atom_2):
     for bond in range(len(bonds)):
@@ -117,13 +141,17 @@ def find_bonds(mol,do_order_bonds=0):
     #First pass
     for atom_x in range(len(mol.atoms)):
         atoms_near = find_atom_near(mol,mol.atoms[atom_x].pos)
-        list_atom_near.append(atoms_near)
+        if np.sum(atoms_near) >= number_bonds[atom_x]:
+            atoms_near = find_nearest_atoms(mol,mol.atoms[atom_x].pos,number_bonds[atom_x])
 
         for atom_near in range(len(atoms_near)):
             if atoms_near[atom_near] and not(are_bonded(bonds,atom_x,atom_near)[0]):
                 bonds.append([atom_x,atom_near,1])
                 number_bonds[atom_x] = number_bonds[atom_x]-1
                 number_bonds[atom_near] = number_bonds[atom_near]-1
+
+
+
 
     if do_order_bonds:
         #Second pass where the atoms that only have one neighbor are solved
