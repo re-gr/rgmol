@@ -205,20 +205,9 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
     reconstructed_eigenvectors = []
 
 
-    eigenvectors_contrib = []
-    for vec in range(len(eigenvectors)):
-        C = []
-        for i in range(len(eigenvectors[vec])):
-            norm = (np.sum(eigenvectors[vec]*transition_matrix[i][vec])*eigenvectors[vec][i])
-
-            C.append( np.sign(norm)*abs(norm)**(1/2))
-        C = np.array(C)
-        C = C/np.sum(abs(C))
-        eigenvectors_contrib.append(C)
-
 
     for eigenvector in zip(eigenvectors,eigenvalues,range(len(eigenvectors))):
-        # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(abs(eigenvectors[eigenvector[2]]))
+        eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(abs(eigenvectors[eigenvector[2]]))
         # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(eigenvectors[eigenvector[2]]**2)**(1/2)
         # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(eigenvectors[eigenvector[2]]**2)**(1/2)/overlap_integral
         reconstructed_eigenvector = np.zeros((nx,ny,nz))
@@ -230,7 +219,7 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
 
     self.properties["linear_response_eigenvalues"] = eigenvalues
     self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
-    self.properties["contribution_linear_response_eigenvectors"] = np.array(eigenvectors_contrib)
+    self.properties["contribution_linear_response_eigenvectors"] = eigenvectors
 
     return eigenvalues, reconstructed_eigenvectors
 
