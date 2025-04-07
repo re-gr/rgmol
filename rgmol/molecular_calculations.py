@@ -483,6 +483,8 @@ def calculate_MO(self,grid_points,delta=3):
     N_AO = len(AO_calculated)
     MO_calculated = []
     MO_list = np.array(self.properties["MO_list"])
+    MO_occupancy = self.properties["MO_occupancy"][0]
+
 
     voxel_matrix = self.properties["voxel_matrix"]
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
@@ -491,7 +493,7 @@ def calculate_MO(self,grid_points,delta=3):
     for MO in MO_list:
         AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
         MO_not_normalized = np.sum(AO_calculated*AO_contribution_reshaped,axis=0)
-        MO_calculated.append(MO_not_normalized / (np.sum(MO_not_normalized**2*dV)**(1/2)))
+        MO_calculated.append(MO_not_normalized / (np.sum(MO_not_normalized**2*dV/MO_occupancy)**(1/2)))
 
     self.properties["MO_calculated"] = np.array(MO_calculated)
     return np.array(MO_calculated)
@@ -540,7 +542,7 @@ def calculate_occupied_MO(self,grid_points,delta=3):
             break
         AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
         MO_not_normalized = np.sum(AO_calculated*AO_contribution_reshaped,axis=0)
-        MO_calculated.append(MO_not_normalized / (np.sum(MO_not_normalized**2*dV)**(1/2)))
+        MO_calculated.append(MO_not_normalized / (np.sum(MO_not_normalized**2*dV/MO_occ)**(1/2)))
 
     self.properties["MO_calculated"] = np.array(MO_calculated)
     return np.array(MO_calculated)
@@ -584,14 +586,16 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
 
     MO = np.array(self.properties["MO_list"][MO_chosen])
+    MO_occupancy = self.properties["MO_occupancy"][0]
+
 
     AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
 
     MO_chosen_calculated = np.sum(AO_calculated*AO_contribution_reshaped,axis=0)
 
-    self.properties["MO_calculated"][MO_chosen] = MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV)**(1/2))
+    self.properties["MO_calculated"][MO_chosen] = MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV/MO_occupancy)**(1/2))
 
-    return MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV)**(1/2))
+    return MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV/MO_occupancy)**(1/2))
 
 
 
@@ -630,7 +634,7 @@ def calculate_electron_density(self,grid_points,delta=5):
 
     MO_occupied = MO[:MO_occ_index]
 
-    electron_density = np.sum(MO_occ * MO_occupied**2,axis=0)
+    electron_density = np.sum((MO_occupied)**2,axis=0)
 
     print("Finished Calculating Electron Density")
     self.properties["electron_density"] = electron_density
@@ -704,7 +708,7 @@ def calculate_transition_density(self,grid_points,delta=3):
     for transition in zip(transition_list,transition_factor_list):
         transition_density = np.zeros((nx,ny,nz))
         transition_factor_list_in = np.array(transition[1])
-        transition_factor_list_in /= np.sum(transition_factor_list_in **2)
+        transition_factor_list_in /= np.sum(transition_factor_list_in **2)**(1/2)
 
         for transition_MO in zip(transition[0],transition_factor_list_in):
             MO_OCC = calculate_MO_chosen(self,transition_MO[0][0],grid_points,delta=delta)
@@ -773,19 +777,18 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
 
 
     transition_factor_list = np.array(transition_factor_list)
-    # transition_factor_list /= np.sum(transition_factor_list**2)
-
+    transition_factor_list /= np.sum(transition_factor_list**2)**(1/2)
 
     nx,ny,nz = grid_points
     transition_density = np.zeros((nx,ny,nz))
 
+
     for transition_MO in zip(transition_list, transition_factor_list):
-        # print(transition_MO)
+
         MO_OCC = calculate_MO_chosen(self,transition_MO[0][0],grid_points,delta=delta)
         MO_VIRT = calculate_MO_chosen(self,transition_MO[0][1],grid_points,delta=delta)
 
         transition_density += transition_MO[1][0] * MO_OCC * MO_VIRT
-
 
     self.properties["transition_density_list"][chosen_transition_density] = transition_density
     return transition_density

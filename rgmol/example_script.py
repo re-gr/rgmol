@@ -29,6 +29,12 @@ if __name__=="__main__":
     if False:
         file = rgmol.examples.adf_CH3Cl
         mol = rgmol.extract_adf.extract(file)
+        mol.plot_condensed_kernel("condensed linear response",factor=.5)
+
+    ## Visualization of a diagonalized condensed kernel : condensed linear response
+    if False:
+        file = rgmol.examples.adf_CH3Cl
+        mol = rgmol.extract_adf.extract(file)
         mol.plot_diagonalized_condensed_kernel("condensed linear response")
 
     ## Visualization of a cube file
@@ -54,7 +60,7 @@ if __name__=="__main__":
         file = rgmol.examples.molden_H2CO
         mol = rgmol.extract_molden.extract(file,do_order_bonds=1)
         rgmol.extract_orca.extract_properties(rgmol.examples.orca_H2CO,mol=mol)
-        mol.plot_transition_density(delta=5,grid_points=(60,60,60),opacity_radius=.4)
+        mol.plot_transition_density(delta=5,grid_points=(100,100,100),opacity_radius=.4)
 
     ## Visualization of Diagonalized Non-Condensed Kernel : Linear response function
     if False:

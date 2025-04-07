@@ -87,7 +87,7 @@ def extract_properties(file,mol=None,keyword="cube"):
             flag_pos -= 1
 
         elif flag_other:
-            number_points_x = list_number_points[0]
+            number_points_x = list_number_points[2]
             number_squares_y = list_number_points[1]
 
             flag_other -= 1
@@ -111,6 +111,7 @@ def extract_properties(file,mol=None,keyword="cube"):
                     cube.append(square)
                     square = []
                     count_square = 0
+
     if mol:
         mol.properties["voxel_origin"] = voxel_origin
         mol.properties["voxel_matrix"] = voxel_matrix
@@ -140,6 +141,7 @@ def extract(file,do_order_bonds=0):
     """
 
     voxel_origin,voxel_matrix,atom_number,atom_position,cube = extract_properties(file)
+
 
 
     list_atoms = []
