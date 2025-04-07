@@ -28,7 +28,7 @@ import rgmol.calculate_CDFT
 import rgmol.write
 import rgmol.plot_pyvista
 
-__version__ = "0.1.2.4"
+__version__ = "0.1.2.5"
 
 
 ##
