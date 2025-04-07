@@ -277,6 +277,15 @@ def plot_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
     plotter.add_mesh(atom_sphere,color=atom.color,pbr=False,roughness=0.0,metallic=0.0,diffuse=1,opacity=opacity,name="atom_{}".format(atom.nickname))
     return
 
+def plot_single_atom(plotter,atom,plotted_property="radius",opacity=1,factor=1):
+    """
+    plot atom as a sphere with a fixed name
+    """
+    Norm = atom.properties[plotted_property]
+    atom_sphere = pyvista.Sphere(radius=Norm*factor, phi_resolution=100, theta_resolution=100,center=atom.pos)
+    plotter.add_mesh(atom_sphere,color=atom.color,pbr=False,roughness=0.0,metallic=0.0,diffuse=1,opacity=opacity,name="atom_single")
+    return
+
 
 def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     """

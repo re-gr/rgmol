@@ -259,9 +259,59 @@ def plot_property(self,plotted_property,opacity=.4,factor=1,with_radius=True,opa
     return
 
 
-def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_condensed_kernel(self,kernel,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_diagonalized_condensed_kernel(kernel,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_condensed_kernel(kernel,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000))
+
+    Plots a condensed kernel for a molecule. One can navigate through the vectors using a slider.
+
+    Parameters
+    ----------
+        kernel : str
+            The kernel to be diagonalized and plotted
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+    """
+    X = self.properties[kernel]
+    ncols = len(X)
+
+    plotter = pyvista.Plotter()
+    if with_radius:
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+    def create_mesh_diagonalized_kernel(value):
+        vector_number = int(round(value))
+        plot_single_atom(plotter,self.atoms[vector_number-1],factor=factor_radius*1.5)
+        self.plot_vector(plotter,X[:,vector_number-1],opacity=opacity,factor=factor)
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_diagonalized_kernel, [1, len(X)],value=1,title="Vector", fmt="%1.0f")
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+    plotter.show(full_screen=False)
+    return
+
+def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000)):
+    """
+    plot_diagonalized_condensed_kernel(kernel,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Diagonalize and plot a condensed kernel for a molecule. One can navigate through the eigenmodes using a slider.
 
@@ -314,9 +364,9 @@ def plot_diagonalized_condensed_kernel(self,kernel,opacity=0.5,factor=1,with_rad
 ## General 3D plotting ##
 #########################
 
-def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_isodensity(self,plotted_isodensity="cube",opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_isodensity(plotted_isodensity="cube",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_isodensity(plotted_isodensity="cube",opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot an isodensity
 
@@ -364,9 +414,9 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.5,factor=1,with_rad
 
 
 
-def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cube",delimiter="&",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cube",delimiter="&",opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_multiple_isodensities(range_files,plotted_isodensity="cube",delimiter=" ",opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_multiple_isodensities(range_files,plotted_isodensity="cube",delimiter=" ",opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot multiple isodensities, each one can be selected using a slider. The delimiter is replaced in the name file by number in the range_file to load multiple files
     Only one delimiter should be used in the base_name_file
@@ -432,9 +482,9 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
 ## Plotting Atomic / Molecular Properties ##
 ############################################
 
-def plot_AO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_AO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_AO(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_AO(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Atomic Orbitals of a molecule
     The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -499,9 +549,9 @@ def plot_AO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_rad
 
 
 
-def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_MO(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_MO(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Molecular Orbitals of a molecule
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -567,9 +617,9 @@ def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_rad
 
 
 
-def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_product_MO(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_product_MO(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Molecular Orbitals of a molecule on the left and the right.
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule.
@@ -644,8 +694,8 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,
         print_occupancy(plotter,self.properties["MO_occupancy"],MO_number_2)
 
     def calculate_product_MO(MO_ind_1,MO_ind_2):
-        MO_1 = self.calculate_MO_chosen(MO_ind_1,grid_points,delta=delta)
-        MO_2 = self.calculate_MO_chosen(MO_ind_2,grid_points,delta=delta)
+        MO_1 = self.calculate_MO_chosen(MO_ind_1-1,grid_points,delta=delta)
+        MO_2 = self.calculate_MO_chosen(MO_ind_2-1,grid_points,delta=delta)
         MO_prod = MO_1 * MO_2
         plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_prod,opacity=opacity,factor=factor,cutoff=cutoff,add_name="prod")
         plotter.add_text(text=r"Product of {} and {}".format(MO_ind_1,MO_ind_2),name="mo prod")
@@ -681,9 +731,9 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,
 
 
 
-def plot_electron_density(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_electron_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_electron_density(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_electron_density(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Electron Density of a molecule.
@@ -741,9 +791,9 @@ def plot_electron_density(self,grid_points=(100,100,100),delta=3,opacity=0.5,fac
 
 
 
-def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=10,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=10,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_fukui_function(mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=10,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_fukui_function(mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=10,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plots the fukui function desired.
@@ -793,7 +843,16 @@ def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(1
     if not fukui_type in self.properties:
         self.calculate_fukui_function(mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
 
-    if not fukui_type in self.properties:
+    if "0" in fukui_type:
+        fukui = self.properties["f0"]
+    elif "+" in fukui_type or "p" in fukui_type:
+        fukui = self.properties["f+"]
+    elif "-" in fukui_type or "m" in fukui_type:
+        fukui = self.properties["f-"]
+    else:
+        raise ValueError('This kind of fukui function does not exist. Please chose between 0, + or -')
+
+    if type(fukui) is None:
         raise TypeError("This fukui function could not be computed, did you give mol_m or mol_p ?")
 
     fukui = self.properties[fukui_type]
@@ -814,9 +873,9 @@ def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(1
 
 
 
-def plot_dipole_moment(self,opacity=0.5,factor=1,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_dipole_moment(self,opacity=0.8,factor=1,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_dipole_moment(opacity=0.5,factor=1,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_dipole_moment(opacity=0.8,factor=1,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plots the electric and magnetic dipole moments of a molecule.
@@ -904,9 +963,9 @@ def plot_dipole_moment(self,opacity=0.5,factor=1,opacity_radius=1,factor_radius=
     plotter.show(full_screen=False)
 
 
-def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_transition_density(grid_points=(100,100,100),delta=3,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_transition_density(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Transition Densities of a molecule.
@@ -1004,9 +1063,9 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.5,f
 
 
 
-def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_points=(100,100,100),delta=10,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
+def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_points=(100,100,100),delta=10,number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
     """
-    plot_diagonalized_kernel(kernel,plotting_method="isodensity",grid_points=(100,100,100),delta=10,number_isodensities=10 ,opacity=0.5,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
+    plot_diagonalized_kernel(kernel,plotting_method="isodensity",grid_points=(100,100,100),delta=10,number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
 
 
     Calculate and diagonalize a kernel.
@@ -1125,6 +1184,7 @@ molecule.plot = plot
 molecule.plot_vector = plot_vector
 molecule.plot_radius = plot_radius
 molecule.plot_property = plot_property
+molecule.plot_condensed_kernel = plot_condensed_kernel
 molecule.plot_diagonalized_condensed_kernel = plot_diagonalized_condensed_kernel
 molecule.plot_isodensity = plot_isodensity
 molecule.plot_multiple_isodensities = plot_multiple_isodensities
