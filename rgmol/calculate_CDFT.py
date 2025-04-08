@@ -207,7 +207,7 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
 
 
     for eigenvector in zip(eigenvectors,eigenvalues,range(len(eigenvectors))):
-        eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(abs(eigenvectors[eigenvector[2]]))
+        # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(abs(eigenvectors[eigenvector[2]]))
         # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(eigenvectors[eigenvector[2]]**2)**(1/2)
         # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(eigenvectors[eigenvector[2]]**2)**(1/2)/overlap_integral
         reconstructed_eigenvector = np.zeros((nx,ny,nz))
@@ -284,7 +284,8 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
         fukui = self.properties["f-"]
 
     if not 'hardness' in self.properties:
-        hardness = self.calculate_hardness()
+        self.calculate_hardness()
+    hardness = self.properties["hardness"]
 
 
     voxel_matrix = self.properties["voxel_matrix"]
@@ -328,7 +329,7 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
 
 
     for eigenvector in zip(eigenvectors,eigenvalues,range(len(eigenvectors))):
-        eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(abs(eigenvectors[eigenvector[2]]))
+        # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(abs(eigenvectors[eigenvector[2]]))
 
         reconstructed_eigenvector = np.zeros((nx,ny,nz))
 

@@ -1147,7 +1147,7 @@ def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_point
             plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
-            print_contribution_transition_density(plotter,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
+            print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
         slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
         plotter.add_slider_widget(lambda value: slider_function("cutoff",value), [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
@@ -1158,7 +1158,7 @@ def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_point
             plot_cube_multiple_isodensities(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
-            print_contribution_transition_density(plotter,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
+            print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
     elif plotting_method == "volume":
         def create_mesh_diagonalized_kernel(value,cutoff):
@@ -1166,7 +1166,7 @@ def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_point
             plot_cube_volume(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
-            print_contribution_transition_density(plotter,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
+            print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
     slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))

@@ -460,7 +460,7 @@ def plot_cube_volume(plotter,voxel_origin,voxel_matrix,cube,opacity=1,factor=1,a
 
 
 
-def print_contribution_transition_density(plotter,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=1):
+def print_contribution_transition_density(plotter,mol,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=1):
     """
     Prints the contribution of each transition density for an eigenvector
     """
@@ -469,6 +469,7 @@ def print_contribution_transition_density(plotter,kernel,vector_number,contrib_e
     font_size_title = int(16/divy*plotter.window_size[1]/1000)
     font_size = int(14/divy*plotter.window_size[1]/1000)
     pos_y = plotter.window_size[1]/divy-200*plotter.window_size[1]/1000
+
 
     plotter.add_text(text=r"Contribution of tranisition densities",name="contrib_name",position=(0,pos_y),font_size=font_size_title)
 
@@ -492,7 +493,7 @@ def print_contribution_transition_density(plotter,kernel,vector_number,contrib_e
     text_contrib = ""
     compt_contrib = 0
     for contrib in range(len(contrib_sorted)):
-        if abs(contrib_sorted[contrib])<0.05:
+        if abs(contrib_sorted[contrib])<0.05 or compt_contrib>=10:
             break
         if contrib_indices_sorted[contrib] == len(contrib_sorted)-1 and kernel=="softness_kernel":
             text_contrib +="f : {:3.3f}\n".format(contrib_sorted[contrib])
@@ -525,7 +526,7 @@ def print_contribution_transition_density(plotter,kernel,vector_number,contrib_e
     text_contrib = ""
     for trans in range(len(transition_contrib_sorted)):
         occ,virt = np.unravel_index(array_sort[trans],np.shape(transition_contrib))
-        if abs(transition_contrib[occ,virt]) < 0.05:
+        if abs(transition_contrib[occ,virt]) < 0.05 or compt>=10:
             break
         if occ == max_occupied+1 and virt == max_virtual+1:
             text_contrib += "f"+": {:3.3f}\n".format(transition_contrib[occ,virt])
@@ -533,6 +534,10 @@ def print_contribution_transition_density(plotter,kernel,vector_number,contrib_e
             text_contrib += "{} -> {}".format(occ,virt)+": {:3.3f}\n".format(transition_contrib[occ,virt])
         compt += 1
 
+    if kernel == "softness_kernel":
+        compt+=2
+        text_contrib += "Number electrons transferred in this mode :\n"
+        text_contrib += "{:3.4f}".format(contributions[-1]**2 * mol.properties["hardness"] * mol.properties["softness_kernel_eigenvalues"][vector_number-1] )
     plotter.add_text(text=text_contrib,name="transi",font_size=font_size,position=(20.0,pos_y-4*font_size_title-2*font_size*compt_contrib-2*font_size*compt))
 
 
