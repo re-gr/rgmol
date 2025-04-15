@@ -47,7 +47,7 @@ def _extract_mol(file):
 
 
 
-def extract_propertires(file,mol=None):
+def extract_properties(file,mol=None):
     """
     extract_properties(file,mol=None)
 
@@ -104,7 +104,6 @@ def extract_propertires(file,mol=None):
                     flag_completing_state = 0
                     flag_completed_state = 1
                     transition_list.append(transition)
-
                     #renormalize factors
                     transition_factor = np.array(transition_factor)
                     transition_factor = (transition_factor / np.sum(transition_factor**2)).tolist()
@@ -114,7 +113,9 @@ def extract_propertires(file,mol=None):
                     if "b" in lsplit[0]:
                         raise ValueError("Unrestricted calculations not yet implemented")
                     transition.append([ int(lsplit[0][:-1]),int(lsplit[2][:-1])])
-                    transition_factor.append([ float(lsplit[-1][:-1]) ])
+                    fact = lsplit[-1]
+                    fact = fact.replace(")","")
+                    transition_factor.append([ float(fact) ])
 
             elif len(line)==1 and flag_completed_state:
                 flag_states = 0
