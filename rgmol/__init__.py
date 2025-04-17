@@ -27,11 +27,36 @@ import rgmol.molecular_calculations
 import rgmol.calculate_CDFT
 import rgmol.write
 import rgmol.plot_pyvista
+import rgmol.potential
 
-__version__ = "0.1.2.5"
+__version__ = "0.1.2.2"
 
+nprocs = 1
 
-##
+def set_number_procs(nprocs):
+    """
+    set_number_procs(nprocs)
+
+    This functions sets the number maximum of processors that can be used by rgmol.
+    Because of python shenanigans, the maximum number of processors that should be used is 8.
+    Higher number of processors will slow down the calculations
+
+    Parameters
+    ----------
+        nprocs : int
+            the maximum number of processors
+
+    Returns
+    -------
+        None
+    """
+
+    if type(nprocs) is int:
+        rgmol.nprocs = nprocs
+    else:
+        raise TypeError('The number of processors used should be an integer. You gave a {}'.format(type(nprocs)))
+
+set_nprocs = set_number_procs
 
 
 if __name__=="__main__":

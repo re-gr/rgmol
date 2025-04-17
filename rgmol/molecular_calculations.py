@@ -11,6 +11,7 @@ These methods allow the calculation of various chemical properties such as AO, M
 import numpy as np
 import scipy as sp
 from rgmol.objects import *
+import time
 
 def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     """
@@ -47,7 +48,8 @@ def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     for coefs in zip(contraction_coefficients,exponent_primitives):
         sum_gaussian += coefs[0] * np.exp(-coefs[1]*r_r)
 
-    sum_gaussian /= np.sum(sum_gaussian**2*dV)**(1/2)
+    sum_gaussian /= (np.einsum("ijk,ijk->",sum_gaussian,sum_gaussian)*dV)**(1/2)
+
     return sum_gaussian,
 
 def gaussian_p(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
@@ -94,9 +96,9 @@ def gaussian_p(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         sum_gaussian_y += y*coefs[0] * np.exp(-coefs[1]*r_r)
         sum_gaussian_z += z*coefs[0] * np.exp(-coefs[1]*r_r)
 
-    sum_gaussian_x /= np.sum(sum_gaussian_x**2*dV)**(1/2)
-    sum_gaussian_y /= np.sum(sum_gaussian_y**2*dV)**(1/2)
-    sum_gaussian_z /= np.sum(sum_gaussian_z**2*dV)**(1/2)
+    sum_gaussian_x /= (np.einsum("ijk,ijk->",sum_gaussian_x,sum_gaussian_x)*dV)**(1/2)
+    sum_gaussian_y /= (np.einsum("ijk,ijk->",sum_gaussian_y,sum_gaussian_y)*dV)**(1/2)
+    sum_gaussian_z /= (np.einsum("ijk,ijk->",sum_gaussian_z,sum_gaussian_z)*dV)**(1/2)
 
     return sum_gaussian_x,sum_gaussian_y,sum_gaussian_z
 
@@ -153,11 +155,11 @@ def gaussian_d(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         sum_gaussian_xx_yy += (x_x-y_y)*coefs[0] * np.exp(-coefs[1]*r_r)
         sum_gaussian_zz += (2*z*z-x_x-y_y)*coefs[0] * np.exp(-coefs[1]*r_r)
 
-    sum_gaussian_xy /= np.sum(sum_gaussian_xy**2*dV)**(1/2)
-    sum_gaussian_xz /= np.sum(sum_gaussian_xz**2*dV)**(1/2)
-    sum_gaussian_yz /= np.sum(sum_gaussian_yz**2*dV)**(1/2)
-    sum_gaussian_xx_yy /= np.sum(sum_gaussian_xx_yy**2*dV)**(1/2)
-    sum_gaussian_zz /= np.sum(sum_gaussian_zz**2*dV)**(1/2)
+    sum_gaussian_xy /= (np.einsum("ijk,ijk->",sum_gaussian_xy,sum_gaussian_xy)*dV)**(1/2)
+    sum_gaussian_xz /= (np.einsum("ijk,ijk->",sum_gaussian_xz,sum_gaussian_xz)*dV)**(1/2)
+    sum_gaussian_yz /= (np.einsum("ijk,ijk->",sum_gaussian_yz,sum_gaussian_yz)*dV)**(1/2)
+    sum_gaussian_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_xx_yy,sum_gaussian_xx_yy)*dV)**(1/2)
+    sum_gaussian_zz /= (np.einsum("ijk,ijk->",sum_gaussian_zz,sum_gaussian_zz)*dV)**(1/2)
 
     return sum_gaussian_zz, sum_gaussian_xz, sum_gaussian_yz, sum_gaussian_xx_yy, sum_gaussian_xy
 
@@ -221,13 +223,13 @@ def gaussian_f(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         sum_gaussian_zxx_zyy += (x_x-y_y)*z*coefs[0] * np.exp(-coefs[1]*r_r)
         sum_gaussian_xxx_xyy += (3*y_y-x_x)*x*coefs[0] * np.exp(-coefs[1]*r_r)
 
-    sum_gaussian_yyy_xxy /= np.sum(sum_gaussian_yyy_xxy**2*dV)**(1/2)
-    sum_gaussian_xyz /= np.sum(sum_gaussian_xyz**2*dV)**(1/2)
-    sum_gaussian_yzz_yrr /= np.sum(sum_gaussian_yzz_yrr**2*dV)**(1/2)
-    sum_gaussian_zzz_zrr /= np.sum(sum_gaussian_zzz_zrr**2*dV)**(1/2)
-    sum_gaussian_xzz_xrr /= np.sum(sum_gaussian_xzz_xrr**2*dV)**(1/2)
-    sum_gaussian_zxx_zyy /= np.sum(sum_gaussian_zxx_zyy**2*dV)**(1/2)
-    sum_gaussian_xxx_xyy /= np.sum(sum_gaussian_xxx_xyy**2*dV)**(1/2)
+    sum_gaussian_yyy_xxy /= (np.einsum("ijk,ijk->",sum_gaussian_yyy_xxy,sum_gaussian_yyy_xxy)*dV)**(1/2)
+    sum_gaussian_xyz /= (np.einsum("ijk,ijk->",sum_gaussian_xyz,sum_gaussian_xyz)*dV)**(1/2)
+    sum_gaussian_yzz_yrr /= (np.einsum("ijk,ijk->",sum_gaussian_yzz_yrr,sum_gaussian_yzz_yrr)*dV)**(1/2)
+    sum_gaussian_zzz_zrr /= (np.einsum("ijk,ijk->",sum_gaussian_zzz_zrr,sum_gaussian_zzz_zrr)*dV)**(1/2)
+    sum_gaussian_xzz_xrr /= (np.einsum("ijk,ijk->",sum_gaussian_xzz_xrr,sum_gaussian_xzz_xrr)*dV)**(1/2)
+    sum_gaussian_zxx_zyy /= (np.einsum("ijk,ijk->",sum_gaussian_zxx_zyy,sum_gaussian_zxx_zyy)*dV)**(1/2)
+    sum_gaussian_xxx_xyy /= (np.einsum("ijk,ijk->",sum_gaussian_xxx_xyy,sum_gaussian_xxx_xyy)*dV)**(1/2)
 
     return sum_gaussian_zzz_zrr, sum_gaussian_xzz_xrr, sum_gaussian_yzz_yrr, sum_gaussian_zxx_zyy, sum_gaussian_xyz, sum_gaussian_xxx_xyy, sum_gaussian_yyy_xxy
 
@@ -299,15 +301,15 @@ def gaussian_g(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         sum_gaussian_xxxx_yyyy += (6*x_x*y_y-x_x*x_x-y_y*y_y)*coefs[0] * np.exp(-coefs[1]*r_r)
 
 
-    sum_gaussian_zzzz /= np.sum(sum_gaussian_zzzz**2*dV)**(1/2)
-    sum_gaussian_zzzy /= np.sum(sum_gaussian_zzzy**2*dV)**(1/2)
-    sum_gaussian_zzzx /= np.sum(sum_gaussian_zzzx**2*dV)**(1/2)
-    sum_gaussian_zzxy /= np.sum(sum_gaussian_zzxy**2*dV)**(1/2)
-    sum_gaussian_zz_xx_yy /= np.sum(sum_gaussian_zz_xx_yy**2*dV)**(1/2)
-    sum_gaussian_zyyy /= np.sum(sum_gaussian_zyyy**2*dV)**(1/2)
-    sum_gaussian_zxxx /= np.sum(sum_gaussian_zxxx**2*dV)**(1/2)
-    sum_gaussian_xy_xx_yy /= np.sum(sum_gaussian_xy_xx_yy**2*dV)**(1/2)
-    sum_gaussian_xxxx_yyyy /= np.sum(sum_gaussian_xxxx_yyyy**2*dV)**(1/2)
+    sum_gaussian_zzzz /= (np.einsum("ijk,ijk->",sum_gaussian_zzzz,sum_gaussian_zzzz)*dV)**(1/2)
+    sum_gaussian_zzzy /= (np.einsum("ijk,ijk->",sum_gaussian_zzzy,sum_gaussian_zzzy)*dV)**(1/2)
+    sum_gaussian_zzzx /= (np.einsum("ijk,ijk->",sum_gaussian_zzzx,sum_gaussian_zzzx)*dV)**(1/2)
+    sum_gaussian_zzxy /= (np.einsum("ijk,ijk->",sum_gaussian_zzxy,sum_gaussian_zzxy)*dV)**(1/2)
+    sum_gaussian_zz_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_zz_xx_yy,sum_gaussian_zz_xx_yy)*dV)**(1/2)
+    sum_gaussian_zyyy /= (np.einsum("ijk,ijk->",sum_gaussian_zyyy,sum_gaussian_zyyy)*dV)**(1/2)
+    sum_gaussian_zxxx /= (np.einsum("ijk,ijk->",sum_gaussian_zxxx,sum_gaussian_zxxx)*dV)**(1/2)
+    sum_gaussian_xy_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_xy_xx_yy,sum_gaussian_xy_xx_yy)*dV)**(1/2)
+    sum_gaussian_xxxx_yyyy /= (np.einsum("ijk,ijk->",sum_gaussian_xxxx_yyyy,sum_gaussian_xxxx_yyyy)*dV)**(1/2)
 
     return sum_gaussian_zzzz, sum_gaussian_zzzx, sum_gaussian_zzzy, sum_gaussian_zz_xx_yy, sum_gaussian_zzxy, sum_gaussian_zxxx, sum_gaussian_zyyy, sum_gaussian_xxxx_yyyy, sum_gaussian_xy_xx_yy
 
@@ -426,8 +428,10 @@ def calculate_AO(self,grid_points,delta=3):
     AO_type_list = self.properties["AO_type_list"]
 
     AO_calculated = []
-
-    print("Calculating Atomic Orbitals")
+    print("###############################")
+    print("# Calculating Atomic Orbitals #")
+    print("###############################")
+    time_before_calc = time.time()
 
     for AO_atom in zip(self.atoms,AO_list,AO_type_list):
         r0 = AO_atom[0].pos
@@ -451,7 +455,15 @@ def calculate_AO(self,grid_points,delta=3):
     self.properties["voxel_coordinates"] = r
     self.properties["AO_calculated"] = np.array(AO_calculated)
 
-    print("Finished Calculating Atomic Orbitals")
+
+    time_taken = time.time() - time_before_calc
+    text_finished = "# Finished Calculating Atomic Orbitals #"
+    text_time = "# in {:3.3f} s #".format(time_taken)
+    numb_di = max(len(text_finished),len(text_time))
+    print("#"*numb_di)
+    print(text_finished)
+    print(text_time)
+    print("#"*numb_di)
     return np.array(AO_calculated)
 
 
@@ -489,13 +501,27 @@ def calculate_MO(self,grid_points,delta=3):
     voxel_matrix = self.properties["voxel_matrix"]
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
 
+    print('##################################')
+    print("# Calculating Molecular Orbitals #")
+    print('##################################')
+
+    time_before_calc = time.time()
+
 
     for MO in MO_list:
         AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
-        MO_not_normalized = np.sum(AO_calculated*AO_contribution_reshaped,axis=0)
-        MO_calculated.append(MO_not_normalized / (np.sum(MO_not_normalized**2*dV/MO_occupancy)**(1/2)))
+        MO_not_normalized = np.einsum("ijkl,ijkl->jkl",AO_calculated,AO_contribution_reshaped)
+        MO_calculated.append(MO_not_normalized / (np.einsum("ijk,ijk->",MO_not_normalized,MO_not_normalized)*dV/MO_occupancy)**(1/2))
 
     self.properties["MO_calculated"] = np.array(MO_calculated)
+
+    time_taken = time.time() - time_before_calc
+
+    print("###########################################")
+    print("# Finished Calculating Molecular Orbitals #")
+    print("# in {:3.3f} s #".format(time_taken))
+    print("###########################################")
+
     return np.array(MO_calculated)
 
 
@@ -541,8 +567,8 @@ def calculate_occupied_MO(self,grid_points,delta=3):
         if MO_occ==0:
             break
         AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
-        MO_not_normalized = np.sum(AO_calculated*AO_contribution_reshaped,axis=0)
-        MO_calculated.append(MO_not_normalized / (np.sum(MO_not_normalized**2*dV/MO_occ)**(1/2)))
+        MO_not_normalized = np.einsum("ijkl,ijkl->jkl",AO_calculated,AO_contribution_reshaped)
+        MO_calculated.append(MO_not_normalized / (np.einsum("ijk,ijk->",MO_not_normalized,MO_not_normalized)*dV/MO_occ)**(1/2))
 
     self.properties["MO_calculated"] = np.array(MO_calculated)
     return np.array(MO_calculated)
@@ -591,9 +617,9 @@ def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
 
     AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
 
-    MO_chosen_calculated = np.sum(AO_calculated*AO_contribution_reshaped,axis=0)
+    MO_chosen_calculated = np.einsum("ijkl,ijkl->jkl",AO_calculated,AO_contribution_reshaped)
 
-    self.properties["MO_calculated"][MO_chosen] = MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV/MO_occupancy)**(1/2))
+    self.properties["MO_calculated"][MO_chosen] = MO_chosen_calculated / (np.einsum("ijk,ijk->",MO_chosen_calculated,MO_chosen_calculated)*dV/MO_occupancy)**(1/2)
 
     return MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV/MO_occupancy)**(1/2))
 
@@ -634,7 +660,7 @@ def calculate_electron_density(self,grid_points,delta=5):
 
     MO_occupied = MO[:MO_occ_index]
 
-    electron_density = np.sum((MO_occupied)**2,axis=0)
+    electron_density = np.einsum("ijkl,ijkl->jkl",MO_occupied,MO_occupied)
 
     print("Finished Calculating Electron Density")
     self.properties["electron_density"] = electron_density
@@ -701,9 +727,14 @@ def calculate_transition_density(self,grid_points,delta=3):
     nx,ny,nz = grid_points
 
 
-    print("Calculating Transition Density")
+    print("##################################")
+    print("# Calculating Transition Density #")
+    print("##################################")
 
+    time_before_calc = time.time()
 
+    #There should be a way to speed up the calculation
+    #This can be done by geting an array of the coeffs with 0 on those who are not there and then doing the einsum
     transition_density_list = []
     for transition in zip(transition_list,transition_factor_list):
         transition_density = np.zeros((nx,ny,nz))
@@ -720,9 +751,11 @@ def calculate_transition_density(self,grid_points,delta=3):
 
     self.properties["transition_density_list"] = transition_density_list
 
-
-    print("Finished calculating Transition Density")
-
+    time_taken = time.time()-time_before_calc
+    print("###########################################")
+    print("# Finished calculating Transition Density #")
+    print('# in {:3.3f} s #'.format(time_taken))
+    print("###########################################")
     return transition_density_list
 
 
