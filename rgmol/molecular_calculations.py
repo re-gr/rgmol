@@ -8,10 +8,12 @@ This script adds functions, and methods to the molecule objects.
 These methods allow the calculation of various chemical properties such as AO, MO, Transition densities or linear response function.
 """
 
+import time
 import numpy as np
 import scipy as sp
+import rgmol
 from rgmol.objects import *
-import time
+from rgmol.threading_functions import *
 
 def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     """
@@ -574,7 +576,7 @@ def calculate_occupied_MO(self,grid_points,delta=3):
     return np.array(MO_calculated)
 
 
-def calculate_MO_chosen(self,MO_chosen,grid_points,delta=3):
+def calculate_MO_chosen(self,MO_chosen,grid_points=(80,80,80),delta=3):
     """
     calculate_MO_chosen(MO_chosen,grid_points,delta=3)
 
@@ -724,6 +726,7 @@ def calculate_transition_density(self,grid_points,delta=3):
     if not "MO_calculated" in self.properties:
         self.calculate_MO(grid_points=grid_points,delta=delta)
 
+    nprocs = rgmol.nprocs
     nx,ny,nz = grid_points
 
 
@@ -735,21 +738,52 @@ def calculate_transition_density(self,grid_points,delta=3):
 
     #There should be a way to speed up the calculation
     #This can be done by geting an array of the coeffs with 0 on those who are not there and then doing the einsum
-    transition_density_list = []
-    for transition in zip(transition_list,transition_factor_list):
-        transition_density = np.zeros((nx,ny,nz))
-        transition_factor_list_in = np.array(transition[1])
-        transition_factor_list_in /= np.sum(transition_factor_list_in **2)**(1/2)
+    transi_occ_max = 0
+    transi_virt_max = 0
+    num_transition = len(transition_list)
 
-        for transition_MO in zip(transition[0],transition_factor_list_in):
-            MO_OCC = calculate_MO_chosen(self,transition_MO[0][0],grid_points,delta=delta)
-            MO_VIRT = calculate_MO_chosen(self,transition_MO[0][1],grid_points,delta=delta)
-            transition_density += transition_MO[1][0] * MO_OCC * MO_VIRT
+    for transition,transition_factor in zip(transition_list,transition_factor_list):
+        # print(transition)
+        transi_occ = np.max(transition[:,0])
+        transi_virt = np.max(transition[:,1])
 
-        transition_density_list.append(transition_density)
+        if transi_occ_max < transi_occ:
+            transi_occ_max = transi_occ
+        if transi_virt_max < transi_virt:
+            transi_virt_max = transi_virt
+
+    transi_occ_max += 1
+    transi_virt_max += 1
+    transitions = np.zeros((transi_occ_max,transi_virt_max))
+    transition_density_coefficients = np.zeros((num_transition,transi_occ_max,transi_virt_max))
+    count = 0
+    for transition in range(len(transition_list)):
+        for factor_index in range(len(transition_list[transition])):
+            occ,virt = transition_list[transition][factor_index]
+            transitions[occ,virt] = 1
+            transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index]
+
+    if nprocs > 1:
+        transition_density_list = calculate_transition_density_multithread(self,transitions,transition_density_coefficients,grid_points,nprocs)
+    else:
+        transition_density_list = np.zeros((len(transition_list),nx,ny,nz))
+        for occ in range(transi_occ_max):
+            for virt in range(transi_virt_max):
+                if transitions[occ,virt]:
+
+                    MO_OCC = calculate_MO_chosen(self,occ,grid_points,delta=delta)
+                    MO_VIRT = calculate_MO_chosen(self,virt,grid_points,delta=delta)
+                    MO_product = MO_OCC * MO_VIRT
+
+                    transition_coeffs = transition_density_coefficients[:,occ,virt]
+                    for transition in range(num_transition):
+                        coeff = transition_coeffs[transition]
+                        if coeff>0:
+                            transition_density_list[transition] += coeff * MO_product
 
 
     self.properties["transition_density_list"] = transition_density_list
+
 
     time_taken = time.time()-time_before_calc
     print("###########################################")

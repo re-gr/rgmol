@@ -213,23 +213,19 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
     eigenvectors = eigenvectors.transpose()
 
 
-    reconstructed_eigenvectors = []
 
 
-    for eigenvector,eigenvalue in zip(eigenvectors,eigenvalues):
-        eigenvector_reshaped = eigenvector.reshape((number_transition,1,1,1))
-        transitions_reshaped = transition_density_list.reshape((number_transition,nx,ny,nz))
-        reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,transitions_reshaped)
-        reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
-        reconstructed_eigenvectors.append(reconstructed_eigenvector)
-    #
-    # for eigenvector in zip(eigenvectors,eigenvalues,range(len(eigenvectors))):
-    #
-    #     reconstructed_eigenvector = np.zeros((nx,ny,nz))
-    #     for transition in range(len(eigenvector[0])):
-    #         reconstructed_eigenvector += eigenvector[0][transition] * transition_density_list[transition]
-    #     reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
-    #     reconstructed_eigenvectors.append(reconstructed_eigenvector)
+    if nprocs >1:
+        reconstructed_eigenvectors = reconstruct_eigenvectors(transition_density_list,eigenvectors,dV,nprocs)
+    else:
+        reconstructed_eigenvectors = []
+        for eigenvector in eigenvectors:
+            eigenvector_reshaped = eigenvector.reshape((number_transition,1,1,1))
+            transitions_reshaped = transition_density_list.reshape((number_transition,nx,ny,nz))
+            reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,transitions_reshaped)
+            reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
+            reconstructed_eigenvectors.append(reconstructed_eigenvector)
+
 
     self.properties["linear_response_eigenvalues"] = eigenvalues
     self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
