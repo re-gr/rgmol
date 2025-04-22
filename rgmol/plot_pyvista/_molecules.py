@@ -1063,9 +1063,9 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,f
 
 
 
-def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_points=(100,100,100),delta=10,number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
+def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
     """
-    plot_diagonalized_kernel(kernel,plotting_method="isodensity",grid_points=(100,100,100),delta=10,number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
+    plot_diagonalized_kernel(kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
 
 
     Calculate and diagonalize a kernel.
@@ -1079,14 +1079,14 @@ def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_point
     ----------
         kernel : str
             The kernel to be diagonalized and plotted
-        plotting_method : str, optional
-            The method used for plotting. By default isodensity. The other methods are : "multiple isodensities", "volume"
         grid_points : list of 3, optional
             The number of points for the grid in each dimension. By default (40,40,40)
         delta : float, optional
             The length added on all directions of the box containing all atomic centers. By default 3
-        cutoff : float, optional
-            The initial cutoff of the isodensity plot for the isodensity plotting method. By default .2
+        number_plotted_eigenvectors : int, optional
+            The Number of eigenvectors to be plotted. By default 100
+        plotting_method : str, optional
+            The method used for plotting. By default isodensity. The other methods are : "multiple isodensities", "volume"
         number_isodensities : int, optional
             The number of isodensities to be plotted if the method used is multiple isodensities
         opacity : float, optional
@@ -1099,6 +1099,8 @@ def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_point
             The opacity of the radius plot. By default .8
         factor_radius : float, optional
             The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot for the isodensity plotting method. By default .2
         screenshot_button : bool, optional
             Adds a screenshot button. True by default
         window_size_screenshot : tuple, optional
@@ -1135,6 +1137,10 @@ def plot_diagonalized_kernel(self,kernel,plotting_method="isodensity",grid_point
 
     else:
         raise TypeError("The kernel {} has not been implemented. The available kernels are : linear_response_function and softness_kernel".format(kernel))
+
+    eigenvectors = eigenvectors [:number_plotted_eigenvectors]
+    eigenvalues = eigenvalues [:number_plotted_eigenvectors]
+
 
     plotter = pyvista.Plotter()
     if with_radius:
