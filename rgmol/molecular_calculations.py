@@ -647,7 +647,6 @@ def calculate_electron_density(self,grid_points,delta=5):
         electron_density : ndarray
     """
 
-    print("Calculating Electron Density")
     if not "MO_calculated" in self.properties:
         self.calculate_occupied_MO(grid_points,delta=delta)
 
@@ -664,7 +663,6 @@ def calculate_electron_density(self,grid_points,delta=5):
 
     electron_density = np.einsum("ijkl,ijkl->jkl",MO_occupied,MO_occupied)
 
-    print("Finished Calculating Electron Density")
     self.properties["electron_density"] = electron_density
     return electron_density
 

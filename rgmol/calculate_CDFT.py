@@ -207,13 +207,8 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
     diag_matrix = transition_matrix_inv.dot(LR_matrix_in_TDB)
 
     eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
-
-
     # eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     eigenvectors = eigenvectors.transpose()
-
-
-
 
     if nprocs >1:
         reconstructed_eigenvectors = reconstruct_eigenvectors(transition_density_list,eigenvectors,dV,nprocs)
@@ -221,8 +216,7 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
         reconstructed_eigenvectors = []
         for eigenvector in eigenvectors:
             eigenvector_reshaped = eigenvector.reshape((number_transition,1,1,1))
-            transitions_reshaped = transition_density_list.reshape((number_transition,nx,ny,nz))
-            reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,transitions_reshaped)
+            reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,transition_density_list)
             reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
             reconstructed_eigenvectors.append(reconstructed_eigenvector)
 
@@ -307,19 +301,33 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     voxel_matrix = self.properties["voxel_matrix"]
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
 
-    basis = np.array(transition_density_list + [fukui]) #Append the fukui function
+
+    nprocs = rgmol.nprocs
+
+    print("#############################################")
+    print("# Calculating Eigenmodes of Softness Kernel #")
+    print("#############################################")
+
+
+    time_before_calc = time.time()
+    fukui_reshaped = fukui.reshape((1,nx,ny,nz))
+    basis = np.append(transition_density_list,fukui_reshaped,axis=0) #Append the fukui function
     factor = np.array((transition_energy/2).tolist() + [hardness])
 
     #Append the hardness and divide the energy by 2 to take into account the 2 in the formula of the LRF
     length_basis = len(basis)
 
-    overlap_matrix = np.zeros((length_basis,length_basis))
 
-    for first_transition in range(length_basis):
-        for second_transition in range(first_transition+1):
-            overlap_integral = np.sum(basis[first_transition] * basis[second_transition]) * dV
-            overlap_matrix[first_transition,second_transition] = overlap_integral
-            overlap_matrix[second_transition,first_transition] = overlap_integral
+
+    if nprocs >1:
+        overlap_matrix = calculate_overlap_matrix_multithread(basis,nprocs,dV)
+    else:
+        overlap_matrix = np.zeros((length_basis,length_basis))
+        for first_transition in range(length_basis):
+            for second_transition in range(first_transition+1):
+                overlap_integral = np.sum(basis[first_transition] * basis[second_transition]) * dV
+                overlap_matrix[first_transition,second_transition] = overlap_integral
+                overlap_matrix[second_transition,first_transition] = overlap_integral
 
 
     #following dimensions : i,k,j
@@ -343,20 +351,26 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     eigenvectors = eigenvectors.transpose()
     reconstructed_eigenvectors = []
 
-
-    for eigenvector in zip(eigenvectors,eigenvalues,range(len(eigenvectors))):
-        # eigenvectors[eigenvector[2]] = eigenvectors[eigenvector[2]]/np.sum(abs(eigenvectors[eigenvector[2]]))
-
-        reconstructed_eigenvector = np.zeros((nx,ny,nz))
-
-        for transition in range(len(eigenvector[0])):
-            reconstructed_eigenvector += eigenvector[0][transition] * basis[transition]
-        reconstructed_eigenvector = reconstructed_eigenvector/np.sum(reconstructed_eigenvector**2*dV)**(1/2)
-        reconstructed_eigenvectors.append(reconstructed_eigenvector)
+    if nprocs >1:
+        reconstructed_eigenvectors = reconstruct_eigenvectors(basis,eigenvectors,dV,nprocs)
+    else:
+        reconstructed_eigenvectors = []
+        for eigenvector in eigenvectors:
+            eigenvector_reshaped = eigenvector.reshape((length_basis,1,1,1))
+            reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,basis)
+            reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
+            reconstructed_eigenvectors.append(reconstructed_eigenvector)
 
     self.properties["softness_kernel_eigenvalues"] = eigenvalues
     self.properties["softness_kernel_eigenvectors"] = reconstructed_eigenvectors
     self.properties["contribution_softness_kernel_eigenvectors"] = eigenvectors
+
+    time_taken = time.time() - time_before_calc
+
+    print("######################################################")
+    print("# Finished calculating eigenmodes of Softness Kernel #")
+    print("# in {:3.3f} s #".format(time_taken))
+    print("######################################################")
 
     return eigenvalues, reconstructed_eigenvectors
 
