@@ -203,11 +203,11 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
     LR_matrix_in_TDB = np.einsum("ijk,ijk,ijk->ik",-2/transition_energy_reshaped,transition_matrix_reshaped,transition_matrix_reshaped_2)
 
 
-    transition_matrix_inv = np.linalg.inv(transition_matrix)
-    diag_matrix = transition_matrix_inv.dot(LR_matrix_in_TDB)
+    # transition_matrix_inv = np.linalg.inv(transition_matrix)
+    # diag_matrix = transition_matrix_inv.dot(LR_matrix_in_TDB)
 
-    eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
-    # eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
+    # eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
+    eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     eigenvectors = eigenvectors.transpose()
 
     if nprocs >1:
@@ -341,10 +341,10 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     s_matrix = np.sum(1/factor_reshaped* overlap_matrix_reshaped * overlap_matrix_reshaped_2,axis=1)
 
 
-    overlap_matrix_inv = np.linalg.inv(overlap_matrix)
-    diag_matrix = overlap_matrix_inv.dot(s_matrix)
+    # overlap_matrix_inv = np.linalg.inv(overlap_matrix)
+    # diag_matrix = overlap_matrix_inv.dot(s_matrix)
 
-    eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
+    # eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
 
 
     eigenvalues, eigenvectors = sp.linalg.eigh(s_matrix,overlap_matrix)
