@@ -147,6 +147,25 @@ def write_cube(self,cube,file_name,description="cube"):
         file.writelines(Lines)
 
 def write_txt(self,cube,file_name):
+    """
+    write_txt(cube,file_name)
+
+    This functions writes a txt file containing a 3D array.
+    This method is not the preferred one, just use mol.save()
+
+    Parameters
+    ----------
+        cube : ndarray
+            The cube file to save
+        file_name : str
+            The name of the file
+
+    Returns
+    -------
+        None
+            The file is written
+    """
+
     grid_points = self.properties["grid_points"]
     nx,ny,nz = grid_points
     comments = ""
@@ -166,8 +185,10 @@ molecule.write_txt = write_txt
 #########################################
 
 
-def save_kernel(mol,file_location,kernel_name,eigenvalues,eigenvectors,contributions,output_extension):
-    """Save"""
+def _save_kernel(mol,file_location,kernel_name,eigenvectors,output_extension):
+    """
+    This functions saves the eigenmodes of a kernel
+    """
 
     output_extension = output_extension.lower().strip(".")
 
@@ -203,9 +224,21 @@ def save_kernel(mol,file_location,kernel_name,eigenvalues,eigenvectors,contribut
 
 def save(self,output_extension="npy"):
     """
-    save()
+    save(output_extension="npy")
 
-    This function saves all the molecule calculated properties in a rgmol folder where the molecule file is
+    This function saves the eignemodes of the already computed kernels in a folder called rgmol.
+    The rgmol folder is located in the same folder as the input file used for the molecule.
+    By default the extension used is npy as it is the faster method.
+
+    Parameters
+    ----------
+        output_extension : str, optional
+            The output extension of the cube files. By default npy. The other extension available are txt and cube but are NOT recommended
+
+    Returns
+    -------
+        None
+            The files are written in the rgmol folder
 
     """
 
@@ -228,7 +261,7 @@ def save(self,output_extension="npy"):
 
         np.savetxt(file_location+"rgmol//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
         np.savetxt(file_location+"rgmol//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
-        save_kernel(self,file_location,"linear_response_function",linear_response_eigenvalues,linear_response_eigenvectors,contribution_linear_response_eigenvectors,output_extension)
+        _save_kernel(self,file_location,"linear_response_function",linear_response_eigenvectors,output_extension)
 
 
     if "softness_kernel_eigenvalues" in self.properties:
@@ -236,9 +269,9 @@ def save(self,output_extension="npy"):
         softness_kernel_eigenvectors = self.properties["softness_kernel_eigenvectors"]
         contribution_softness_kernel_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
 
-        np.savetxt(file_location+"rgmol//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Linear Response Eigenvalues")
+        np.savetxt(file_location+"rgmol//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Softness Kernel Eigenvalues")
         np.savetxt(file_location+"rgmol//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
-        save_kernel(self,file_location,"softness_kernel",softness_kernel_eigenvalues,softness_kernel_eigenvectors,contribution_softness_kernel_eigenvectors,output_extension)
+        _save_kernel(self,file_location,"softness_kernel",softness_kernel_eigenvectors,output_extension)
 
 
     voxel_origin = self.properties["voxel_origin"]
@@ -259,7 +292,17 @@ def read(self):
     """
     read()
 
-    This function reads
+    This function reads the files located in the rgmol folder where the molecule is saved.
+
+    Parameters
+    ----------
+        None
+            All the parameters needed are already inside the molecule
+
+    Returns
+    -------
+        None
+            The properties will be put inside molecule.properties
 
     """
 
