@@ -361,9 +361,9 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
             reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
             reconstructed_eigenvectors.append(reconstructed_eigenvector)
 
-    self.properties["softness_kernel_eigenvalues"] = eigenvalues
-    self.properties["softness_kernel_eigenvectors"] = reconstructed_eigenvectors
-    self.properties["contribution_softness_kernel_eigenvectors"] = eigenvectors
+    self.properties["softness_kernel_eigenvalues"] = eigenvalues[::-1]
+    self.properties["softness_kernel_eigenvectors"] = reconstructed_eigenvectors[::-1]
+    self.properties["contribution_softness_kernel_eigenvectors"] = eigenvectors[::-1]
 
     time_taken = time.time() - time_before_calc
 

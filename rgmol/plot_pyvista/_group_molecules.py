@@ -659,14 +659,14 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
             eigenvalues = molecule.properties["linear_response_eigenvalues"]
-            contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
+            contrib_eigenvectors = molecule.properties["contribution_linear_response_eigenvectors"]
             transition_list = molecule.properties["transition_list"]
             transition_factor_list = molecule.properties["transition_factor_list"]
 
             plot_cube(plotter,molecule.properties["voxel_origin"],molecule.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff,add_name=str(shape[1]*indexes[0]+indexes[1]))
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
             if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[0])
+                print_contribution_transition_density(plotter,molecule,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
     elif plotting_method == "multiple isodensities":
         def create_mesh_diagonalized_kernel(value,indexes,molecule,cutoff):
@@ -674,7 +674,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
             eigenvalues = molecule.properties["linear_response_eigenvalues"]
-            contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
+            contrib_eigenvectors = molecule.properties["contribution_linear_response_eigenvectors"]
             transition_factor_list = molecule.properties["transition_factor_list"]
             transition_list = molecule.properties["transition_list"]
 
@@ -682,7 +682,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
 
             if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[0])
+                print_contribution_transition_density(plotter,molecule,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
     elif plotting_method == "volume":
         def create_mesh_diagonalized_kernel(value,indexes,molecule,cutoff):
@@ -690,7 +690,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             vector_number = int(round(value))
             eigenvectors = molecule.properties["linear_response_eigenvectors"]
             eigenvalues = molecule.properties["linear_response_eigenvalues"]
-            contrib_eigenvectors = molecule.properties["contibution_linear_response_eigenvectors"]
+            contrib_eigenvectors = molecule.properties["contribution_linear_response_eigenvectors"]
             transition_list = molecule.properties["transition_list"]
             transition_factor_list = molecule.properties["transition_factor_list"]
 
@@ -699,7 +699,7 @@ def plot_diagonalized_kernel(self,kernel,method="only eigenmodes",plotting_metho
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue",font_size=18/shape[1])
 
             if method == "only eigenmodes":
-                print_contribution_transition_density(plotter,vector_number,contrib_eigenvectors,transition_list,transition_factor_list,divy=shape[0])
+                print_contribution_transition_density(plotter,molecule,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
 
 

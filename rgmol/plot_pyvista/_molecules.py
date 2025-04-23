@@ -1063,9 +1063,9 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,f
 
 
 
-def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
+def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
     """
-    plot_diagonalized_kernel(kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
+    plot_diagonalized_kernel(kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
 
 
     Calculate and diagonalize a kernel.
@@ -1085,6 +1085,10 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
             The length added on all directions of the box containing all atomic centers. By default 3
         number_plotted_eigenvectors : int, optional
             The Number of eigenvectors to be plotted. By default 100
+        try_reading : bool, optional
+            If the eigenmodes were calculated and saved before, try reading them from the rgmol folder. True by default
+        save : bool, optional
+            The eigenmodes, eigenvalues and contributions of transition densities will be save in the folder rgmol that will be created where the molecule file is located
         plotting_method : str, optional
             The method used for plotting. By default isodensity. The other methods are : "multiple isodensities", "volume"
         number_isodensities : int, optional
@@ -1118,9 +1122,23 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
         None
             The plotter should display when using this function
     """
-
+    did_read = 1
     if kernel == "linear_response_function":
-        self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
+        if try_reading:
+            try: self.read()
+            except: pass
+
+        if try_reading and not "linear_response_eigenvectors" in self.properties:
+            did_read = 0
+            print("########################################")
+            print("# No previous calculations were found. #")
+            print("#   The eigenmodes will be computed.   #")
+            print("########################################")
+            self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
+        elif not try_reading:
+            did_read = 0
+            self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
+
         eigenvectors = self.properties["linear_response_eigenvectors"]
         eigenvalues = self.properties["linear_response_eigenvalues"]
         contrib_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
@@ -1128,7 +1146,22 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
         transition_factor_list = self.properties["transition_factor_list"]
 
     elif kernel == "softness_kernel":
-        self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,grid_points=grid_points,delta=delta)
+        self.calculate_hardness()
+        if try_reading:
+            try: self.read()
+            except: pass
+
+        if try_reading and not "softness_kernel_eigenvectors" in self.properties:
+            did_read = 0
+            print("########################################")
+            print("# No previous calculations were found. #")
+            print("#   The eigenmodes will be computed.   #")
+            print("########################################")
+            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,grid_points=grid_points,delta=delta)
+        elif not try_reading:
+            did_read = 0
+            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,grid_points=grid_points,delta=delta)
+
         eigenvectors = self.properties["softness_kernel_eigenvectors"]
         eigenvalues = self.properties["softness_kernel_eigenvalues"]
         contrib_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
@@ -1137,6 +1170,9 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
 
     else:
         raise TypeError("The kernel {} has not been implemented. The available kernels are : linear_response_function and softness_kernel".format(kernel))
+
+    if save and not did_read:
+        self.save()
 
     eigenvectors = eigenvectors [:number_plotted_eigenvectors]
     eigenvalues = eigenvalues [:number_plotted_eigenvectors]
@@ -1173,8 +1209,9 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
             print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
-    slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
 
+
+    slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
 
@@ -1202,4 +1239,5 @@ molecule.plot_dipole_moment = plot_dipole_moment
 molecule.plot_transition_density = plot_transition_density
 molecule.plot_fukui_function = plot_fukui_function
 molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
+
 

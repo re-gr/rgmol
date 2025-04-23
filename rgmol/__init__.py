@@ -16,7 +16,6 @@ The documentation can be found on `rgmol wiki <re-gr.github.io/rgmol_wiki>`_
 
 import numpy as np
 import os
-# from write import *
 from rgmol.objects import *
 import rgmol.extract_adf
 import rgmol.extract_cube
@@ -25,7 +24,7 @@ import rgmol.extract_orca
 import rgmol.extract_gaussian
 import rgmol.molecular_calculations
 import rgmol.calculate_CDFT
-import rgmol.write
+import rgmol.read_save
 import rgmol.plot_pyvista
 import rgmol.potential
 
