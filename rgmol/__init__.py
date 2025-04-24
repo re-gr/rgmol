@@ -28,7 +28,7 @@ import rgmol.read_save
 import rgmol.plot_pyvista
 import rgmol.potential
 
-__version__ = "0.1.3.0"
+__version__ = "0.1.3.1"
 
 nprocs = 1
 
