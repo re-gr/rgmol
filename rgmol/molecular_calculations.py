@@ -776,8 +776,8 @@ def calculate_transition_density(self,grid_points,delta=3):
                     transition_coeffs = transition_density_coefficients[:,occ,virt]
                     for transition in range(num_transition):
                         coeff = transition_coeffs[transition]
-                        if coeff>0:
-                            transition_density_list[transition] += coeff * MO_product
+                        if coeff!=0:
+                            transition_density_list[transition] = transition_density_list[transition] + coeff * MO_product
 
 
     self.properties["transition_density_list"] = transition_density_list
