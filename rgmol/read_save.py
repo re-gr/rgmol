@@ -18,12 +18,12 @@ import rgmol
 
 def _get_file_location(file):
     """gets the location of the file of the output of the molecule"""
-    file_splitted = file.split("//")[:-1]
+    file_splitted = file.split("/")[:-1]
     file_location = ""
 
     for f in file_splitted:
         file_location += f
-        file_location +="//"
+        file_location +="/"
 
     return file_location
 

@@ -761,7 +761,10 @@ def calculate_transition_density(self,grid_points,delta=3):
             transitions[occ,virt] = 1
             transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index]
 
-    if nprocs > 1:
+    # print(num_transition,len(np.einsum("ijk,ijk->i",transition_density_coefficients,transition_density_coefficients)))
+    # print(np.einsum("ijk,ijk->i",transition_density_coefficients,transition_density_coefficients))
+
+    if nprocs > 1 and 0:
         transition_density_list = calculate_transition_density_multithread(self,transitions,transition_density_coefficients,grid_points,nprocs)
     else:
         transition_density_list = np.zeros((len(transition_list),nx,ny,nz))
@@ -832,6 +835,10 @@ def calculate_chosen_transition_density(self,chosen_transition_density,grid_poin
     if not "transition_list" in self.properties:
         raise ValueError("No transitions were found, one should use rgmol.extract_excited_states.extract_transition to extract transition")
 
+
+    #Initialize transition density list
+    if not "transition_density_list" in self.properties:
+        self.properties["transition_density_list"] = [[] for k in range(len(self.properties["transition_list"]))]
 
     if type(self.properties["transition_density_list"][chosen_transition_density]) is not list:
         return self.properties["transition_density_list"][chosen_transition_density]

@@ -103,10 +103,10 @@ def extract_properties(file,mol=None):
                 if len(line)==1:
                     flag_completing_state = 0
                     flag_completed_state = 1
-                    transition_list.append(transition)
+                    transition_list.append(np.array(transition))
                     #renormalize factors
                     transition_factor = np.array(transition_factor)
-                    transition_factor = (transition_factor / np.sum(transition_factor**2)).tolist()
+                    # transition_factor = transition_factor / (np.sum(transition_factor**2))**(1/2)
 
                     transition_factor_list.append(transition_factor)
                 else:
@@ -114,8 +114,14 @@ def extract_properties(file,mol=None):
                         raise ValueError("Unrestricted calculations not yet implemented")
                     transition.append([ int(lsplit[0][:-1]),int(lsplit[2][:-1])])
                     fact = lsplit[-1]
-                    fact = fact.replace(")","")
-                    transition_factor.append([ float(fact) ])
+
+                    if len(lsplit) == 5:
+                        #TDA FALSE calculation
+                        transition_factor.append([ np.sign(float(fact))*abs(float(fact))**(1/2) ])
+                    else:
+                        #TDA TRUE calculation
+                        fact = fact.replace(")","")
+                        transition_factor.append([ float(fact) ])
 
             elif len(line)==1 and flag_completed_state:
                 flag_states = 0

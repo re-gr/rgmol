@@ -1086,7 +1086,7 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
         number_plotted_eigenvectors : int, optional
             The Number of eigenvectors to be plotted. By default 100
         try_reading : bool, optional
-            If the eigenmodes were calculated and saved before, try reading them from the rgmol folder. True by default
+            If the eigenmodes were calculated and saved before, try reading them from the rgmol folder. If False, the computation will be remade. True by default
         save : bool, optional
             The eigenmodes, eigenvalues and contributions of transition densities will be save in the folder rgmol that will be created where the molecule file is located
         plotting_method : str, optional

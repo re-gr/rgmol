@@ -115,7 +115,7 @@ def _product_MO_calc(mol,list_add_transition,transitions,nocc,nvirt,index_move,t
             transition_coeffs = transition_density_coefficients[:,occ,virt]
             for transition in range(num_transitions):
                 coeff = transition_coeffs[transition]
-                if coeff>0:
+                if coeff!=0:
                     list_add_transition[transition] += coeff * MO_product
 
 def _divide_bool(arr,nprocs):
@@ -158,7 +158,8 @@ def calculate_transition_density_multithread(mol,transitions,transition_density_
     """
     This function divides the virtual coefficients into multiple parts
     """
-
+    voxel_matrix = mol.properties["voxel_matrix"]
+    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
     #This hard cap is because it is actually slower to put too much processors
     if nprocs > 4:
         nprocs = 4
@@ -181,6 +182,9 @@ def calculate_transition_density_multithread(mol,transitions,transition_density_
     for thread in list_th:
         thread.join()
     transition_density_list = np.einsum("ijklm->jklm",list_add_transitions)
+    # list_div_transitions = np.einsum("jklm,jklm->j",transition_density_list,transition_density_list)
+    # list_div_transitions = list_div_transitions.reshape((num_transitions,1,1,1))
+    # transition_density_list = transition_density_list / (list_div_transitions*dV)**(1/2)
     return transition_density_list
 
 
