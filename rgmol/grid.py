@@ -15,16 +15,46 @@ import rgmol
 from rgmol.objects import *
 from rgmol.threading_functions import *
 
-class list_grid:
+class list_grids:
     def __init__(self,grids):
         self.grids = grids
+        grids_centers = []
+        for grid_i in grids:
+            grids_centers.append(grid_i.center)
+        self.grids_centers = np.array(grids_centers)
 
 
 
 class grid:
-    def __init__(self,r,grid_type):
+    def __init__(self,coords,center,grid_type,coords_gc=None,R=1):
         self.grid_type = grid_type
         self.center = center
+        self.coords = coords
+        self.number_points = np.prod(np.shape(coords)[1:])
+        self.R = R
+        self.coords_gc = coords_gc
+
+        if grid_type.lower() == "cubic":
+            self.xyz_coords = coords.reshape((3,self.number_points))
+
+        elif grid_type.lower() == "atomic":
+            r,Theta,Phi = coords
+            cos_theta = np.cos(Theta)
+            sin_theta = np.sin(Theta)
+            cos_phi = np.cos(Phi)
+            sin_phi = np.sin(Phi)
+
+            x = r * sin_theta * cos_phi + self.center[0]
+            y = r * sin_theta * sin_phi + self.center[1]
+            z = r * cos_theta + self.center[2]
+
+            self.xyz_coords = np.array([x,y,z]).reshape((3,self.number_points))
+
+
+        else:
+            raise TypeError("This type of grid {} has not been implemented. Please use cubic or atomic.".format(grid_type))
+
+
 
 
 def create_voxel_from_molecule(mol,grid_points,delta=5,delta_at=.4):
@@ -60,8 +90,9 @@ def create_voxel_from_molecule(mol,grid_points,delta=5,delta_at=.4):
 
     list_pos = mol.list_property("pos")
     nx,ny,nz = grid_points
-    xmin,ymin,zmin = np.min(list_pos,axis=(0))
-    xmax,ymax,zmax = np.max(list_pos,axis=(0))
+    xmin,ymin,zmin = np.min(list_pos,axis=0)
+    xmax,ymax,zmax = np.max(list_pos,axis=0)
+    print(zmin,zmax)
 
     voxel_origin = [xmin-delta,ymin-delta,zmin-delta]
 
@@ -124,9 +155,9 @@ def create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix):
     voxel_end[2] = voxel_origin[2] + voxel_matrix[2][2]*nz
 
 
-    x = np.linspace(voxel_origin[0],voxel_end[0],nx,endpoint=False)
-    y = np.linspace(voxel_origin[1],voxel_end[1],ny,endpoint=False)
-    z = np.linspace(voxel_origin[2],voxel_end[2],nz,endpoint=False)
+    x = np.linspace(voxel_origin[0],voxel_end[0],nx,endpoint=True)
+    y = np.linspace(voxel_origin[1],voxel_end[1],ny,endpoint=True)
+    z = np.linspace(voxel_origin[2],voxel_end[2],nz,endpoint=True)
 
     r = x.reshape((1,nx,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
         y.reshape((1,1,ny,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
@@ -135,18 +166,9 @@ def create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix):
     return r
 
 
-
-
-
-
-def create_grid_atom(N_r,N_ang,R=1):
+def create_grid_atom(atom,N_r,N_ang,R=1):
     Theta = (np.arange(N_ang)*np.pi/N_ang).reshape((1,1,N_ang))
     Phi = (np.arange(N_ang)*2*np.pi/N_ang).reshape((1,N_ang,1))
-
-    cos_theta = np.cos(Theta)
-    sin_theta = np.sin(Theta)
-    cos_phi = np.cos(Phi)
-    sin_phi = np.sin(Phi)
 
     r_0 = np.cos((np.arange(N_r)+1)/(N_r+1) *np.pi) #Gauss Chebyshev Type 2
     r_0 = r_0 - (r_0==1)*0.001 #Convert x=1 to x=0.999
@@ -154,51 +176,70 @@ def create_grid_atom(N_r,N_ang,R=1):
     r = r.reshape((N_r,1,1))
 
 
-    Coords = r.reshape((1,N_r,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
+    coords = r.reshape((1,N_r,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
              Theta.reshape((1,1,N_ang,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
              Phi.reshape((1,1,1,N_ang))*np.array([0,0,1.]).reshape((3,1,1,1))
 
-    return r_0,Coords
+
+    grid_i = grid(coords,atom.pos,"atomic",R=R,coords_gc=r_0)
+
+    return grid_i
 
 
+def function_cutoff(mu):
+    return 3/2*mu - 1/2*mu**3
 
-
-def voronoi_becke(mol,grids,N_rad,N_ang):
+def voronoi_becke(grids,N_rad,N_ang):
     """
+    Becke, A. D.The Journal of Chemical Physics 1988,88, 2547–2553
     """
-    Mu = []
-    for grid in grids.grids:
-        center = grid.center
-        xyz_coords = grid.xyz_coords
-        mu_i = np.zeros((len(xyz_coords)))
-        for x,y,z in xyz_coords:
-            pass
+    num_grids = len(grids.grids)
+    grids_centers = grids.grids_centers
+
+    for grid_i,grid_i_index in zip(grids.grids,range(num_grids)):
+        #Dimensions : grid_i,grid_j,points,coordinates
+
+        number_points = grid_i.number_points
+
+        xyz_coords = grid_i.xyz_coords.transpose().reshape((1,1,number_points,3))
+
+        grids_centers_i = grids_centers.reshape((num_grids,1,1,3))
+        grids_centers_j = grids_centers.reshape((1,num_grids,1,3))
+        R_ij = np.linalg.norm(grids_centers_i-grids_centers_j,axis=3)
+        R_ij = R_ij + (R_ij==0)*1e9 #Remove diagonal part
+
+        r_i = np.linalg.norm(xyz_coords - grids_centers_i,axis=3)
+        r_j = np.linalg.norm(xyz_coords - grids_centers_j,axis=3)
+
+        Mu_ij = (r_i - r_j) / R_ij
+
+        s3 = 1/2 * (1-function_cutoff(function_cutoff(function_cutoff(Mu_ij))))
+
+        Pi = np.prod(s3,axis=1)
+        wn = Pi[grid_i_index] / np.sum(Pi,axis=0)
+
+        grid_i.wn = wn
 
 
 
-        mu_ij = (ri-rj) /rij
 
-
-
-    s3 = 1/2 * (1-function_cutoff(function_cutoff(function_cutoff(mu_ij))))
-
-    Pi = np.prod(s3,axis=1)
-    wn = Pi / np.sum(Pi)
-
-
-
-def integrate_on_atom_grid(mol,grid,arr,R):
-
-    r_0,Coords = create_grid_atom(n_r,n_ang,R=R)
+def integrate_on_atom_grid(mol,grid,arr):
+    coords_gc = grid.coords_gc
+    Coords = grid.coords
+    R = grid.R
 
     r = Coords[0]
+    n_r,n_ang = np.shape(Coords)[1:3]
+    wn = grid.wn
     w_gc = (np.pi/(n_r+1) * np.sin(np.arange(n_r)/(n_r+1)*np.pi)).reshape((n_r,1,1)) #Weight Gauss Chebyshev Type 2
 
     Theta = (np.arange(n_ang)*np.pi/n_ang).reshape((1,n_ang,1))
 
-    r_0 = r_0.reshape((n_r,1,1))
-    dV = 2/(1-r_0)**2 * R * w_gc * \#Radial Part
+    coords_gc = coords_gc.reshape((n_r,1,1))
+
+    dV = 2/(1-coords_gc)**2 * R * w_gc * \
         (r)**2 *np.sin(Theta)*2*np.pi/n_ang/n_ang*np.pi #Angular part
 
     Int = np.einsum("ijk,ijk->",arr,dV)
     return Int
+
