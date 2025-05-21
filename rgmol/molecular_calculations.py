@@ -39,6 +39,8 @@ def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         s_orbital : ndarray same shape as r
 
     """
+
+
     n,nx,ny,nz = np.shape(r)
     sum_gaussian = np.zeros((nx,ny,nz))
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
@@ -48,7 +50,7 @@ def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     r_r = x**2 + y**2 + z**2
 
     for coefs in zip(contraction_coefficients,exponent_primitives):
-        sum_gaussian += coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian +=  coefs[0] * np.exp(-coefs[1]*r_r)
 
     sum_gaussian /= (np.einsum("ijk,ijk->",sum_gaussian,sum_gaussian)*dV)**(1/2)
 
@@ -317,7 +319,7 @@ def gaussian_g(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
 
 
 
-def create_voxel_from_molecule(mol,grid_points,delta=5):
+def create_voxel_from_molecule(mol,grid_points,delta=5,delta_at=.4):
     """
     create_voxel_from_molecule(mol,grid_points,delta=5)
 
@@ -339,6 +341,15 @@ def create_voxel_from_molecule(mol,grid_points,delta=5):
             the matrix of the voxel
     """
 
+    print("##############################################")
+    print("#    No voxel was found, creating a voxel    #")
+    print("# with a delta = {:3.3f} around the molecule #".format(delta))
+    print("#   on a grid of {} points   #".format(grid_points))
+    print("#   and divides subspaces around each atoms  #")
+    print("#       with the same number of points       #")
+    print("#            and a delta = {:3.3f}           #".format(delta_at))
+    print("##############################################")
+
     list_pos = mol.list_property("pos")
     nx,ny,nz = grid_points
     xmin,ymin,zmin = np.min(list_pos,axis=(0))
@@ -351,8 +362,32 @@ def create_voxel_from_molecule(mol,grid_points,delta=5):
     z_step = (zmax - zmin + 2*delta)/nz
 
     voxel_matrix = [[x_step,0,0],[0,y_step,0],[0,0,z_step]]
+    r = create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix)
 
-    return voxel_origin,voxel_matrix
+    subspaces_voxel_matrix = []
+    subspaces_voxel_origin = []
+
+    for atom in mol.atoms:
+        pos = atom.pos
+        pos_min = (pos - delta_at).reshape((3,1,1,1))
+        pos_max = (pos + delta_at).reshape((3,1,1,1))
+
+        pos_min_norm = np.linalg.norm(r-pos_min,axis=0)
+        pos_max_norm = np.linalg.norm(r-pos_max,axis=0)
+
+        min_index_x,min_index_y,min_index_z = np.unravel_index(np.argmin(pos_min_norm),(nx,ny,nz))
+        max_index_x,max_index_y,max_index_z = np.unravel_index(np.argmin(pos_max_norm),(nx,ny,nz))
+
+        subspaces_voxel_origin.append([min_index_x,min_index_y,min_index_z])
+        delta_pos = r[:,max_index_x,max_index_y,max_index_z] - r[:,min_index_x,min_index_y,min_index_z]
+
+        x_step_sub = delta_pos[0]*2/grid_points[0]
+        y_step_sub = delta_pos[1]*2/grid_points[1]
+        z_step_sub = delta_pos[2]*2/grid_points[2]
+        subspaces_voxel_matrix.append([[x_step_sub,0,0],[0,y_step_sub,0],[0,0,z_step_sub]])
+
+
+    return r,voxel_origin,voxel_matrix,subspaces_voxel_matrix,subspaces_voxel_origin
 
 
 def create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix):
@@ -413,15 +448,18 @@ def calculate_AO(self,grid_points,delta=3):
     """
 
     if not "voxel_origin" in self.properties:
-        voxel_origin,voxel_matrix = create_voxel_from_molecule(self,grid_points,delta=delta)
+        coordinates,voxel_origin,voxel_matrix,subspaces_voxel_matrix,subspaces_voxel_origin = create_voxel_from_molecule(self,grid_points,delta=delta)
         self.properties["voxel_origin"] = voxel_origin
         self.properties["voxel_matrix"] = voxel_matrix
         self.properties["grid_points"] = grid_points
+        self.properties["subspaces_voxel_matrix"] = subspaces_voxel_matrix
+        self.properties["subspaces_voxel_origin"] = subspaces_voxel_origin
+        self.properties["coordinates"] = coordinates
 
     voxel_origin = self.properties["voxel_origin"]
     voxel_matrix = self.properties["voxel_matrix"]
+    r = self.properties["coordinates"]
 
-    r = create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix)
 
     if not "AO_list" in self.properties:
         raise TypeError("The Atomic Orbital functions were not found.")
@@ -765,6 +803,7 @@ def calculate_transition_density(self,grid_points,delta=3):
     # print(np.einsum("ijk,ijk->i",transition_density_coefficients,transition_density_coefficients))
 
     if nprocs > 1 and 0:
+    # if nprocs > 1:
         transition_density_list = calculate_transition_density_multithread(self,transitions,transition_density_coefficients,grid_points,nprocs)
     else:
         transition_density_list = np.zeros((len(transition_list),nx,ny,nz))
