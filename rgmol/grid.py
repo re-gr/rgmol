@@ -14,6 +14,7 @@ import scipy as sp
 import rgmol
 from rgmol.objects import *
 from rgmol.threading_functions import *
+import scipy as sp
 
 class list_grids:
     def __init__(self,grids):
@@ -26,13 +27,14 @@ class list_grids:
 
 
 class grid:
-    def __init__(self,coords,center,grid_type,coords_gc=None,R=1):
+    def __init__(self,coords,center,grid_type,dV,coords_gc=None,R=1):
         self.grid_type = grid_type
         self.center = center
         self.coords = coords
         self.number_points = np.prod(np.shape(coords)[1:])
         self.R = R
         self.coords_gc = coords_gc
+        self.dV = dV
 
         if grid_type.lower() == "cubic":
             self.xyz_coords = coords.reshape((3,self.number_points))
@@ -48,7 +50,7 @@ class grid:
             y = r * sin_theta * sin_phi + self.center[1]
             z = r * cos_theta + self.center[2]
 
-            self.xyz_coords = np.array([x,y,z]).reshape((3,self.number_points))
+            self.xyz_coords = np.array([x,y,z])
 
 
         else:
@@ -166,60 +168,118 @@ def create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix):
     return r
 
 
-def create_grid_atom(atom,N_r,N_ang,R=1):
-    Theta = (np.arange(N_ang)*np.pi/N_ang).reshape((1,1,N_ang))
-    Phi = (np.arange(N_ang)*2*np.pi/N_ang).reshape((1,N_ang,1))
+
+
+def create_grid_atom(atom,N_r,N_leb,R=1):
+    """
+    """
+    coords_lebedev_xyz,weight_lebedev = sp.integrate.lebedev_rule(N_leb)
+    X,Y,Z = coords_lebedev_xyz
+    X = X + (X==0)*1e-9
+    N_ang = len(X)
+    R = 1
+
+    Theta = np.arccos(Z/R)
+    Phi = np.sign(Y) * np.arccos(X/(X**2+Y**2)**(1/2))
+    Phi = np.arctan2(Y,X)
+
+
+    Theta = Theta.reshape((1,1,N_ang))
+    Phi = Phi.reshape((1,1,N_ang))
+
 
     r_0 = np.cos((np.arange(N_r)+1)/(N_r+1) *np.pi) #Gauss Chebyshev Type 2
-    r_0 = r_0 - (r_0==1)*0.001 #Convert x=1 to x=0.999
+    r_0 = r_0 - (r_0==1)*0.0001 #Convert x=1 to x=0.999
     r = R*(1+r_0)/(1-r_0) #Becke Transform
-    r = r.reshape((N_r,1,1))
 
 
-    coords = r.reshape((1,N_r,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
-             Theta.reshape((1,1,N_ang,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
-             Phi.reshape((1,1,1,N_ang))*np.array([0,0,1.]).reshape((3,1,1,1))
+    zeta = 1.5
+    alpha = 0.6
+    r = zeta / np.log(2) * np.log( (2)/ (1-r_0) ) * (1+r_0)**(alpha)
+    # r = zeta / np.log(2) * np.log( (2)/ (1-r_0) )
 
+    r = r.reshape((N_r,1))
+    r_0 = r_0.reshape((N_r,1))
+    weight_lebedev = weight_lebedev.reshape((1,N_ang))
 
-    grid_i = grid(coords,atom.pos,"atomic",R=R,coords_gc=r_0)
+    coords = r.reshape((1,N_r,1))*np.array([1.,0,0]).reshape((3,1,1)) + \
+             Theta.reshape((1,1,N_ang))*np.array([0,1.,0]).reshape((3,1,1)) + \
+             Phi.reshape((1,1,N_ang))*np.array([0,0,1.]).reshape((3,1,1))
+
+    # dr = 2/(1-r_0)**2 / (1-r_0**2)**(1/2)
+    # dr = zeta/np.log(2) * (1/(1-r_0)) / (1-r_0**2)**(1/2)
+    dr = zeta/np.log(2) * (1+r_0)**(alpha) * (alpha / (1+r_0) * np.log((2)/(1-r_0)) + 1/(1-r_0) ) / (1-r_0**2)**(1/2)
+    w_gc = (np.pi/(N_r+1) * np.sin((np.arange(N_r)+1)/(N_r+1)*np.pi)**2).reshape((N_r,1)) #Weight Gauss Chebyshev Type 2
+    dV = dr * w_gc * weight_lebedev * r * r
+    grid_i = grid(coords,atom.pos,"atomic",R=R,coords_gc=r_0,dV=dV)
+
 
     return grid_i
+
+# def create_grid_atom_lin(atom,N_r,N_ang,R=1):
+#
+#
+#     Theta = (np.arange(N_ang)*np.pi/N_ang).reshape((1,1,N_ang))
+#     Phi = (np.arange(N_ang)*2*np.pi/N_ang).reshape((1,N_ang,1))
+#
+#     r_0 = np.cos((np.arange(N_r)+1)/(N_r+1) *np.pi) #Gauss Chebyshev Type 2
+#     r_0 = r_0 - (r_0==1)*0.001 #Convert x=1 to x=0.999
+#     r = R*(1+r_0)/(1-r_0) #Becke Transform
+#
+#     r = r.reshape((N_r,1,1))
+#
+#     coords = r.reshape((1,N_r,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
+#              Theta.reshape((1,1,N_ang,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
+#              Phi.reshape((1,1,1,N_ang))*np.array([0,0,1.]).reshape((3,1,1,1))
+#
+#
+#     grid_i = grid(coords,atom.pos,"atomic",R=R,coords_gc=r_0)
+#
+#     return grid_i
 
 
 def function_cutoff(mu):
     return 3/2*mu - 1/2*mu**3
 
-def voronoi_becke(grids,N_rad,N_ang):
+def voronoi_becke(grids):
     """
     Becke, A. D.The Journal of Chemical Physics 1988,88, 2547–2553
     """
     num_grids = len(grids.grids)
     grids_centers = grids.grids_centers
 
+    C = 0
     for grid_i,grid_i_index in zip(grids.grids,range(num_grids)):
         #Dimensions : grid_i,grid_j,points,coordinates
 
         number_points = grid_i.number_points
+        n_r,n_l = np.shape(grid_i.xyz_coords)[1:]
+        xyz_coords = grid_i.xyz_coords.transpose((1,2,0)).reshape((1,1,n_r,n_l,3))
 
-        xyz_coords = grid_i.xyz_coords.transpose().reshape((1,1,number_points,3))
+        grids_centers_i = grids_centers.reshape((num_grids,1,1,1,3))
+        grids_centers_j = grids_centers.reshape((1,num_grids,1,1,3))
+        R_ij = np.linalg.norm(grids_centers_i-grids_centers_j,axis=4)
+        R_ij = R_ij + (R_ij==0)*1 #Remove diagonal part
 
-        grids_centers_i = grids_centers.reshape((num_grids,1,1,3))
-        grids_centers_j = grids_centers.reshape((1,num_grids,1,3))
-        R_ij = np.linalg.norm(grids_centers_i-grids_centers_j,axis=3)
-        R_ij = R_ij + (R_ij==0)*1e9 #Remove diagonal part
-
-        r_i = np.linalg.norm(xyz_coords - grids_centers_i,axis=3)
-        r_j = np.linalg.norm(xyz_coords - grids_centers_j,axis=3)
-
+        r_i = np.linalg.norm(xyz_coords - grids_centers_i,axis=4)
+        r_j = np.linalg.norm(xyz_coords - grids_centers_j,axis=4)
+        # print(r_i[:,:,0,0],r_j[:,:,0,0],(r_i-r_j)[:,:,0,0],R_ij[:,:,0,0])
         Mu_ij = (r_i - r_j) / R_ij
+        # print(Mu_ij[:,:,-1,0])
+
+
 
         s3 = 1/2 * (1-function_cutoff(function_cutoff(function_cutoff(Mu_ij))))
-
+        # s3 = Mu_ij<0
+        # print(np.shape(s3))
         Pi = np.prod(s3,axis=1)
+
+
         wn = Pi[grid_i_index] / np.sum(Pi,axis=0)
 
-        grid_i.wn = wn
+        # wn = Pi[grid_i_index]
 
+        grid_i.wn = wn
 
 
 
@@ -229,17 +289,28 @@ def integrate_on_atom_grid(mol,grid,arr):
     R = grid.R
 
     r = Coords[0]
-    n_r,n_ang = np.shape(Coords)[1:3]
+    # n_r,n_ang = np.shape(Coords)[1:3]
+    # wn = grid.wn.reshape((n_r,n_ang,n_ang))
+    # print(np.min(wn))
+    n_r,n_leb = np.shape(Coords)[1:3]
     wn = grid.wn
-    w_gc = (np.pi/(n_r+1) * np.sin(np.arange(n_r)/(n_r+1)*np.pi)).reshape((n_r,1,1)) #Weight Gauss Chebyshev Type 2
 
-    Theta = (np.arange(n_ang)*np.pi/n_ang).reshape((1,n_ang,1))
+    # w_gc = (np.pi/(n_r+1) * np.sin((np.arange(n_r)+1)/(n_r+1)*np.pi)**2).reshape((n_r,1,1)) #Weight Gauss Chebyshev Type 2
 
-    coords_gc = coords_gc.reshape((n_r,1,1))
 
-    dV = 2/(1-coords_gc)**2 * R * w_gc * \
-        (r)**2 *np.sin(Theta)*2*np.pi/n_ang/n_ang*np.pi #Angular part
+    # coords_gc = coords_gc.reshape((n_r,1,1))
+    coords_gc = coords_gc.reshape((n_r,1))
+    # theta = (np.arange(n_ang)*np.pi/n_ang).reshape((1,n_ang,1))
 
-    Int = np.einsum("ijk,ijk->",arr,dV)
-    return Int
+    # dV = 2/(1-coords_gc)**2/(1-coords_gc**2)**(1/2) * R * w_gc * wn * r * r * np.sin(theta) * 2 * np.pi*np.pi/n_ang/n_ang
+    # dV = r * r * np.sin(theta) * 2 * np.pi*np.pi/n_ang/n_ang
+    # dV = 2/(1-coords_gc)**2 / (1-coords_gc**2)**(1/2) * R * w_gc * wn * w_lbdv * r * r
+
+    dV = grid.dV
+    dV = wn * dV
+
+    # dV = 2/(1-coords_gc)**2 * R * w_gc *r**2
+    # print(np.shape(arr),np.shape(dV))
+    Int = np.einsum("ij,ij->",arr,dV)
+    return Int,dV
 

@@ -41,8 +41,8 @@ def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     """
 
 
-    n,nx,ny,nz = np.shape(r)
-    sum_gaussian = np.zeros((nx,ny,nz))
+    # n,nx,ny,nz = np.shape(r)
+    sum_gaussian = np.zeros(np.shape(r)[1:])
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
     x,y,z = r
     x0,y0,z0 = r0
@@ -52,7 +52,7 @@ def gaussian_s(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     for coefs in zip(contraction_coefficients,exponent_primitives):
         sum_gaussian +=  coefs[0] * np.exp(-coefs[1]*r_r)
 
-    sum_gaussian /= (np.einsum("ijk,ijk->",sum_gaussian,sum_gaussian)*dV)**(1/2)
+    # sum_gaussian /= (np.einsum("ijk,ijk->",sum_gaussian,sum_gaussian)*dV)**(1/2)
 
     return sum_gaussian,
 
@@ -84,10 +84,10 @@ def gaussian_p(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     """
 
 
-    n,nx,ny,nz = np.shape(r)
-    sum_gaussian_x = np.zeros((nx,ny,nz))
-    sum_gaussian_y = np.zeros((nx,ny,nz))
-    sum_gaussian_z = np.zeros((nx,ny,nz))
+    # n,nx,ny,nz = np.shape(r)
+    sum_gaussian_x = np.zeros(np.shape(r)[1:])
+    sum_gaussian_y = np.zeros(np.shape(r)[1:])
+    sum_gaussian_z = np.zeros(np.shape(r)[1:])
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
     x,y,z = r
     x0,y0,z0 = r0
@@ -100,9 +100,9 @@ def gaussian_p(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         sum_gaussian_y += y*coefs[0] * np.exp(-coefs[1]*r_r)
         sum_gaussian_z += z*coefs[0] * np.exp(-coefs[1]*r_r)
 
-    sum_gaussian_x /= (np.einsum("ijk,ijk->",sum_gaussian_x,sum_gaussian_x)*dV)**(1/2)
-    sum_gaussian_y /= (np.einsum("ijk,ijk->",sum_gaussian_y,sum_gaussian_y)*dV)**(1/2)
-    sum_gaussian_z /= (np.einsum("ijk,ijk->",sum_gaussian_z,sum_gaussian_z)*dV)**(1/2)
+    # sum_gaussian_x /= (np.einsum("ijk,ijk->",sum_gaussian_x,sum_gaussian_x)*dV)**(1/2)
+    # sum_gaussian_y /= (np.einsum("ijk,ijk->",sum_gaussian_y,sum_gaussian_y)*dV)**(1/2)
+    # sum_gaussian_z /= (np.einsum("ijk,ijk->",sum_gaussian_z,sum_gaussian_z)*dV)**(1/2)
 
     return sum_gaussian_x,sum_gaussian_y,sum_gaussian_z
 
@@ -136,12 +136,12 @@ def gaussian_d(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         d_xy_orbital
     """
 
-    n,nx,ny,nz = np.shape(r)
-    sum_gaussian_xy = np.zeros((nx,ny,nz))
-    sum_gaussian_xz = np.zeros((nx,ny,nz))
-    sum_gaussian_yz = np.zeros((nx,ny,nz))
-    sum_gaussian_xx_yy = np.zeros((nx,ny,nz))
-    sum_gaussian_zz = np.zeros((nx,ny,nz))
+    # n,nx,ny,nz = np.shape(r)
+    sum_gaussian_xy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_xz = np.zeros(np.shape(r)[1:])
+    sum_gaussian_yz = np.zeros(np.shape(r)[1:])
+    sum_gaussian_xx_yy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zz = np.zeros(np.shape(r)[1:])
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
     x,y,z = r
     x0,y0,z0 = r0
@@ -156,14 +156,14 @@ def gaussian_d(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         sum_gaussian_xy += (x*y)*coefs[0] * np.exp(-coefs[1]*r_r)
         sum_gaussian_xz += (x*z)*coefs[0] * np.exp(-coefs[1]*r_r)
         sum_gaussian_yz += (y*z)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_xx_yy += (x_x-y_y)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zz += (2*z*z-x_x-y_y)*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_xx_yy += (x_x-y_y)/2*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zz += (z*z-x_x/2-y_y/2)/3**(1/2) * coefs[0] * np.exp(-coefs[1]*r_r)
 
-    sum_gaussian_xy /= (np.einsum("ijk,ijk->",sum_gaussian_xy,sum_gaussian_xy)*dV)**(1/2)
-    sum_gaussian_xz /= (np.einsum("ijk,ijk->",sum_gaussian_xz,sum_gaussian_xz)*dV)**(1/2)
-    sum_gaussian_yz /= (np.einsum("ijk,ijk->",sum_gaussian_yz,sum_gaussian_yz)*dV)**(1/2)
-    sum_gaussian_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_xx_yy,sum_gaussian_xx_yy)*dV)**(1/2)
-    sum_gaussian_zz /= (np.einsum("ijk,ijk->",sum_gaussian_zz,sum_gaussian_zz)*dV)**(1/2)
+    # sum_gaussian_xy /= (np.einsum("ijk,ijk->",sum_gaussian_xy,sum_gaussian_xy)*dV)**(1/2)
+    # sum_gaussian_xz /= (np.einsum("ijk,ijk->",sum_gaussian_xz,sum_gaussian_xz)*dV)**(1/2)
+    # sum_gaussian_yz /= (np.einsum("ijk,ijk->",sum_gaussian_yz,sum_gaussian_yz)*dV)**(1/2)
+    # sum_gaussian_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_xx_yy,sum_gaussian_xx_yy)*dV)**(1/2)
+    # sum_gaussian_zz /= (np.einsum("ijk,ijk->",sum_gaussian_zz,sum_gaussian_zz)*dV)**(1/2)
 
     return sum_gaussian_zz, sum_gaussian_xz, sum_gaussian_yz, sum_gaussian_xx_yy, sum_gaussian_xy
 
@@ -199,14 +199,14 @@ def gaussian_f(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         f_xxx_xyy_orbital,
         f_yyy_xxy_orbital
     """
-    n,nx,ny,nz = np.shape(r)
-    sum_gaussian_yyy_xxy = np.zeros((nx,ny,nz))
-    sum_gaussian_xyz = np.zeros((nx,ny,nz))
-    sum_gaussian_yzz_yrr = np.zeros((nx,ny,nz))
-    sum_gaussian_zzz_zrr = np.zeros((nx,ny,nz))
-    sum_gaussian_xzz_xrr = np.zeros((nx,ny,nz))
-    sum_gaussian_zxx_zyy = np.zeros((nx,ny,nz))
-    sum_gaussian_xxx_xyy = np.zeros((nx,ny,nz))
+    # n,nx,ny,nz = np.shape(r)
+    sum_gaussian_yyy_xxy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_xyz = np.zeros(np.shape(r)[1:])
+    sum_gaussian_yzz_yrr = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zzz_zrr = np.zeros(np.shape(r)[1:])
+    sum_gaussian_xzz_xrr = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zxx_zyy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_xxx_xyy = np.zeros(np.shape(r)[1:])
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
     x,y,z = r
     x0,y0,z0 = r0
@@ -219,21 +219,21 @@ def gaussian_f(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
     r_r = x**2 + y**2 + z**2
 
     for coefs in zip(contraction_coefficients,exponent_primitives):
-        sum_gaussian_yyy_xxy += (y_y-3*x_x)*y*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_yyy_xxy += (y_y-3*x_x)/(2*6**(1/2))*y*coefs[0] * np.exp(-coefs[1]*r_r)
         sum_gaussian_xyz += (x*y*z)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_yzz_yrr += (5*z_z-r_r)*y*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zzz_zrr += (5*z_z-3*r_r)*z*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_xzz_xrr += (5*z_z-r_r)*x*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zxx_zyy += (x_x-y_y)*z*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_xxx_xyy += (3*y_y-x_x)*x*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_yzz_yrr += (5*z_z-r_r)/(2*10**(1/2))*y*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zzz_zrr += (5*z_z-3*r_r) /(2*15**(1/2))  *z*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_xzz_xrr += (5*z_z-r_r)/(2*10**(1/2))*x*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zxx_zyy += (x_x-y_y)/2*z*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_xxx_xyy += (3*y_y-x_x)/(2*6**(1/2))*x*coefs[0] * np.exp(-coefs[1]*r_r)
 
-    sum_gaussian_yyy_xxy /= (np.einsum("ijk,ijk->",sum_gaussian_yyy_xxy,sum_gaussian_yyy_xxy)*dV)**(1/2)
-    sum_gaussian_xyz /= (np.einsum("ijk,ijk->",sum_gaussian_xyz,sum_gaussian_xyz)*dV)**(1/2)
-    sum_gaussian_yzz_yrr /= (np.einsum("ijk,ijk->",sum_gaussian_yzz_yrr,sum_gaussian_yzz_yrr)*dV)**(1/2)
-    sum_gaussian_zzz_zrr /= (np.einsum("ijk,ijk->",sum_gaussian_zzz_zrr,sum_gaussian_zzz_zrr)*dV)**(1/2)
-    sum_gaussian_xzz_xrr /= (np.einsum("ijk,ijk->",sum_gaussian_xzz_xrr,sum_gaussian_xzz_xrr)*dV)**(1/2)
-    sum_gaussian_zxx_zyy /= (np.einsum("ijk,ijk->",sum_gaussian_zxx_zyy,sum_gaussian_zxx_zyy)*dV)**(1/2)
-    sum_gaussian_xxx_xyy /= (np.einsum("ijk,ijk->",sum_gaussian_xxx_xyy,sum_gaussian_xxx_xyy)*dV)**(1/2)
+    # sum_gaussian_yyy_xxy /= (np.einsum("ijk,ijk->",sum_gaussian_yyy_xxy,sum_gaussian_yyy_xxy)*dV)**(1/2)
+    # sum_gaussian_xyz /= (np.einsum("ijk,ijk->",sum_gaussian_xyz,sum_gaussian_xyz)*dV)**(1/2)
+    # sum_gaussian_yzz_yrr /= (np.einsum("ijk,ijk->",sum_gaussian_yzz_yrr,sum_gaussian_yzz_yrr)*dV)**(1/2)
+    # sum_gaussian_zzz_zrr /= (np.einsum("ijk,ijk->",sum_gaussian_zzz_zrr,sum_gaussian_zzz_zrr)*dV)**(1/2)
+    # sum_gaussian_xzz_xrr /= (np.einsum("ijk,ijk->",sum_gaussian_xzz_xrr,sum_gaussian_xzz_xrr)*dV)**(1/2)
+    # sum_gaussian_zxx_zyy /= (np.einsum("ijk,ijk->",sum_gaussian_zxx_zyy,sum_gaussian_zxx_zyy)*dV)**(1/2)
+    # sum_gaussian_xxx_xyy /= (np.einsum("ijk,ijk->",sum_gaussian_xxx_xyy,sum_gaussian_xxx_xyy)*dV)**(1/2)
 
     return sum_gaussian_zzz_zrr, sum_gaussian_xzz_xrr, sum_gaussian_yzz_yrr, sum_gaussian_zxx_zyy, sum_gaussian_xyz, sum_gaussian_xxx_xyy, sum_gaussian_yyy_xxy
 
@@ -272,16 +272,16 @@ def gaussian_g(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         g_xxxx_yyyy_orbital,
         g_xy_xx_yy_orbital
     """
-    n,nx,ny,nz = np.shape(r)
-    sum_gaussian_zzzz = np.zeros((nx,ny,nz))
-    sum_gaussian_zzzy = np.zeros((nx,ny,nz))
-    sum_gaussian_zzzx = np.zeros((nx,ny,nz))
-    sum_gaussian_zzxy = np.zeros((nx,ny,nz))
-    sum_gaussian_zz_xx_yy = np.zeros((nx,ny,nz))
-    sum_gaussian_zyyy = np.zeros((nx,ny,nz))
-    sum_gaussian_zxxx = np.zeros((nx,ny,nz))
-    sum_gaussian_xy_xx_yy = np.zeros((nx,ny,nz))
-    sum_gaussian_xxxx_yyyy = np.zeros((nx,ny,nz))
+    # n,nx,ny,nz = np.shape(r)
+    sum_gaussian_zzzz = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zzzy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zzzx = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zzxy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zz_xx_yy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zyyy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_zxxx = np.zeros(np.shape(r)[1:])
+    sum_gaussian_xy_xx_yy = np.zeros(np.shape(r)[1:])
+    sum_gaussian_xxxx_yyyy = np.zeros(np.shape(r)[1:])
     dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
     x,y,z = r
     x0,y0,z0 = r0
@@ -305,15 +305,15 @@ def gaussian_g(r,contraction_coefficients,exponent_primitives,r0,voxel_matrix):
         sum_gaussian_xxxx_yyyy += (6*x_x*y_y-x_x*x_x-y_y*y_y)*coefs[0] * np.exp(-coefs[1]*r_r)
 
 
-    sum_gaussian_zzzz /= (np.einsum("ijk,ijk->",sum_gaussian_zzzz,sum_gaussian_zzzz)*dV)**(1/2)
-    sum_gaussian_zzzy /= (np.einsum("ijk,ijk->",sum_gaussian_zzzy,sum_gaussian_zzzy)*dV)**(1/2)
-    sum_gaussian_zzzx /= (np.einsum("ijk,ijk->",sum_gaussian_zzzx,sum_gaussian_zzzx)*dV)**(1/2)
-    sum_gaussian_zzxy /= (np.einsum("ijk,ijk->",sum_gaussian_zzxy,sum_gaussian_zzxy)*dV)**(1/2)
-    sum_gaussian_zz_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_zz_xx_yy,sum_gaussian_zz_xx_yy)*dV)**(1/2)
-    sum_gaussian_zyyy /= (np.einsum("ijk,ijk->",sum_gaussian_zyyy,sum_gaussian_zyyy)*dV)**(1/2)
-    sum_gaussian_zxxx /= (np.einsum("ijk,ijk->",sum_gaussian_zxxx,sum_gaussian_zxxx)*dV)**(1/2)
-    sum_gaussian_xy_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_xy_xx_yy,sum_gaussian_xy_xx_yy)*dV)**(1/2)
-    sum_gaussian_xxxx_yyyy /= (np.einsum("ijk,ijk->",sum_gaussian_xxxx_yyyy,sum_gaussian_xxxx_yyyy)*dV)**(1/2)
+    # sum_gaussian_zzzz /= (np.einsum("ijk,ijk->",sum_gaussian_zzzz,sum_gaussian_zzzz)*dV)**(1/2)
+    # sum_gaussian_zzzy /= (np.einsum("ijk,ijk->",sum_gaussian_zzzy,sum_gaussian_zzzy)*dV)**(1/2)
+    # sum_gaussian_zzzx /= (np.einsum("ijk,ijk->",sum_gaussian_zzzx,sum_gaussian_zzzx)*dV)**(1/2)
+    # sum_gaussian_zzxy /= (np.einsum("ijk,ijk->",sum_gaussian_zzxy,sum_gaussian_zzxy)*dV)**(1/2)
+    # sum_gaussian_zz_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_zz_xx_yy,sum_gaussian_zz_xx_yy)*dV)**(1/2)
+    # sum_gaussian_zyyy /= (np.einsum("ijk,ijk->",sum_gaussian_zyyy,sum_gaussian_zyyy)*dV)**(1/2)
+    # sum_gaussian_zxxx /= (np.einsum("ijk,ijk->",sum_gaussian_zxxx,sum_gaussian_zxxx)*dV)**(1/2)
+    # sum_gaussian_xy_xx_yy /= (np.einsum("ijk,ijk->",sum_gaussian_xy_xx_yy,sum_gaussian_xy_xx_yy)*dV)**(1/2)
+    # sum_gaussian_xxxx_yyyy /= (np.einsum("ijk,ijk->",sum_gaussian_xxxx_yyyy,sum_gaussian_xxxx_yyyy)*dV)**(1/2)
 
     return sum_gaussian_zzzz, sum_gaussian_zzzx, sum_gaussian_zzzy, sum_gaussian_zz_xx_yy, sum_gaussian_zzxy, sum_gaussian_zxxx, sum_gaussian_zyyy, sum_gaussian_xxxx_yyyy, sum_gaussian_xy_xx_yy
 
@@ -416,9 +416,9 @@ def create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix):
     voxel_end[2] = voxel_origin[2] + voxel_matrix[2][2]*nz
 
 
-    x = np.linspace(voxel_origin[0],voxel_end[0],nx,endpoint=False)
-    y = np.linspace(voxel_origin[1],voxel_end[1],ny,endpoint=False)
-    z = np.linspace(voxel_origin[2],voxel_end[2],nz,endpoint=False)
+    x = np.linspace(voxel_origin[0],voxel_end[0],nx,endpoint=True)
+    y = np.linspace(voxel_origin[1],voxel_end[1],ny,endpoint=True)
+    z = np.linspace(voxel_origin[2],voxel_end[2],nz,endpoint=True)
 
     r = x.reshape((1,nx,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
         y.reshape((1,1,ny,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
