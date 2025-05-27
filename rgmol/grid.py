@@ -17,7 +17,51 @@ from rgmol.dicts import *
 
 
 class mol_grids:
+    """
+    mol_grids(grids)
+
+    Constructs a list of multiple atomic grids for a molecule
+
+    Parameters
+    ----------
+        grids : list, optional
+            List containing all the grids
+
+    Returns
+    -------
+        mol_grids
+            mol_grids object
+
+    Attributes
+    ----------
+        grids : list
+            The list of all the grids
+        centers : list
+            The list of the centers
+    """
     def __init__(self,grids):
+        """
+        mol_grids(grids)
+
+        Constructs a list of multiple atomic grids for a molecule
+
+        Parameters
+        ----------
+            grids : list, optional
+                List containing all the grids
+
+        Returns
+        -------
+            mol_grids
+                mol_grids object
+
+        Attributes
+        ----------
+            grids : list
+                The list of all the grids
+            centers : list
+                The list of the centers
+        """
         self.grids = grids
         grids_centers = []
         for grid_i in grids:
@@ -49,7 +93,76 @@ class mol_grids:
 
 
 class grid:
-    def __init__(self,coords,center,grid_type,dV,coords_gc=None,params={}):
+    """
+    grid(coords,center,grid_type,dV,coords_gc=None)
+
+    Constructs an atomic grid around a center.
+    For contructing the grid properly around an atom, one should use create_atomic_grid
+
+    Parameters
+    ----------
+        coords : ndarray
+            Array containing the spherical coordinates of each point of the grid
+        center : ndarray
+            The center of the grid
+        grid_type : str
+            The type of grid, should be atomic as cubic are deprecated
+        dV : array
+            The dV of each point used for integration
+        coords_gc : array, optional
+            The coordinates of the gauss-chebychev integration.
+            This represents the coordinates between -1 and 1
+    Returns
+    -------
+        grid
+            grid object
+
+    Attributes
+    ----------
+        coords : ndarray
+        center : ndarray
+        grid_type : str
+        dV : array
+        coords_gc : array
+        number_points : int
+        xyz_coords : array
+    """
+    def __init__(self,coords,center,grid_type,dV,coords_gc=None):
+        """
+        grid(coords,center,grid_type,dV,coords_gc=None)
+
+        Constructs an atomic grid around a center.
+        For contructing the grid properly around an atom, one should use create_atomic_grid
+
+        Parameters
+        ----------
+            coords : ndarray
+                Array containing the spherical coordinates of each point of the grid
+            center : ndarray
+                The center of the grid
+            grid_type : str
+                The type of grid, should be atomic as cubic are deprecated
+            dV : array
+                The dV of each point used for integration
+            coords_gc : array, optional
+                The coordinates of the gauss-chebychev integration.
+                This represents the coordinates between -1 and 1
+        Returns
+        -------
+            grid
+                grid object
+
+        Attributes
+        ----------
+            coords : ndarray
+            center : ndarray
+            grid_type : str
+            dV : array
+            coords_gc : array
+            number_points : int
+            xyz_coords : array
+        """
+
         self.grid_type = grid_type
         self.center = center
         self.coords = coords
@@ -72,7 +185,6 @@ class grid:
             z = r * cos_theta + self.center[2]
 
             self.xyz_coords = np.array([x,y,z])
-
 
         else:
             raise TypeError("This type of grid {} has not been implemented. Please use cubic or atomic.".format(grid_type))
@@ -200,6 +312,24 @@ class grid:
 #         z.reshape((1,1,1,nz))*np.array([0,0,1.]).reshape((3,1,1,1))
 #
 #     return r
+
+
+def create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None):
+    """
+    """
+
+    list_grids = []
+    for atom,index_atom in zip(mol.atoms,len(mol.atoms)):
+        N_r, d_leb, zeta, alpha = None, None, None, None
+
+        if N_r_list: N_r = N_r_list[index_atom]
+        if d_leb_list: d_leb = d_leb_list[index_atom]
+        if alpha_list: alpha = alpha_list[index_atom]
+        if zeta_list: zeta = zeta_list[index_atom]
+
+        list_grids.append(create_atomic_grid(atom,N_r=N_r,d_leb=d_leb,zeta=zeta,alpha=alpha))
+
+
 
 
 

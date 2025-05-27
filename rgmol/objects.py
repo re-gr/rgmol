@@ -138,6 +138,10 @@ class molecule(object):
             Dictionnary containing the properties of the molecules. By default : {}
         name : str, optional
             Name of the molecule
+        file : str, optional
+            the file from which the information are extracted
+        mol_grids : mol_grids, optional
+            The atomic grids of the molecule
 
     Returns
     -------
@@ -152,7 +156,7 @@ class molecule(object):
         properties : dict
     """
 
-    def __init__(self,atoms,bonds,properties={},name=None,file=None):
+    def __init__(self,atoms,bonds,properties={},name=None,file=None,mol_grids=None):
         """
         molecule(atoms,bonds,properties={},name=None)
 
@@ -168,6 +172,10 @@ class molecule(object):
                 Dictionnary containing the properties of the molecules. By default : {}
             name : str, optional
                 Name of the molecule
+            file : str, optional
+                the file from which the information are extracted
+            mol_grids : mol_grids, optional
+                The atomic grids of the molecule
 
         Returns
         -------
@@ -186,6 +194,7 @@ class molecule(object):
         self.atoms = atoms
         self.bonds = bonds
         self.file = file
+        self.mol_grids = mol_grids
 
         if type(properties) is not dict:
             raise TypeError("The properties should be listed in a dict")
