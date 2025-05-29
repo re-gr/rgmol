@@ -124,9 +124,9 @@ def calculate_hardness(self):
     return hardness
 
 
-def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100),delta=10):
+def calculate_eigenmodes_linear_response_function(self):
     """
-    calculate_eigenmodes_linear_response_function(grid_points=(100,100,100),delta=10)
+    calculate_eigenmodes_linear_response_function()
 
     Calculates the linear response function from the transition densities.
     This method does not calculate directly the linear response, but only the eigenmodes.
@@ -157,19 +157,14 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
     Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
     """
 
-    nx,ny,nz = grid_points
-
     if not "transition_density_list" in self.properties:
-        self.calculate_transition_density(grid_points,delta=delta)
+        self.calculate_transition_density()
 
     #Dummy implementation for now
-    transition_density_list = np.array(self.properties["transition_density_list"])
+    transition_density_list = self.properties["transition_density_list"]
     transition_energy = np.array(self.properties['transition_energy'])
 
-    number_transition = len(transition_density_list)
-
-    voxel_matrix = self.properties["voxel_matrix"]
-    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+    N_grids,N_trans,N_r,N_ang = np.shape(transition_density_list)
 
     nprocs = rgmol.nprocs
 
@@ -178,40 +173,42 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
     print("#################################")
     time_before_calc = time.time()
 
-    if nprocs >1:
+    if nprocs >1 and 0:
         transition_matrix = calculate_overlap_matrix_multithread(transition_density_list,nprocs,dV)
     else:
-        transition_matrix = np.zeros((number_transition,number_transition))
-        for first_transition in range(len(transition_density_list)):
+        transition_matrix = np.zeros((N_trans,N_trans))
+        for first_transition in range(N_trans):
             for second_transition in range(first_transition+1):
-                overlap_integral = np.einsum('jkl,jkl->',transition_density_list[first_transition] * transition_density_list[second_transition]) * dV
+                overlap_integral = 0
+                for grid,index_grid in zip(self.mol_grids.grids,range(N_grids)):
+                    overlap_integral += grid.integrate(transition_density_list[index_grid,first_transition] * transition_density_list[index_grid,second_transition])
+
                 transition_matrix[first_transition,second_transition] = overlap_integral
                 transition_matrix[second_transition,first_transition] = overlap_integral
-
-    LR_matrix_in_TDB = np.zeros((number_transition,number_transition))
+    LR_matrix_in_TDB = np.zeros((N_trans,N_trans))
     #linear response matrix in transition densities basis
 
 
     #following dimensions : i,j,k
     #Calculates <rho_0^i|rho_0^j>
-    transition_matrix_reshaped = transition_matrix.reshape((number_transition,number_transition,1))
+    transition_matrix_reshaped = transition_matrix.reshape((N_trans,N_trans,1))
     #Calculates <rho_0^j|rho_0^k>
-    transition_matrix_reshaped_2 = transition_matrix.reshape((1,number_transition,number_transition))
+    transition_matrix_reshaped_2 = transition_matrix.reshape((1,N_trans,N_trans))
     #Used to divide by the energy for j
-    transition_energy_reshaped = transition_energy.reshape(1,number_transition,1)
+    transition_energy_reshaped = transition_energy.reshape(1,N_trans,1)
 
     # LR_matrix_in_TDB = -2*np.einsum("ijk,ijk->ik",transition_matrix_reshaped,transition_matrix_reshaped_2)
     LR_matrix_in_TDB = np.einsum("ijk,ijk,ijk->ik",-2/transition_energy_reshaped,transition_matrix_reshaped,transition_matrix_reshaped_2)
 
 
-    # transition_matrix_inv = np.linalg.inv(transition_matrix + np.eye(number_transition)*1e-5)
+    # transition_matrix_inv = np.linalg.inv(transition_matrix + np.eye(N_trans)*1e-5)
     # diag_matrix = transition_matrix_inv.dot(LR_matrix_in_TDB)
     #
     # eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
     eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     # eigenvalues, eigenvectors = sp.linalg.eig(LR_matrix_in_TDB,transition_matrix)
 
-    # eigenvectors = eigenvectors.transpose()
+    eigenvectors = eigenvectors.transpose()
 
     # eigvalB,eigvecB = np.linalg.eigh(transition_matrix)
     # eigvecBtilde = eigvecB * eigvalB**(-1/2)
@@ -219,17 +216,17 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
     # eigenvalues, eigvecA = np.linalg.eigh(Atilde)
     # eigenvectors = eigvecBtilde @ eigvecA
 
-    eigenvectors = eigenvectors.transpose()
-
-    if nprocs >1:
-        reconstructed_eigenvectors = reconstruct_eigenvectors(transition_density_list,eigenvectors,dV,nprocs)
-    else:
-        reconstructed_eigenvectors = []
-        for eigenvector in eigenvectors:
-            eigenvector_reshaped = eigenvector.reshape((number_transition,1,1,1))
-            reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,transition_density_list)
-            reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
-            reconstructed_eigenvectors.append(reconstructed_eigenvector)
+    # eigenvectors = eigenvectors.transpose()
+    #
+    # if nprocs >1 and 0:
+    #     reconstructed_eigenvectors = reconstruct_eigenvectors(transition_density_list,eigenvectors,dV,nprocs)
+    # else:
+    #     reconstructed_eigenvectors = []
+    #     for eigenvector in eigenvectors:
+    #         eigenvector_reshaped = eigenvector.reshape((N_trans,1,1,1))
+    #         reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,transition_density_list)
+    #         # reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
+    #         reconstructed_eigenvectors.append(reconstructed_eigenvector)
 
 
     # contribution_eigenvectors = eigenvectors / np.einsum("ij,ij->i",eigenvectors,eigenvectors)**(1/2)
@@ -241,8 +238,8 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
         contribution_eigenvectors.append(k/n)
 
     self.properties["linear_response_eigenvalues"] = eigenvalues
-    self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
-    self.properties["contribution_linear_response_eigenvectors"] = contribution_eigenvectors
+    # self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
+    self.properties["contribution_linear_response_eigenvectors"] = np.array(contribution_eigenvectors)
 
     time_taken = time.time() - time_before_calc
 
@@ -250,7 +247,7 @@ def calculate_eigenmodes_linear_response_function(self,grid_points=(100,100,100)
     print("# Finished calculating eigenmodes of LRF #")
     print("# in {:3.3f} s #".format(time_taken))
     print("##########################################")
-    return eigenvalues, reconstructed_eigenvectors
+    return eigenvalues, np.array(contribution_eigenvectors)
 
 
 def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10):

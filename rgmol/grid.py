@@ -220,106 +220,184 @@ class grid:
 
 
 
-# def create_cubic_grid_from_molecule(mol,grid_points,delta=5,delta_at=.4):
-#     """
-#     create_cubic_grid_from_molecule(mol,grid_points,delta=5)
-#
-#     Creates a cubic voxel from the position of atoms in a molecule
-#
-#     Parameters
-#     ----------
-#         mol : molecule_object
-#         grid_points : list of 3
-#             the number of points for each coordinates
-#         delta : float, optional
-#             the length added on all directiosn to the box containing all atomic centers
-#
-#     Returns
-#     -------
-#         voxel_origin : list of 3
-#             the origin of the voxel
-#         voxel_matrix : 2d list
-#             the matrix of the voxel
-#     """
-#
-#     print("##############################################")
-#     print("#    No voxel was found, creating a voxel    #")
-#     print("# with a delta = {:3.3f} around the molecule #".format(delta))
-#     print("#   on a grid of {} points   #".format(grid_points))
-#     print("##############################################")
-#
-#     list_pos = mol.list_property("pos")
-#     nx,ny,nz = grid_points
-#     xmin,ymin,zmin = np.min(list_pos,axis=0)
-#     xmax,ymax,zmax = np.max(list_pos,axis=0)
-#
-#     voxel_origin = [xmin-delta,ymin-delta,zmin-delta]
-#
-#     x_step = (xmax - xmin + 2*delta)/nx
-#     y_step = (ymax - ymin + 2*delta)/ny
-#     z_step = (zmax - zmin + 2*delta)/nz
-#
-#     voxel_matrix = [[x_step,0,0],[0,y_step,0],[0,0,z_step]]
-#     r = create_coordinates_from_voxel(grid_points,voxel_origin,voxel_matrix)
-#
-#     for atom in mol.atoms:
-#         pos = atom.pos
-#         pos_min = (pos - delta_at).reshape((3,1,1,1))
-#         pos_max = (pos + delta_at).reshape((3,1,1,1))
-#
-#         pos_min_norm = np.linalg.norm(r-pos_min,axis=0)
-#         pos_max_norm = np.linalg.norm(r-pos_max,axis=0)
-#
-#         min_index_x,min_index_y,min_index_z = np.unravel_index(np.argmin(pos_min_norm),(nx,ny,nz))
-#         max_index_x,max_index_y,max_index_z = np.unravel_index(np.argmin(pos_max_norm),(nx,ny,nz))
-#
-#
-#     return r,voxel_origin,voxel_matrix
-#
-#
-# def create_coordinates_from_cubic_grid(grid_points,voxel_origin,voxel_matrix):
-#     """
-#     create_coordinates_from_cubic_grid(grid_points,voxel_origin,voxel_matrix)
-#
-#     Creates coordinates from a cubic grid
-#
-#     Parameters
-#     ----------
-#         grid_points : list of 3
-#         voxel_origin : list of 3
-#         voxel_matrix : 2d list
-#
-#     Return
-#     ------
-#         r : ndarray corresponding to the coordinates
-#     """
-#
-#     nx,ny,nz = grid_points
-#
-#     voxel_end = [0,0,0]
-#
-#     voxel_end[0] = voxel_origin[0] + voxel_matrix[0][0]*nx
-#     voxel_end[1] = voxel_origin[1] + voxel_matrix[1][1]*ny
-#     voxel_end[2] = voxel_origin[2] + voxel_matrix[2][2]*nz
-#
-#
-#     x = np.linspace(voxel_origin[0],voxel_end[0],nx,endpoint=True)
-#     y = np.linspace(voxel_origin[1],voxel_end[1],ny,endpoint=True)
-#     z = np.linspace(voxel_origin[2],voxel_end[2],nz,endpoint=True)
-#
-#     r = x.reshape((1,nx,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
-#         y.reshape((1,1,ny,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
-#         z.reshape((1,1,1,nz))*np.array([0,0,1.]).reshape((3,1,1,1))
-#
-#     return r
+def create_cubic_grid_from_molecule(mol,grid_points,delta=5):
+    """
+    create_cubic_grid_from_molecule(mol,grid_points,delta=5)
+
+    Creates a cubic voxel from the position of atoms in a molecule
+
+    Parameters
+    ----------
+        mol : molecule_object
+        grid_points : list of 3
+            the number of points for each coordinates
+        delta : float, optional
+            the length added on all directiosn to the box containing all atomic centers
+
+    Returns
+    -------
+        voxel_origin : list of 3
+            the origin of the voxel
+        voxel_matrix : 2d list
+            the matrix of the voxel
+    """
+
+    list_pos = mol.list_property("pos")
+    nx,ny,nz = grid_points
+    xmin,ymin,zmin = np.min(list_pos,axis=0)
+    xmax,ymax,zmax = np.max(list_pos,axis=0)
+
+    voxel_origin = [xmin-delta,ymin-delta,zmin-delta]
+
+    x_step = (xmax - xmin + 2*delta)/nx
+    y_step = (ymax - ymin + 2*delta)/ny
+    z_step = (zmax - zmin + 2*delta)/nz
+
+    voxel_matrix = [[x_step,0,0],[0,y_step,0],[0,0,z_step]]
+    r,c = create_coordinates_from_cubic_grid(grid_points,voxel_origin,voxel_matrix)
+
+    return r,c
+
+def create_coordinates_from_cubic_grid(grid_points,voxel_origin,voxel_matrix):
+    """
+    create_coordinates_from_cubic_grid(grid_points,voxel_origin,voxel_matrix)
+
+    Creates coordinates from a cubic grid
+
+    Parameters
+    ----------
+        grid_points : list of 3
+        voxel_origin : list of 3
+        voxel_matrix : 2d list
+
+    Return
+    ------
+        r : ndarray corresponding to the coordinates
+    """
+
+    nx,ny,nz = grid_points
+
+    voxel_end = [0,0,0]
+
+    voxel_end[0] = voxel_origin[0] + voxel_matrix[0][0]*nx
+    voxel_end[1] = voxel_origin[1] + voxel_matrix[1][1]*ny
+    voxel_end[2] = voxel_origin[2] + voxel_matrix[2][2]*nz
+
+
+    x = np.linspace(voxel_origin[0],voxel_end[0],nx,endpoint=True)
+    y = np.linspace(voxel_origin[1],voxel_end[1],ny,endpoint=True)
+    z = np.linspace(voxel_origin[2],voxel_end[2],nz,endpoint=True)
+
+    r = x.reshape((1,nx,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
+        y.reshape((1,1,ny,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
+        z.reshape((1,1,1,nz))*np.array([0,0,1.]).reshape((3,1,1,1))
+
+    return r,[x,y,z]
+
+
+def create_rectilinear_grid_from_molecule(mol,grid_points=(80,80,80),delta=7):
+    """
+    create_cubic_grid_from_molecule(mol,grid_points=(80,80,80),delta=7)
+
+    Creates a cubic voxel from the position of atoms in a molecule
+
+    Parameters
+    ----------
+        mol : molecule_object
+        grid_points : list of 3
+            the number of points for each coordinates
+        delta : float, optional
+            the length added on all directiosn to the box containing all atomic centers
+
+    Returns
+    -------
+        voxel_origin : list of 3
+            the origin of the voxel
+        voxel_matrix : 2d list
+            the matrix of the voxel
+    """
+
+    list_pos = mol.list_property("pos")
+    nx,ny,nz = grid_points
+    xmin,ymin,zmin = np.min(list_pos,axis=0)
+    xmax,ymax,zmax = np.max(list_pos,axis=0)
+
+    N_atoms = len(mol.atoms)
+
+    nx,ny,nz = grid_points
+    zeta=1
+    alpha=0.6
+
+    list_x = []
+    list_y = []
+    list_z = []
+
+    nx,ny,nz = nx//2,ny//2,nz//2
+    #Gauss Chebyshev Type 2
+    mx = np.cos((np.arange(nx)+1)/(nx+1) *np.pi)
+    mx = mx - (mx==1)*0.0001 #Convert x=1 to x=0.999
+
+    x = zeta / np.log(2) * np.log( (2)/ (1-mx) ) * (1+mx)**(alpha) #M4
+    x_tot = np.append(-x,x[::-1])
+
+    my = np.cos((np.arange(ny)+1)/(ny+1) *np.pi)
+    my = my - (my==1)*0.0001 #Convert x=1 to x=0.999
+    y = zeta / np.log(2) * np.log( (2)/ (1-my) ) * (1+my)**(alpha) #M4
+    y_tot = np.append(-y,y[::-1])
+
+    mz = np.cos((np.arange(nz)+1)/(nz+1) *np.pi)
+    mz = mz - (mz==1)*0.0001 #Convert x=1 to x=0.999
+    z = zeta / np.log(2) * np.log( (2)/ (1-mz) ) * (1+mz)**(alpha) #M4
+    z_tot = np.append(-z,z[::-1])
+
+    r = x_tot.reshape((1,nx*2,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
+        y_tot.reshape((1,1,ny*2,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
+        z_tot.reshape((1,1,1,nz*2))*np.array([0,0,1.]).reshape((3,1,1,1))
+
+    # d = dx_tot.reshape((1,nx*2,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
+    #     dy_tot.reshape((1,1,ny*2,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
+    #     dz_tot.reshape((1,1,1,nz*2))*np.array([0,0,1.]).reshape((3,1,1,1))
+
+    return r,[x_tot,y_tot,z_tot]
+
+
 
 
 def create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None):
     """
+    create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None)
+
+    Creates atomic grids for all the atoms in the molecule.
+    For more details on the atomic grids, see :doc:`create_atomic_grid<create_atomic_grid>`
+
+    Parameters
+    ----------
+        mol : molecule
+            The molecule for which the grids will be computed
+        N_r_list : list, optional
+            The list of the number of points in the radial part.
+            If not provided, an already optimized value will be used
+        d_leb_list : list, optional
+            The order of Lebedev quadrature used
+            If not provided, an already optimized value will be used
+        zeta_list : list, optional
+            The zeta parameter, more info on :doc:`create_atomic_grid<create_atomic_grid>`
+            If not provided, an already optimized value will be used
+        alpha_list : list, optional
+            The alpha parameter, more info on :doc:`create_atomic_grid<create_atomic_grid>`
+            If not provided, an already optimized value will be used
+
+    Returns
+    -------
+        None
+            The molecule attribute mol_grids will contain the result
     """
 
+    if mol.mol_grids:
+        return
+
     list_grids = []
-    for atom,index_atom in zip(mol.atoms,len(mol.atoms)):
+    for atom,index_atom in zip(mol.atoms,range(len(mol.atoms))):
         N_r, d_leb, zeta, alpha = None, None, None, None
 
         if N_r_list: N_r = N_r_list[index_atom]
@@ -329,6 +407,10 @@ def create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_
 
         list_grids.append(create_atomic_grid(atom,N_r=N_r,d_leb=d_leb,zeta=zeta,alpha=alpha))
 
+
+    m_grids = mol_grids(list_grids)
+    voronoi_becke(m_grids)
+    mol.mol_grids = m_grids
 
 
 
@@ -472,11 +554,11 @@ def voronoi_becke(mol_grids):
     def function_cutoff(mu):
         return 3/2*mu - 1/2*mu**3
 
-    num_grids = len(grids.grids)
-    grids_centers = grids.grids_centers
+    num_grids = len(mol_grids.grids)
+    grids_centers = mol_grids.grids_centers
 
 
-    for grid_i,grid_i_index in zip(grids.grids,range(num_grids)):
+    for grid_i,grid_i_index in zip(mol_grids.grids,range(num_grids)):
         #Dimensions : grid_i,grid_j,rad,ang,coordinates
         number_points = grid_i.number_points
         n_r,n_l = np.shape(grid_i.xyz_coords)[1:]

@@ -10,8 +10,11 @@ These methods allow the plotting of chemical properties using pyvista.
 
 import numpy as np
 import pyvista
+import matplotlib.pyplot as plt
 from rgmol.objects import *
 import rgmol.molecular_calculations
+import rgmol.grid
+import rgmol.rectilinear_grid_reconstruction
 from ._functions import *
 
 ###############################
@@ -49,6 +52,76 @@ class _three_buttons:
         elif mode=="m":
             self.mode_M = value
         self.func(self.value,self.mode_D,self.mode_P,self.mode_M)
+
+##############################################
+## Adding Plotting Methods for Atomic Grids ##
+##############################################
+
+
+def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None,opacity=0.5):
+    """
+    plots the atomic grid
+
+    """
+    if not self.mol_grids:
+        rgmol.grid.create_grid_from_mol(self)
+
+
+    plotter = pyvista.Plotter()
+
+
+    for grid,atom in zip(self.mol_grids.grids,self.atoms):
+        coords = grid.xyz_coords
+        num_points = grid.number_points
+        coords = coords.reshape((3,num_points)).transpose()
+        points = pyvista.PolyData(coords)
+        plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=opacity,color=atom.color)
+
+    for atom_x in self.atoms:
+        atom_x.plot(plotter,opacity=1.0,factor=1)
+
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.show(full_screen=False)
+    return
+
+
+def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None,opacity=0.1):
+    """
+    plots the atomic grid
+
+    """
+    if not self.mol_grids:
+        rgmol.grid.create_grid_from_mol(self)
+
+
+    plotter = pyvista.Plotter()
+
+
+    for grid,atom,array_to_plot in zip(self.mol_grids.grids,self.atoms,arr):
+        coords = grid.xyz_coords
+        num_points = grid.number_points
+        coords = coords.reshape((3,num_points)).transpose()
+        points = pyvista.PolyData(coords)
+
+
+        plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=[1.0,0.3,0.0,0.3,1.0],scalars=array_to_plot)
+
+    for atom_x in self.atoms:
+        atom_x.plot(plotter,opacity=0.3,factor=1)
+
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.show(full_screen=False)
+    return
+
+molecule.plot_atomic_grid = plot_atomic_grid
+molecule.plot_on_atomic_grid = plot_on_atomic_grid
+
 
 ########################################
 ## Adding Plotting Methods for Atoms  ##
@@ -478,13 +551,16 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
     plotter.show(full_screen=False)
     return
 
+
+
+
 ############################################
 ## Plotting Atomic / Molecular Properties ##
 ############################################
 
-def plot_AO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_AO(self,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_AO(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_AO(opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Atomic Orbitals of a molecule
     The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
@@ -492,10 +568,6 @@ def plot_AO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_rad
 
     Parameters
     ----------
-        grid_points : list of 3, optional
-            The number of points for the grid in each dimension. By default (40,40,40)
-        delta : float, optional
-            The length added on all directions of the box containing all atomic centers. By default 3
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -522,13 +594,12 @@ def plot_AO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_rad
     plotter = pyvista.Plotter()
 
     def create_mesh_AO(value,cutoff):
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["AO_calculated"][int(round(value))-1],opacity=opacity,factor=factor,cutoff=cutoff)
-        AO_number = int(round(value))
+        AO_number = int(round(value)) - 1
+        AO = AO_calculated[AO_number]
+        AO = np.sign(AO)*AO**2
+        plot_cube(plotter,coords,AO,opacity=opacity,factor=factor,cutoff=cutoff)
 
-    if not "AO_calculated" in self.properties:
-        rgmol.molecular_calculations.calculate_AO(self,grid_points,delta=delta)
-
-
+    coords,AO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_AO(self)
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
@@ -537,7 +608,7 @@ def plot_AO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_rad
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
-    plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(self.properties["AO_calculated"])],value=1,title="Number", fmt="%1.0f")
+    plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(AO_calculated)],value=1,title="Number", fmt="%1.0f")
     plotter.add_slider_widget(lambda value: slider_function("cutoff",value), [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
     if screenshot_button:
         add_screenshot_button(plotter,window_size_screenshot)
@@ -587,17 +658,18 @@ def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_rad
 
     plotter = pyvista.Plotter()
 
-    if not "MO_calculated" in self.properties:
-        self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
+    coords,MO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_MO(self)
+
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
 
     def create_mesh_MO(value,cutoff):
         MO_number = int(round(value))
-        MO_calculated = self.calculate_MO_chosen(MO_number-1,grid_points,delta=delta)
+        MO = MO_calculated[MO_number-1]
+        MO = np.sign(MO)*MO**2
 
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor,cutoff=cutoff)
+        plot_cube(plotter,coords,MO,opacity=opacity,factor=factor,cutoff=cutoff)
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number-1]),name="mo energy")
         print_occupancy(plotter,self.properties["MO_occupancy"],MO_number)
 
@@ -606,7 +678,7 @@ def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_rad
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
-    plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(self.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
+    plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(MO_calculated)],value=1,title="Number", fmt="%1.0f")
     plotter.add_slider_widget(lambda value: slider_function("cutoff",value), [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
 
     if screenshot_button:
@@ -772,15 +844,13 @@ def plot_electron_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,fac
     """
 
     plotter = pyvista.Plotter()
-
-    if not "electron_density" in self.properties:
-        self.calculate_electron_density(grid_points,delta=delta)
+    coords,electron_density = rgmol.rectilinear_grid_reconstruction.reconstruct_electron_density(self,grid_points)
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
 
     def create_mesh_cube(value):
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties["electron_density"],opacity=opacity,factor=factor,cutoff=value)
+        plot_cube(plotter,coords,electron_density,opacity=opacity,factor=factor,cutoff=value)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
@@ -963,7 +1033,7 @@ def plot_dipole_moment(self,opacity=0.8,factor=1,opacity_radius=1,factor_radius=
     plotter.show(full_screen=False)
 
 
-def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_transition_density(self,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
     plot_transition_density(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
@@ -1023,14 +1093,9 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,f
     """
 
     plotter = pyvista.Plotter()
+    # coords,transition_density_list = rgmol.rectilinear_grid_reconstruction.reconstruct_transition_density(self)
+    coords,MO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_MO(self)
 
-    #Initialize MO list
-    if not "MO_calculated" in self.properties:
-        self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
-
-    #Initialize transition density list
-    if not "transition_density_list" in self.properties:
-        self.properties["transition_density_list"] = [[] for k in range(len(self.properties["transition_list"]))]
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
@@ -1038,9 +1103,9 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,f
 
     def create_mesh_transition_density(value,cutoff):
         transition_number = int(round(value))
-        transition_density_calculated = self.calculate_chosen_transition_density(transition_number-1,grid_points,delta=delta)
+        transition_density_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_transition_density(self,transition_number-1)
+        plot_cube(plotter,coords,transition_density_calculated,opacity=opacity,factor=factor,cutoff=cutoff)
 
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],transition_density_calculated,opacity=opacity,factor=factor,cutoff=cutoff)
 
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["transition_energy"][transition_number-1]),name="transition energy")
 
@@ -1053,7 +1118,7 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,f
     if screenshot_button:
         add_screenshot_button(plotter,window_size_screenshot)
 
-    plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(self.properties["transition_density_list"])],value=1,title="Number", fmt="%1.0f")
+    plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(self.properties["transition_list"])],value=1,title="Number", fmt="%1.0f")
     plotter.add_slider_widget(lambda value: slider_function("cutoff",value), [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
     plotter.show(full_screen=False)
 
@@ -1063,7 +1128,7 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,f
 
 
 
-def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
+def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
     """
     plot_diagonalized_kernel(kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
 
@@ -1073,24 +1138,22 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
     Only the eigenmodes are computed using a method that does not calculate the whole kernel.
     The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
 
+    By default the eigenmodes will be plotted. If one wants not to do the plot, putting number_plotted_eigenvectors to 0 will not produce any plot.
+
     For the softness kernel as it is calculated using the Parr-Berkowitz relation, the fukui functions need to be computed. For that, a calculation adding (mol_p) or removing an electron (mol_m) needs to be done with the same geometry.
 
     Parameters
     ----------
         kernel : str
             The kernel to be diagonalized and plotted
-        grid_points : list of 3, optional
-            The number of points for the grid in each dimension. By default (40,40,40)
-        delta : float, optional
-            The length added on all directions of the box containing all atomic centers. By default 3
         number_plotted_eigenvectors : int, optional
-            The Number of eigenvectors to be plotted. By default 100
+            The Number of eigenvectors to be plotted. If 0, no plot will be produced. By default 100
         try_reading : bool, optional
             If the eigenmodes were calculated and saved before, try reading them from the rgmol folder. If False, the computation will be remade. True by default
         save : bool, optional
             The eigenmodes, eigenvalues and contributions of transition densities will be save in the folder rgmol that will be created where the molecule file is located
         plotting_method : str, optional
-            The method used for plotting. By default isodensity. The other methods are : "multiple isodensities", "volume"
+            The method used for plotting. By default isodensity. The other methods are : "multiple isodensities"
         number_isodensities : int, optional
             The number of isodensities to be plotted if the method used is multiple isodensities
         opacity : float, optional
@@ -1124,7 +1187,13 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
     """
     did_read = 1
     if kernel == "linear_response_function":
-        if try_reading:
+        if "linear_response_eigenvectors" in self.properties:
+            print("############################################")
+            print("# Eigenmodes already extracted or computed #")
+            print("############################################")
+
+
+        elif try_reading:
             try: self.read()
             except: pass
 
@@ -1134,16 +1203,17 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
             print("# No previous calculations were found. #")
             print("#   The eigenmodes will be computed.   #")
             print("########################################")
-            self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
+            self.calculate_eigenmodes_linear_response_function()
         elif not try_reading:
             did_read = 0
-            self.calculate_eigenmodes_linear_response_function(grid_points,delta=delta)
+            self.calculate_eigenmodes_linear_response_function()
 
-        eigenvectors = self.properties["linear_response_eigenvectors"]
+        # eigenvectors = self.properties["linear_response_eigenvectors"]
         eigenvalues = self.properties["linear_response_eigenvalues"]
         contrib_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
         transition_list = self.properties["transition_list"]
         transition_factor_list = self.properties["transition_factor_list"]
+        coords,eigenvectors = rgmol.rectilinear_grid_reconstruction.reconstruct_eigenvectors(self)
 
     elif kernel == "softness_kernel":
         self.calculate_hardness()
@@ -1157,12 +1227,12 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
             print("# No previous calculations were found. #")
             print("#   The eigenmodes will be computed.   #")
             print("########################################")
-            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,grid_points=grid_points,delta=delta)
+            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type)
         elif not try_reading:
             did_read = 0
-            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,grid_points=grid_points,delta=delta)
+            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type)
 
-        eigenvectors = self.properties["softness_kernel_eigenvectors"]
+        # eigenvectors = self.properties["softness_kernel_eigenvectors"]
         eigenvalues = self.properties["softness_kernel_eigenvalues"]
         contrib_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
         transition_list = self.properties["transition_list"] + [[[-1,-1]]]
@@ -1173,6 +1243,11 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
 
     if save and not did_read:
         self.save()
+
+    #Stop here if no eigenvectors are to be plotted
+    if number_plotted_eigenvectors < 1:
+        return
+
 
     eigenvectors = eigenvectors [:number_plotted_eigenvectors]
     eigenvalues = eigenvalues [:number_plotted_eigenvectors]
@@ -1186,7 +1261,7 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
     if plotting_method == "isodensity":
         def create_mesh_diagonalized_kernel(value,cutoff):
             vector_number = int(round(value))
-            plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
+            plot_cube(plotter,coords,eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
             plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
             print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
@@ -1202,14 +1277,6 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
 
             print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
-    elif plotting_method == "volume":
-        def create_mesh_diagonalized_kernel(value,cutoff):
-            vector_number = int(round(value))
-            plot_cube_volume(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
-            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
-
-            print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
-
 
     slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
@@ -1220,6 +1287,60 @@ def plot_diagonalized_kernel(self,kernel,grid_points=(100,100,100),delta=10,numb
 
     plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(eigenvectors)],value=1,title="Eigenvector", fmt="%1.0f")
     plotter.show(full_screen=False)
+
+
+
+
+def plot_analysis_kernel(self,kernel,grid_points=(100,100,100),delta=7,list_vectors=[1,2,3,4,5],try_reading_diagonalized=1,save_diagonalized=1,mol_p=None,mol_m=None,fukui_type="0",save=0,file_name=""):
+    """analysis"""
+
+    if kernel == "linear_response_function":
+        if not "linear_response_eigenvectors" in self.list_properties():
+            self.plot_diagonalized_kernel(kernel,grid_points=grid_points,delta=delta,number_plotted_eigenvectors=0,try_reading=try_reading_diagonalized,save=save_diagonalized)
+
+    elif kernel == "softness_kernel":
+        if not "softness_kernel_eigenvectors" in self.list_properties():
+            self.plot_diagonalized_kernel(kernel,grid_points=grid_points,delta=delta,number_plotted_eigenvectors=0,mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,try_reading=try_reading_diagonalized,save=save_diagonalized)
+
+    else:
+        raise ValueError("The kernel {} has not been implemented. The available kernels are : linear_response_function and softness_kernel".format(kernel))
+
+    self.analysis_eigenmodes(kernel=kernel,list_vectors=list_vectors)
+
+    from_occ = self.properties["from_occ"]
+    to_virt = self.properties["to_virt"]
+
+    colors = ["red","blue","green","darkred","cyan","lime","magenta","teal","purple","darkorange"]
+
+    fig=plt.figure(figsize=(15,7),dpi=200)
+    plt.rcParams.update({'font.size': 15})
+    plt.rcParams['svg.fonttype'] = 'none'
+
+
+    plt.subplot(2,1,1)
+    for index in range(len(from_occ)):
+        plt.plot(from_occ[index],"o-",color=colors[index],label=list_vectors[index])
+    plt.xlabel("Occupied MO index",size=17)
+    plt.ylabel("Coefficient",size=17)
+    plt.legend()
+
+    n_occ = len(from_occ[0])
+    n_virt = len(to_virt[0])
+
+    plt.subplot(2,1,2)
+    for index in range(len(to_virt)):
+        plt.plot(np.arange(n_occ,n_virt),to_virt[index][n_occ:],"o-",color=colors[index],label=list_vectors[index])
+    plt.xlabel("Virtual MO index",size=17)
+    plt.ylabel("Coefficient",size=17)
+
+
+    plt.tight_layout()
+    if save:
+        plt.savefig(file_name)
+    else: plt.show()
+
+
+
 
 
 
@@ -1239,5 +1360,6 @@ molecule.plot_dipole_moment = plot_dipole_moment
 molecule.plot_transition_density = plot_transition_density
 molecule.plot_fukui_function = plot_fukui_function
 molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
+molecule.plot_analysis_kernel = plot_analysis_kernel
 
 

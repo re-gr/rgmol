@@ -9,9 +9,11 @@ These methods allow the plotting of chemical properties using pyvista.
 """
 
 import numpy as np
+import scipy as sp
 import pyvista
 from rgmol.objects import *
 import rgmol.molecular_calculations
+import rgmol.grid
 import os
 
 
@@ -299,20 +301,19 @@ def plot_vector_atom(plotter,atom,vector,opacity=1,factor=1):
     return
 
 
-def plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor=1,add_name=""):
+def plot_cube(plotter,coords,cube,cutoff=0.1,opacity=1,factor=1,add_name=""):
     """
     Plots an isodensity
     """
-
+    x,y,z = coords
     nx,ny,nz = np.shape(cube)
     cube_transposed = np.transpose(cube,(2,1,0))
 
-    grid = pyvista.ImageData(dimensions=(nx,ny,nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=voxel_origin)
-
+    grid = pyvista.RectilinearGrid(x,y,z)
+    grid = grid.cast_to_structured_grid()
     #Calculate cube density
     # cube_density = cube_transposed**2 * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
-    cube_density = abs(cube_transposed) * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
-
+    cube_density = abs(cube_transposed)
     #Calculate renormalization as for some reason some cube files are not normalized
     cube_density = cube_density / np.sum(cube_density)
 
@@ -328,12 +329,12 @@ def plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor
         array_unsort[array_sort[k]] = indexes[k]
     cube_values = cube_values_sorted[array_unsort]
 
+
     cube_values_positive = cube_values + (cube_transposed<0).flatten() * (1-cube_values)
     cube_values_negative = cube_values + (cube_transposed>0).flatten() * (1-cube_values)
 
-    contour_positive = grid.contour(isosurfaces=2,scalars=cube_values_positive,rng=[0,1-cutoff])
-    contour_negative = grid.contour(isosurfaces=2,scalars=cube_values_negative,rng=[0,1-cutoff])
-
+    contour_positive = grid.contour(isosurfaces=[1-cutoff],scalars=cube_values_positive)
+    contour_negative = grid.contour(isosurfaces=[1-cutoff],scalars=cube_values_negative)
 
     if len(contour_positive.point_data["Contour Data"]):
         plotter.add_mesh(contour_positive,name="isosurface_cube_positive"+add_name,opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="red")
@@ -343,6 +344,7 @@ def plot_cube(plotter,voxel_origin,voxel_matrix,cube,cutoff=0.1,opacity=1,factor
         plotter.add_mesh(contour_negative,name="isosurface_cube_negative"+add_name,opacity=opacity,pbr=True,roughness=.5,metallic=.2,color="blue")
     else:
         plotter.remove_actor("isosurface_cube_negative"+add_name)
+
 
 
 
