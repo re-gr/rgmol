@@ -14,6 +14,7 @@ import scipy as sp
 import zipfile as zf
 from rgmol.objects import *
 import rgmol
+import rgmol.grid
 
 
 def _get_file_location(file):
@@ -43,18 +44,14 @@ def _write_data_for_cube(Lines,vector):
         line += "{:9.5e}".format(elem)
     Lines.append(line)
 
-def _write_voxel(file_name,voxel_matrix,voxel_origin,grid_points):
+def _write_voxel(file_name,grid_points,delta):
     """Writes the voxel parameters in a file"""
 
     with open(file_name,"w") as file:
-        file.write("Voxel Matrix :\n")
-        file.write("{} {} {}\n".format(voxel_matrix[0][0],voxel_matrix[0][1],voxel_matrix[0][2]))
-        file.write("{} {} {}\n".format(voxel_matrix[1][0],voxel_matrix[1][1],voxel_matrix[1][2]))
-        file.write("{} {} {}\n".format(voxel_matrix[2][0],voxel_matrix[2][1],voxel_matrix[2][2]))
-        file.write("Voxel Origin :\n")
-        file.write("{} {} {}\n".format(voxel_origin[0],voxel_origin[1],voxel_origin[2]))
         file.write("Grid Points :\n")
         file.write("{} {} {}\n".format(grid_points[0],grid_points[1],grid_points[2]))
+        file.write("Delta :\n")
+        file.write("{}".format(delta))
 
 
 def _read_voxel(file_name):
@@ -64,15 +61,12 @@ def _read_voxel(file_name):
     voxel_matrix=[]
     for line in open(file_name,"r"):
         lsplit = line.split()
-        if count > 0 and count < 4:
-            voxel_matrix.append([float(lsplit[0]),float(lsplit[1]),float(lsplit[2])])
-        elif count == 5:
-            voxel_origin = [float(lsplit[0]),float(lsplit[1]),float(lsplit[2])]
-        elif count == 7:
+        if count == 1:
             grid_points = [int(lsplit[0]),int(lsplit[1]),int(lsplit[2])]
-
+        elif count == 3:
+            delta = float(lsplit[0])
         count+=1
-    return voxel_matrix,voxel_origin,grid_points
+    return grid_points,delta
 
 
 def write_cube(self,cube,file_name,description="cube"):
@@ -259,7 +253,7 @@ def save(self,append_name="",output_extension="npy"):
 
     if "linear_response_eigenvalues" in self.properties:
         linear_response_eigenvalues = self.properties["linear_response_eigenvalues"]
-        linear_response_eigenvectors = self.properties["linear_response_eigenvectors"]
+        linear_response_eigenvectors = self.properties["Reconstructed_linear_response_eigenvectors"]
         contribution_linear_response_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
 
         np.savetxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
@@ -269,7 +263,7 @@ def save(self,append_name="",output_extension="npy"):
 
     if "softness_kernel_eigenvalues" in self.properties:
         softness_kernel_eigenvalues = self.properties["softness_kernel_eigenvalues"]
-        softness_kernel_eigenvectors = self.properties["softness_kernel_eigenvectors"]
+        softness_kernel_eigenvectors = self.properties["Reconstructed_softness_kernel_eigenvectors"]
         contribution_softness_kernel_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
 
         np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Softness Kernel Eigenvalues")
@@ -277,10 +271,9 @@ def save(self,append_name="",output_extension="npy"):
         _save_kernel(self,file_location,rgmol_folder,"softness_kernel",softness_kernel_eigenvectors,output_extension)
 
 
-    voxel_origin = self.properties["voxel_origin"]
-    voxel_matrix = self.properties["voxel_matrix"]
     grid_points = self.properties["grid_points"]
-    _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",voxel_matrix,voxel_origin,grid_points)
+    delta = self.properties["delta"]
+    _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
 
     os.rmdir(file_location + "temp")
 
@@ -321,10 +314,12 @@ def read(self,append_name="",nb_eigen=0):
     listdir_rgmol = os.listdir(file_location + rgmol_folder)
 
     if "voxel_parameters.txt" in listdir_rgmol:
-        voxel_matrix,voxel_origin,grid_points = _read_voxel(file_location+rgmol_folder+"//voxel_parameters.txt")
-        self.properties["voxel_matrix"] = voxel_matrix
-        self.properties["voxel_origin"] = voxel_origin
+        grid_points,delta = _read_voxel(file_location+rgmol_folder+"//voxel_parameters.txt")
         self.properties["grid_points"] = grid_points
+        self.properties["delta"] = delta
+        r,c = rgmol.grid.create_cubic_grid_from_molecule(self,grid_points=grid_points,delta=delta)
+        self.properties["Reconstructed_coords"] = c
+
     else: raise ValueError("Voxel parameters not found")
 
 
@@ -349,7 +344,7 @@ def read(self,append_name="",nb_eigen=0):
 
         for file in listdir_sorted:
             linear_response_eigenvectors.append(np.load(file_location+rgmol_folder+"//linear_response_function//"+file))
-        self.properties["linear_response_eigenvectors"] = linear_response_eigenvectors
+        self.properties["Reconstructed_linear_response_eigenvectors"] = linear_response_eigenvectors
 
         print("######################################")
         print("# Finished Extracting the eigenmodes #")
@@ -374,7 +369,7 @@ def read(self,append_name="",nb_eigen=0):
 
         for file in listdir_sorted:
             softness_kernel_eigenvectors.append(np.load(file_location+rgmol_folder+"//softness_kernel//"+file))
-        self.properties["softness_kernel_eigenvectors"] = softness_kernel_eigenvectors
+        self.properties["Reconstructed_softness_kernel_eigenvectors"] = softness_kernel_eigenvectors
 
         print("######################################")
         print("# Finished Extracting the eigenmodes #")

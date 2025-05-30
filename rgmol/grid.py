@@ -242,6 +242,9 @@ def create_cubic_grid_from_molecule(mol,grid_points,delta=5):
             the matrix of the voxel
     """
 
+    mol.properties["grid_points"] = grid_points
+    mol.properties["delta"] = delta
+
     list_pos = mol.list_property("pos")
     nx,ny,nz = grid_points
     xmin,ymin,zmin = np.min(list_pos,axis=0)
@@ -316,6 +319,9 @@ def create_rectilinear_grid_from_molecule(mol,grid_points=(80,80,80),delta=7):
         voxel_matrix : 2d list
             the matrix of the voxel
     """
+
+    mol.properties["grid_points"] = grid_points
+    mol.properties["delta"] = delta
 
     list_pos = mol.list_property("pos")
     nx,ny,nz = grid_points

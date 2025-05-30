@@ -376,19 +376,35 @@ def reconstruct_eigenvectors(mol,grid_points=(100,100,100)):
     """
 
     """
+    if "Reconstructed_linear_response_eigenvectors" in mol.properties:
+        return mol.properties["Reconstructed_coords"],mol.properties["Reconstructed_linear_response_eigenvectors"]
 
     coords,Reconstructed_transition_density_list = reconstruct_transition_density(mol,grid_points=grid_points)
     contribution_eigenvectors = mol.properties["contribution_linear_response_eigenvectors"]
     N_trans,nx,ny,nz = np.shape(Reconstructed_transition_density_list)
     nprocs = rgmol.nprocs
 
-    if nprocs >1 and 0:
-        reconstructed_eigenvectors = reconstruct_eigenvectors(Reconstructed_transition_density_list,eigenvectors,dV,nprocs)
+
+    print("###############################")
+    print("# Reconstructing Eigenvectors #")
+    print("###############################")
+    time_before_calc = time.time()
+
+    if nprocs >1:
+        reconstructed_eigenvectors = multithreading_reconstruct_eigenvectors(Reconstructed_transition_density_list,contribution_eigenvectors,nprocs)
     else:
         reconstructed_eigenvectors = []
         for eigenvector in contribution_eigenvectors:
             eigenvector_reshaped = eigenvector.reshape((N_trans,1,1,1))
             reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,Reconstructed_transition_density_list)
             reconstructed_eigenvectors.append(reconstructed_eigenvector)
+    mol.properties["Reconstructed_linear_response_eigenvectors"] = np.array(reconstructed_eigenvectors)
 
-    return coords,reconstructed_eigenvectors
+
+    time_taken = time.time()-time_before_calc
+    print("########################################")
+    print("# Finished Reconstructing Eigenvectors #")
+    print('# in {:3.3f} s #'.format(time_taken))
+    print("########################################")
+
+    return coords,mol.properties["Reconstructed_linear_response_eigenvectors"]

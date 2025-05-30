@@ -173,8 +173,8 @@ def calculate_eigenmodes_linear_response_function(self):
     print("#################################")
     time_before_calc = time.time()
 
-    if nprocs >1 and 0:
-        transition_matrix = calculate_overlap_matrix_multithread(transition_density_list,nprocs,dV)
+    if nprocs >1:
+        transition_matrix = calculate_overlap_matrix_multithread(self,transition_density_list,nprocs)
     else:
         transition_matrix = np.zeros((N_trans,N_trans))
         for first_transition in range(N_trans):

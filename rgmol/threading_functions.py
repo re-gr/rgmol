@@ -17,24 +17,27 @@ import rgmol.molecular_calculations
 ## OVERLAP MATRIX CALCULATIONS ##
 #################################
 
-def _overlap_matrix(overlap_matrix,Psi,length,start_i,start_j,dV):
+def _overlap_matrix(mol,overlap_matrix,Psi,length,start_i,start_j):
     """Calculates the overlap matrix as
     (S)ij = \\int Psi_i(r) Psi_j(r) dr
     on a part of the grid :
     from start_i to start_i + length and start_j to start_j + length
     """
+    N_grids = len(mol.mol_grids.grids)
     for i in range(length):
         for j in range(i+1):
             index_i,index_j = i + start_i, j + start_j
-            overlap = np.einsum("ijk,ijk->",Psi[index_i],Psi[index_j])*dV
+            overlap = 0
+            for grid,index_grid in zip(mol.mol_grids.grids,range(N_grids)):
+                overlap += grid.integrate(Psi[index_grid,index_i]*Psi[index_grid,index_j])
             overlap_matrix[index_i,index_j] = overlap
             overlap_matrix[index_j,index_i] = overlap
 
 
-def _overlap_matrix_double(overlap_matrix,Psi,list_div_element,dV):
+def _overlap_matrix_double(mol,overlap_matrix,Psi,list_div_element):
     """Just do the calculation for multiple ones. This is used when the number of processors is N = 2^k with k odd"""
     for (start_i,start_j),length in list_div_element:
-        _overlap_matrix(overlap_matrix,Psi,length,start_i,start_j,dV)
+        _overlap_matrix(mol,overlap_matrix,Psi,length,start_i,start_j)
 
 
 
@@ -60,7 +63,7 @@ def _divide_triangle(N,K,l):
         return _divide_triangle(N//2,K-2,l1) + _divide_triangle(N//2+N%2,K-2,l2) + _divide_triangle(N//2+N%2,K-2,l3) + _divide_triangle(N//2+N%2,K-2,l4)
 
 
-def calculate_overlap_matrix_multithread(Psi,nprocs,dV):
+def calculate_overlap_matrix_multithread(mol,Psi,nprocs):
     """
     This function separates the calculation into multiple threads automatically.
     As the overlap matrix is symmetric, only the rectangle triangle needs to be computed.
@@ -68,7 +71,7 @@ def calculate_overlap_matrix_multithread(Psi,nprocs,dV):
     K is equal to the highest power of 2 that is lower that the number maximum of threads
     """
 
-    N = len(Psi)
+    N = len(Psi[0])
     overlap_matrix = np.zeros((N,N))
 
     L = 2**np.arange(10)
@@ -79,13 +82,13 @@ def calculate_overlap_matrix_multithread(Psi,nprocs,dV):
 
     if K%2==0:
         for (start_i,start_j),length in list_div:
-            kk = th.Thread(target=_overlap_matrix,args=(overlap_matrix,Psi,length,start_i,start_j,dV))
+            kk = th.Thread(target=_overlap_matrix,args=(mol,overlap_matrix,Psi,length,start_i,start_j))
             list_th.append(kk)
             kk.start()
 
     else:
         for list_div_element in list_div:
-            thread = th.Thread(target=_overlap_matrix_double,args=(overlap_matrix,Psi,list_div_element,dV))
+            thread = th.Thread(target=_overlap_matrix_double,args=(mol,overlap_matrix,Psi,list_div_element))
             list_th.append(thread)
             thread.start()
 
@@ -190,12 +193,12 @@ def calculate_transition_density_multithread(mol,transitions,transition_density_
 ####################################
 
 
-def _reconstruct(reconstructed_eigenvectors,transitions,eigenvectors,index,dV):
+def _reconstruct(reconstructed_eigenvectors,transitions,eigenvectors,index):
     number_transitions = len(transitions)
     for eigenvector,index_eig in zip(eigenvectors,range(len(eigenvectors))):
         eigenvector_reshaped = eigenvector.reshape((number_transitions,1,1,1))
         reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,transitions)
-        reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
+        # reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
 
         reconstructed_eigenvectors[index+index_eig] = reconstructed_eigenvector
 
@@ -221,7 +224,7 @@ def _divide_eigenvectors(eigenvectors,nprocs):
     return list_eigenvectors,list_index
 
 
-def reconstruct_eigenvectors(transitions,eigenvectors,dV,nprocs):
+def multithreading_reconstruct_eigenvectors(transitions,eigenvectors,nprocs):
     """REconstructs the eigenvectors"""
 
     #This hard cap is because it is actually slower to put too much processors
@@ -235,7 +238,7 @@ def reconstruct_eigenvectors(transitions,eigenvectors,dV,nprocs):
 
     list_th = []
     for eigenvectors,index in zip(list_eigenvectors,list_index):
-        thread = th.Thread(target=_reconstruct,args=(reconstructed_eigenvectors,transitions,eigenvectors,index,dV))
+        thread = th.Thread(target=_reconstruct,args=(reconstructed_eigenvectors,transitions,eigenvectors,index))
         list_th.append(thread)
         thread.start()
 

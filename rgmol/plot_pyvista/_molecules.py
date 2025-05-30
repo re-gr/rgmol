@@ -1197,7 +1197,7 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_rea
             try: self.read()
             except: pass
 
-        if try_reading and not "linear_response_eigenvectors" in self.properties:
+        if try_reading and not "Reconstructed_linear_response_eigenvectors" in self.properties:
             did_read = 0
             print("########################################")
             print("# No previous calculations were found. #")
@@ -1213,6 +1213,7 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_rea
         contrib_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
         transition_list = self.properties["transition_list"]
         transition_factor_list = self.properties["transition_factor_list"]
+
         coords,eigenvectors = rgmol.rectilinear_grid_reconstruction.reconstruct_eigenvectors(self)
 
     elif kernel == "softness_kernel":
@@ -1221,7 +1222,7 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_rea
             try: self.read()
             except: pass
 
-        if try_reading and not "softness_kernel_eigenvectors" in self.properties:
+        if try_reading and not "Reconstructed_softness_kernel_eigenvectors" in self.properties:
             did_read = 0
             print("########################################")
             print("# No previous calculations were found. #")
