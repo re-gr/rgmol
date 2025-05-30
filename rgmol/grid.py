@@ -61,11 +61,16 @@ class mol_grids:
                 The list of all the grids
             centers : list
                 The list of the centers
+            dV : array
+                The dV of all grids
         """
         self.grids = grids
         grids_centers = []
+        N_r,N_ang = np.shape(grids[0].dV)
+
         for grid_i in grids:
             grids_centers.append(grid_i.center)
+
         self.grids_centers = np.array(grids_centers)
 
 
@@ -91,6 +96,27 @@ class mol_grids:
             Int += grid.integrate(arr)
         return Int
 
+    def get_dV(self):
+        """
+        get_dV
+
+        Gets the integration elements for all grids in the format : N_grids,N_r,N_ang
+
+        Parameters
+        ----------
+            None
+
+        Returns
+        -------
+            dV
+                The integration elements
+        """
+
+        dV = np.zeros((len(grids),N_r,N_ang))
+        for grid_i,index_grid in zip(grids,range(len(grids))):
+            dV[index_grid] = grid_i.dV * grid_i.wn
+
+        return dV
 
 class grid:
     """

@@ -251,14 +251,26 @@ def save(self,append_name="",output_extension="npy"):
     print("############################")
     time_before_writing = time.time()
 
-    if "linear_response_eigenvalues" in self.properties:
+    if "Reconstructed_linear_response_eigenvectors" in self.properties:
         linear_response_eigenvalues = self.properties["linear_response_eigenvalues"]
-        linear_response_eigenvectors = self.properties["Reconstructed_linear_response_eigenvectors"]
         contribution_linear_response_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
+        Reconstructed_linear_response_eigenvectors = self.properties["Reconstructed_linear_response_eigenvectors"]
 
         np.savetxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
         np.savetxt(file_location + rgmol_folder + "//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
-        _save_kernel(self,file_location,rgmol_folder,"linear_response_function",linear_response_eigenvectors,output_extension)
+        _save_kernel(self,file_location,rgmol_folder,"linear_response_function",Reconstructed_linear_response_eigenvectors,output_extension)
+        grid_points = self.properties["grid_points"]
+        delta = self.properties["delta"]
+        _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
+
+
+    if "linear_response_eigenvectors" in self.properties:
+        linear_response_eigenvectors = self.properties["linear_response_eigenvectors"]
+        linear_response_eigenvalues = self.properties["linear_response_eigenvalues"]
+        contribution_linear_response_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
+        np.savetxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
+        np.savetxt(file_location + rgmol_folder + "//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
+        np.save(file_location + rgmol_folder + "//linear_response_eigenvectors",linear_response_eigenvectors)
 
 
     if "softness_kernel_eigenvalues" in self.properties:
@@ -271,9 +283,6 @@ def save(self,append_name="",output_extension="npy"):
         _save_kernel(self,file_location,rgmol_folder,"softness_kernel",softness_kernel_eigenvectors,output_extension)
 
 
-    grid_points = self.properties["grid_points"]
-    delta = self.properties["delta"]
-    _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
 
     os.rmdir(file_location + "temp")
 
@@ -320,7 +329,8 @@ def read(self,append_name="",nb_eigen=0):
         r,c = rgmol.grid.create_cubic_grid_from_molecule(self,grid_points=grid_points,delta=delta)
         self.properties["Reconstructed_coords"] = c
 
-    else: raise ValueError("Voxel parameters not found")
+    else:
+        print("No representation grid parameters were found, the extraction will proceed anyway")
 
 
     if "linear_response_function" in listdir_rgmol:
@@ -350,6 +360,22 @@ def read(self,append_name="",nb_eigen=0):
         print("# Finished Extracting the eigenmodes #")
         print("# in {:3.3f} #".format(time.time()-time_before_extract))
         print("######################################")
+
+    if "linear_response_eigenvectors.npy" in listdir_rgmol:
+        print("############################################")
+        print("# Extracting the eigenmodes on atomic grid #")
+        print("############################################")
+        time_before_extract = time.time()
+
+        linear_response_eigenvectors = np.load(file_location+rgmol_folder+"//linear_response_eigenvectors.npy")
+        self.properties["linear_response_eigenvectors"] = linear_response_eigenvectors
+
+        print("#####################################################")
+        print("# Finished Extracting the eigenmodes on atomic grid #")
+        print("# in {:3.3f} #".format(time.time()-time_before_extract))
+        print("#####################################################")
+
+
 
     if "softness_kernel" in listdir_rgmol:
         print("#############################")
