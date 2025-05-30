@@ -183,8 +183,7 @@ def calculate_transition_density_multithread(mol,transitions,transition_density_
     for thread in list_th:
         thread.join()
     transition_density_list = np.einsum("ijklm->jklm",list_add_transitions)
-    # list_div_transitions = np.einsum("jklm,jklm->j",transition_density_list,transition_density_list)
-    # list_div_transitions = list_div_transitions.reshape((num_transitions,1,1,1))
+
     return transition_density_list
 
 
@@ -246,6 +245,42 @@ def multithreading_reconstruct_eigenvectors(transitions,eigenvectors,nprocs):
         thread.join()
 
     return reconstructed_eigenvectors
+
+
+def _reconstruct_atomic_grids(reconstructed_eigenvectors,transitions,eigenvectors,index):
+
+    N_grids,N_trans,N_r,N_ang = np.shape(transitions)
+
+    for eigenvector,index_eig in zip(eigenvectors,range(len(eigenvectors))):
+        eigenvector_reshaped = eigenvector.reshape((1,N_trans,1,1))
+        reconstructed_eigenvector = np.einsum("ijkl,ijkl->ikl",eigenvector_reshaped,transitions)
+        # reconstructed_eigenvector = reconstructed_eigenvector/(np.einsum("ijk,ijk->",reconstructed_eigenvector,reconstructed_eigenvector)*dV)**(1/2)
+
+        reconstructed_eigenvectors[index+index_eig] = reconstructed_eigenvector
+
+
+def multithreading_reconstruct_eigenvectors_atomic_grids(transitions,eigenvectors,nprocs):
+    """REconstructs the eigenvectors"""
+
+    #This hard cap is because it is actually slower to put too much processors
+    if nprocs > 4:
+        nprocs = 4
+
+    N_grids,N_trans,N_r,N_ang = np.shape(transitions)
+
+    list_eigenvectors,list_index = _divide_eigenvectors(eigenvectors,nprocs)
+    reconstructed_eigenvectors = [np.zeros((N_grids,N_r,N_ang)) for k in range(N_trans)]
+
+    list_th = []
+    for eigenvectors,index in zip(list_eigenvectors,list_index):
+        thread = th.Thread(target=_reconstruct_atomic_grids,args=(reconstructed_eigenvectors,transitions,eigenvectors,index))
+        list_th.append(thread)
+        thread.start()
+
+    for thread in list_th:
+        thread.join()
+
+    return np.array(reconstructed_eigenvectors)
 
 
 
