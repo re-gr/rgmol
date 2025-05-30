@@ -88,26 +88,36 @@ def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_lis
     return
 
 
-def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None,opacity=0.1):
+def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None):
     """
     plots the atomic grid
 
     """
     if not self.mol_grids:
-        rgmol.grid.create_grid_from_mol(self)
+        rgmol.grid.create_grid_from_mol(self,N_r_list=N_r_list,d_leb_list=d_leb_list,zeta_list=zeta_list,alpha_list=alpha_list)
 
 
     plotter = pyvista.Plotter()
 
+
+    maxx = 0
+    for grid,array in zip(self.mol_grids.grids,arr):
+        wn = grid.wn
+        dV = grid.dV
+        val = np.max(abs(array*wn*dV))
+        if val > maxx:
+            maxx = val
 
     for grid,atom,array_to_plot in zip(self.mol_grids.grids,self.atoms,arr):
         coords = grid.xyz_coords
         num_points = grid.number_points
         coords = coords.reshape((3,num_points)).transpose()
         points = pyvista.PolyData(coords)
+        wn = grid.wn
+        dV = grid.dV
 
+        points = plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=[1.0,0.4,0.0,0.4,1.0],scalars=array_to_plot*wn*dV,clim=(-maxx,maxx),cmap="rainbow4")
 
-        plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=[1.0,0.3,0.0,0.3,1.0],scalars=array_to_plot)
 
     for atom_x in self.atoms:
         atom_x.plot(plotter,opacity=0.3,factor=1)
