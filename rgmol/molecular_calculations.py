@@ -256,15 +256,15 @@ def gaussian_g(r,contraction_coefficients,exponent_primitives,r0):
     r_r = x**2 + y**2 + z**2
 
     for coefs in zip(contraction_coefficients,exponent_primitives):
-        sum_gaussian_zzzz += (35*z_z*z_z - 30*z_z*r_r + 3*r_r*r_r)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zzzy += y*z*(7*z_z-3*r_r)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zzzx += x*z*(7*z_z-3*r_r)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zzxy += 2*x*y*(7*z_z-r_r)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zz_xx_yy += (x_x-y_y)*(7*z_z-r_r)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zyyy += y*z*(y_y-3*x_x)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_zxxx += x*z*(3*y_y-x_x)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_xy_xx_yy += 4*x*y*(y_y-x_x)*coefs[0] * np.exp(-coefs[1]*r_r)
-        sum_gaussian_xxxx_yyyy += (6*x_x*y_y-x_x*x_x-y_y*y_y)*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zzzz += (35*z_z*z_z - 30*z_z*r_r + 3*r_r*r_r)/(2*(16*35)**(1/2))*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zzzy += y*z*(7*z_z-3*r_r)/(2*(2*7)**(1/2))*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zzzx += x*z*(7*z_z-3*r_r)/(2*(2*7)**(1/2))*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zzxy += x*y*(7*z_z-r_r)/(2*(7)**(1/2))*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zz_xx_yy += (x_x-y_y)*(7*z_z-r_r)/(2*(2*2*7)**(1/2))*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zyyy += y*z*(y_y-3*x_x)/(2*(2)**(1/2))*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_zxxx += x*z*(3*y_y-x_x)/(2*(2)**(1/2))*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_xy_xx_yy += x*y*(y_y-x_x)/(2)*coefs[0] * np.exp(-coefs[1]*r_r)
+        sum_gaussian_xxxx_yyyy += (6*x_x*y_y-x_x*x_x-y_y*y_y)/(2*(16)**(1/2))*coefs[0] * np.exp(-coefs[1]*r_r)
 
 
     return sum_gaussian_zzzz, sum_gaussian_zzzx, sum_gaussian_zzzy, sum_gaussian_zz_xx_yy, sum_gaussian_zzxy, sum_gaussian_zxxx, sum_gaussian_zyyy, sum_gaussian_xxxx_yyyy, sum_gaussian_xy_xx_yy
@@ -330,7 +330,7 @@ def calculate_AO(self):
 
                 for ao in AO_calc:
                     AO_calculated.append(ao)
-                    Ints.append(grid.integrate(ao**2))
+                    Ints.append(grid.integrate_product(ao,ao))
         AO_calculated_list.append(np.array(AO_calculated))
 
     Ints = np.array(Ints).reshape((N_grids,len(AO_calculated)))
@@ -391,7 +391,7 @@ def calculate_MO(self):
         MO_not_normalized = np.einsum("ijkl,j->ikl",AO_calculated_list,MO)
         MO_calculated_list.append(MO_not_normalized)
         for index_grid in range(N_grids):
-            Ints.append( self.mol_grids.grids[index_grid].integrate(MO_not_normalized[index_grid]**2) )
+            Ints.append( self.mol_grids.grids[index_grid].integrate_product(MO_not_normalized[index_grid],MO_not_normalized[index_grid]) )
 
     #Convert to array an transpose to the dimensions : grids,MO,radial,angular
     MO_calculated_list = np.array(MO_calculated_list).transpose((1,0,2,3))

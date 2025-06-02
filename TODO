@@ -1,5 +1,5 @@
 - Add function to detect type of output and extract accordingly
-- Reimplement write functions for condensed calculations (already coded)
+- logging module for printing information of calculation instead of print
 - Vibrations
 - Updating gorup_molecules object for more recent functions
 - Prettier interface

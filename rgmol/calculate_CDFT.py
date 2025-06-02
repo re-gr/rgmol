@@ -180,9 +180,6 @@ def calculate_eigenmodes_linear_response_function(self,do_construct_eigenvectors
         for first_transition in range(N_trans):
             for second_transition in range(first_transition+1):
                 overlap_integral = self.mol_grids.integrate_product(transition_density_list[index_grid,first_transition],transition_density_list[index_grid,second_transition])
-                # overlap_integral = 0
-                # for grid,index_grid in zip(self.mol_grids.grids,range(N_grids)):
-                #     overlap_integral += grid.integrate(transition_density_list[index_grid,first_transition] * transition_density_list[index_grid,second_transition])
 
                 transition_matrix[first_transition,second_transition] = overlap_integral
                 transition_matrix[second_transition,first_transition] = overlap_integral

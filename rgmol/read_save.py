@@ -375,6 +375,9 @@ def read(self,append_name="",nb_eigen=0):
         print("# in {:3.3f} #".format(time.time()-time_before_extract))
         print("#####################################################")
 
+        #Recreate grid
+        rgmol.grid.create_grid_from_mol(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None)
+
 
 
     if "softness_kernel" in listdir_rgmol:

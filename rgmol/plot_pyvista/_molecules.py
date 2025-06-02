@@ -120,7 +120,8 @@ def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,al
 
 
     for atom_x in self.atoms:
-        atom_x.plot(plotter,opacity=0.3,factor=1)
+        atom_x.plot(plotter,opacity=0.3,factor=0.5)
+    bonds_plotting(plotter,self.bonds,self.list_property("pos"),self.list_property("radius"),factor=.5)
 
 
 
