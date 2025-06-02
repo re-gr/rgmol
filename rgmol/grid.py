@@ -66,7 +66,6 @@ class mol_grids:
         """
         self.grids = grids
         grids_centers = []
-        N_r,N_ang = np.shape(grids[0].dV)
 
         for grid_i in grids:
             grids_centers.append(grid_i.center)
@@ -92,8 +91,34 @@ class mol_grids:
         """
 
         Int = 0
-        for grid in self.grids:
-            Int += grid.integrate(arr)
+        for grid,grid_index in zip(self.grids,range(len(self.grids))):
+            Int += grid.integrate(arr[grid_index])
+        return Int
+
+
+    def integrate_product(self,arr,arr_2):
+        """
+        integrate_product(arr,arr_2)
+
+        Integrates the product of two arrays on all the atomic grid.
+        This method should be used as it is around 3 times faster as using integrate with the product as an argument
+
+        Parameters
+        ----------
+            arr : ndarray
+                The array to be multiplied and integrated
+            arr_2 : ndarray
+                The array to be multiplied and integrated
+
+        Returns
+        -------
+            Int
+                the integral
+        """
+
+        Int = 0
+        for grid,grid_index in zip(self.grids,range(len(self.grids))):
+            Int += grid.integrate_product(arr[grid_index],arr_2[grid_index])
         return Int
 
     def get_dV(self):
@@ -111,9 +136,9 @@ class mol_grids:
             dV
                 The integration elements
         """
-
-        dV = np.zeros((len(grids),N_r,N_ang))
-        for grid_i,index_grid in zip(grids,range(len(grids))):
+        N_r,N_ang = np.shape(self.grids[0].dV)
+        dV = np.zeros((len(self.grids),N_r,N_ang))
+        for grid_i,index_grid in zip(self.grids,range(len(self.grids))):
             dV[index_grid] = grid_i.dV * grid_i.wn
 
         return dV
@@ -241,6 +266,37 @@ class grid:
         dV = wn * dV
 
         Int = np.einsum("ij,ij->",arr,dV)
+
+        return Int
+
+
+    def integrate_product(self,arr,arr_2):
+        """
+        integrate_product(arr,arr_2)
+
+        Integrates the product of two arrays on the atomic grid.
+        This method should be used as it is around 3 times faster as using integrate with the product as an argument
+
+        Parameters
+        ----------
+            arr : ndarray
+                The array to be multiplied and integrated
+            arr_2 : ndarray
+                The array to be multiplied and integrated
+
+        Returns
+        -------
+            Int
+                the integral
+        """
+
+        Coords = self.coords
+        wn = self.wn
+        dV = self.dV
+
+        dV = wn * dV
+
+        Int = np.einsum("ij,ij,ij->",arr,arr_2,dV)
 
         return Int
 

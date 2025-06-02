@@ -179,9 +179,10 @@ def calculate_eigenmodes_linear_response_function(self,do_construct_eigenvectors
         transition_matrix = np.zeros((N_trans,N_trans))
         for first_transition in range(N_trans):
             for second_transition in range(first_transition+1):
-                overlap_integral = 0
-                for grid,index_grid in zip(self.mol_grids.grids,range(N_grids)):
-                    overlap_integral += grid.integrate(transition_density_list[index_grid,first_transition] * transition_density_list[index_grid,second_transition])
+                overlap_integral = self.mol_grids.integrate_product(transition_density_list[index_grid,first_transition],transition_density_list[index_grid,second_transition])
+                # overlap_integral = 0
+                # for grid,index_grid in zip(self.mol_grids.grids,range(N_grids)):
+                #     overlap_integral += grid.integrate(transition_density_list[index_grid,first_transition] * transition_density_list[index_grid,second_transition])
 
                 transition_matrix[first_transition,second_transition] = overlap_integral
                 transition_matrix[second_transition,first_transition] = overlap_integral
@@ -489,3 +490,72 @@ def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2
 
 
 molecule.analysis_eigenmodes = analysis_eigenmodes
+
+
+##TEMPO
+
+
+def calculate_overlaps(self):
+    """
+    calculate_eigenmodes_linear_response_function()
+
+    Calculates the linear response function from the transition densities.
+    This method does not calculate directly the linear response, but only the eigenmodes.
+    The mathematics behind this function will soon be available somewhere...
+
+
+    Parameters
+    ----------
+    grid_points : list of 3
+    delta : float, optional
+        the length added on all directions of the box containing all atomic centers
+
+    Returns
+    -------
+    linear_response_eigenvalues
+        the eigenvalues of the linear response function
+    linear_response_eigenvectors
+        the eigenvectors of the linear response function
+
+    Notes
+    -----
+    The linear response function kernel can be computed as :
+
+    :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
+
+    With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
+
+    Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
+    """
+
+    if not "transition_density_list" in self.properties:
+        self.calculate_transition_density()
+
+    #Dummy implementation for now
+    transition_density_list = self.properties["transition_density_list"]
+    transition_energy = np.array(self.properties['transition_energy'])
+
+    N_grids,N_trans,N_r,N_ang = np.shape(transition_density_list)
+
+    nprocs = rgmol.nprocs
+
+    print("#################################")
+    print("# Calculating Eigenmodes of LRF #")
+    print("#################################")
+    time_before_calc = time.time()
+
+    if nprocs >1:
+        transition_matrix = calculate_overlap_matrix_multithread(self,transition_density_list,nprocs)
+    else:
+        transition_matrix = np.zeros((N_trans,N_trans))
+        for first_transition in range(N_trans):
+            for second_transition in range(first_transition+1):
+                overlap_integral = 0
+                for grid,index_grid in zip(self.mol_grids.grids,range(N_grids)):
+                    overlap_integral += grid.integrate(transition_density_list[index_grid,first_transition] * transition_density_list[index_grid,second_transition])
+
+                transition_matrix[first_transition,second_transition] = overlap_integral
+                transition_matrix[second_transition,first_transition] = overlap_integral
+    return transition_matrix
+
+molecule.calculate_overlaps = calculate_overlaps
