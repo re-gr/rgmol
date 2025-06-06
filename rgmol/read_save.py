@@ -272,15 +272,26 @@ def save(self,append_name="",output_extension="npy"):
         np.savetxt(file_location + rgmol_folder + "//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
         np.save(file_location + rgmol_folder + "//linear_response_eigenvectors",linear_response_eigenvectors)
 
-
-    if "softness_kernel_eigenvalues" in self.properties:
+    if "Reconstructed_softness_kernel_eigenvectors" in self.properties:
         softness_kernel_eigenvalues = self.properties["softness_kernel_eigenvalues"]
-        softness_kernel_eigenvectors = self.properties["Reconstructed_softness_kernel_eigenvectors"]
         contribution_softness_kernel_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
+        Reconstructed_softness_kernel_eigenvectors = self.properties["Reconstructed_softness_kernel_eigenvectors"]
 
-        np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Softness Kernel Eigenvalues")
-        np.savetxt(file_location + rgmol_folder +"//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
-        _save_kernel(self,file_location,rgmol_folder,"softness_kernel",softness_kernel_eigenvectors,output_extension)
+        np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Linear Response Eigenvalues")
+        np.savetxt(file_location + rgmol_folder + "//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
+        _save_kernel(self,file_location,rgmol_folder,"softness_kernel",Reconstructed_softness_kernel_eigenvectors,output_extension)
+        grid_points = self.properties["grid_points"]
+        delta = self.properties["delta"]
+        _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
+
+
+    if "softness_kernel_eigenvectors" in self.properties:
+        softness_kernel_eigenvectors = self.properties["softness_kernel_eigenvectors"]
+        softness_kernel_eigenvalues = self.properties["softness_kernel_eigenvalues"]
+        contribution_softness_kernel_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
+        np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Linear Response Eigenvalues")
+        np.savetxt(file_location + rgmol_folder + "//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
+        np.save(file_location + rgmol_folder + "//softness_kernel_eigenvectors",softness_kernel_eigenvectors)
 
 
 
@@ -404,6 +415,26 @@ def read(self,append_name="",nb_eigen=0):
         print("# Finished Extracting the eigenmodes #")
         print("# in {:3.3f} #".format(time.time()-time_before_extract))
         print("######################################")
+
+    if "softness_kernel_eigenvectors.npy" in listdir_rgmol:
+        print("############################################")
+        print("# Extracting the eigenmodes on atomic grid #")
+        print("############################################")
+        time_before_extract = time.time()
+
+        softness_kernel_eigenvectors = np.load(file_location+rgmol_folder+"//softness_kernel_eigenvectors.npy")
+        self.properties["softness_kernel_eigenvectors"] = softness_kernel_eigenvectors
+
+        print("#####################################################")
+        print("# Finished Extracting the eigenmodes on atomic grid #")
+        print("# in {:3.3f} #".format(time.time()-time_before_extract))
+        print("#####################################################")
+
+        #Recreate grid
+        rgmol.grid.create_grid_from_mol(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None)
+
+
+
 
     if "cubes.zip" in listdir_rgmol:
         print("#############################")

@@ -336,9 +336,9 @@ def calculate_AO(self):
     Ints = np.array(Ints).reshape((N_grids,len(AO_calculated)))
     Ints = np.sum(Ints,axis=0).reshape((1,len(AO_calculated),1,1))
     #Renormalize the results. They should be around 1-1e-10 before normalization though
-    AO_calculated_list = AO_calculated_list / Ints**(1/2)
+    # AO_calculated_list = AO_calculated_list / Ints**(1/2)
 
-    self.properties["AO_calculated_list"] = AO_calculated_list
+    self.properties["AO_calculated_list"] = np.array(AO_calculated_list)
 
     time_taken = time.time() - time_before_calc
     text_finished = "# Finished Calculating Atomic Orbitals #"
@@ -379,7 +379,8 @@ def calculate_MO(self):
     MO_calculated_list = []
     MO_list = np.array(self.properties["MO_list"])
     MO_occupancy = self.properties["MO_occupancy"][0]
-    N_grids,N_MO,N_r,N_ang = np.shape(AO_calculated_list)
+    N_grids,N_AO,N_r,N_ang = np.shape(AO_calculated_list)
+
 
     print('##################################')
     print("# Calculating Molecular Orbitals #")
@@ -390,17 +391,17 @@ def calculate_MO(self):
     for MO in MO_list:
         MO_not_normalized = np.einsum("ijkl,j->ikl",AO_calculated_list,MO)
         MO_calculated_list.append(MO_not_normalized)
-        for index_grid in range(N_grids):
-            Ints.append( self.mol_grids.grids[index_grid].integrate_product(MO_not_normalized[index_grid],MO_not_normalized[index_grid]) )
+        Ints.append(self.mol_grids.integrate_product(MO_not_normalized,MO_not_normalized))
+
+    N_MO = len(MO_list)
 
     #Convert to array an transpose to the dimensions : grids,MO,radial,angular
     MO_calculated_list = np.array(MO_calculated_list).transpose((1,0,2,3))
     #Same for int for the two first dimensions
-    Ints = np.array(Ints).reshape((N_MO,N_grids)).transpose()
-    Ints = np.sum(Ints,axis=0).reshape((1,N_MO,1,1))
+    Ints = np.array(Ints).reshape((1,N_MO,1,1))
 
     #Renormalize the results. They should be around 1-1e-10 before normalization though
-    MO_calculated_list = MO_calculated_list / Ints**(1/2)
+    MO_calculated_list = MO_calculated_list / Ints**(1/2) * MO_occupancy**(1/2)
 
     self.properties["MO_calculated_list"] = np.array(MO_calculated_list)
 
@@ -414,53 +415,6 @@ def calculate_MO(self):
     return np.array(MO_calculated_list)
 
 
-
-def calculate_occupied_MO(self,grid_points,delta=3):
-    """
-    calculate_MO(grid_points,delta=3)
-
-    Calculate all molecular orbitals for a molecule and puts it in molecule.properties["MO_calculated"]
-
-    If no voxel were associated with the molecule, it will automatically create a voxel
-    If the AO were not calculated it will also calculate them
-
-    Parameters
-    ----------
-        grid_points : list of 3
-        delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
-
-    Returns
-    -------
-        MO_calculated : list of ndarray
-    """
-
-    if "MO_calculated" in self.properties:
-        return self.properties["MO_calculated"]
-
-    if not "AO_calculated" in self.properties:
-        calculate_AO(self,grid_points=grid_points,delta=delta)
-
-    AO_calculated = self.properties["AO_calculated"]
-    N_AO = len(AO_calculated)
-    MO_calculated = []
-    MO_list = np.array(self.properties["MO_list"])
-
-    voxel_matrix = self.properties["voxel_matrix"]
-    dV = voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
-
-    MO_occupancy = self.properties["MO_occupancy"]
-
-
-    for MO,MO_occ in zip(MO_list,MO_occupancy):
-        if MO_occ==0:
-            break
-        AO_contribution_reshaped = np.array(MO).reshape((N_AO,1,1,1))
-        MO_not_normalized = np.einsum("ijkl,ijkl->jkl",AO_calculated,AO_contribution_reshaped)
-        MO_calculated.append(MO_not_normalized / (np.einsum("ijk,ijk->",MO_not_normalized,MO_not_normalized)*dV/MO_occ)**(1/2))
-
-    self.properties["MO_calculated"] = np.array(MO_calculated)
-    return np.array(MO_calculated)
 
 
 def calculate_MO_chosen(self,MO_chosen):
@@ -483,17 +437,17 @@ def calculate_MO_chosen(self,MO_chosen):
 
     Returns
     -------
-        MO_calculated : ndarray
+        MO_calculated_list : ndarray
     """
     if not "AO_calculated" in self.properties:
         calculate_AO(self)
 
-    if not "MO_calculated" in self.properties:
-        self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
+    if not "MO_calculated_list" in self.properties:
+        self.properties["MO_calculated_list"] = [[] for k in range(len(self.properties["MO_list"]))]
 
     AO_calculated = self.properties["AO_calculated"]
     N_AO = len(AO_calculated)
-    MO_chosen_calculated = self.properties["MO_calculated"][MO_chosen]
+    MO_chosen_calculated = self.properties["MO_calculated_list"][MO_chosen]
     if type(MO_chosen_calculated) is not list:
         return MO_chosen_calculated
 
@@ -508,7 +462,7 @@ def calculate_MO_chosen(self,MO_chosen):
 
     MO_chosen_calculated = np.einsum("ijkl,ijkl->jkl",AO_calculated,AO_contribution_reshaped)
 
-    self.properties["MO_calculated"][MO_chosen] = MO_chosen_calculated / (np.einsum("ijk,ijk->",MO_chosen_calculated,MO_chosen_calculated)*dV/MO_occupancy)**(1/2)
+    self.properties["MO_calculated_list"][MO_chosen] = MO_chosen_calculated / (np.einsum("ijk,ijk->",MO_chosen_calculated,MO_chosen_calculated)*dV/MO_occupancy)**(1/2)
 
     return MO_chosen_calculated / (np.sum(MO_chosen_calculated**2*dV/MO_occupancy)**(1/2))
 
@@ -534,21 +488,18 @@ def calculate_electron_density(self):
         electron_density : ndarray
     """
 
-    if not "MO_calculated" in self.properties:
-        self.calculate_occupied_MO()
+    if not "MO_calculated_list" in self.properties:
+        self.calculate_MO()
 
-    MO = np.array(self.properties["MO_calculated"])
+    MO = np.array(self.properties["MO_calculated_list"])
 
     MO_occ = np.array(self.properties["MO_occupancy"])
     MO_occ_arr = MO_occ>0
     MO_occ_index = np.argmin(MO_occ)
 
-    MO_occ = MO_occ[MO_occ_arr]
-    MO_occ = MO_occ.reshape(len(MO_occ),1,1,1)
+    MO_occupied = MO[:,:MO_occ_index]
 
-    MO_occupied = MO[:MO_occ_index]
-
-    electron_density = np.einsum("ijkl,ijkl->jkl",MO_occupied,MO_occupied)
+    electron_density = np.einsum("ijkl,ijkl->ikl",MO_occupied,MO_occupied)
 
     self.properties["electron_density"] = electron_density
     return electron_density
@@ -556,7 +507,7 @@ def calculate_electron_density(self):
 
 molecule.calculate_AO = calculate_AO
 molecule.calculate_MO = calculate_MO
-molecule.calculate_occupied_MO = calculate_occupied_MO
+# molecule.calculate_occupied_MO = calculate_occupied_MO
 molecule.calculate_MO_chosen = calculate_MO_chosen
 molecule.calculate_electron_density = calculate_electron_density
 

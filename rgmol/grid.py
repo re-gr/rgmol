@@ -496,6 +496,7 @@ def create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_
         list_grids.append(create_atomic_grid(atom,N_r=N_r,d_leb=d_leb,zeta=zeta,alpha=alpha))
 
 
+
     m_grids = mol_grids(list_grids)
     voronoi_becke(m_grids)
     mol.mol_grids = m_grids
@@ -543,7 +544,6 @@ def create_atomic_grid(atom,N_r=None,d_leb=None,zeta=None,alpha=None):
         .. [1] Treutler, O.; Ahlrichs, R.The Journal of Chemical Physics1995,102,346–354.
         .. [2] Lebedev, V. I.; Laikov, D. N. InDoklady Mathematics, 1999; Vol. 59,pp 477–481.
     """
-
     if not N_r:
         N_r = dict_N_r[atom.name]
     if not d_leb:

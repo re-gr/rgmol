@@ -481,10 +481,11 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.8,factor=1,with_rad
             The plotter should display when using this function
     """
     plotter = pyvista.Plotter()
+    r,coords = rgmol.grid.create_cubic_grid_from_molecule(self,grid_points=np.shape(self.properties[plotted_isodensity]))
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
     def create_mesh_cube(value):
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],self.properties[plotted_isodensity],opacity=opacity,factor=factor,cutoff=value)
+        plot_cube(plotter,coords,self.properties[plotted_isodensity],opacity=opacity,factor=factor,cutoff=value)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
@@ -569,7 +570,7 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
 ## Plotting Atomic / Molecular Properties ##
 ############################################
 
-def plot_AO(self,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_AO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
     plot_AO(opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
@@ -610,7 +611,7 @@ def plot_AO(self,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_r
         AO = np.sign(AO)*AO**2
         plot_cube(plotter,coords,AO,opacity=opacity,factor=factor,cutoff=cutoff)
 
-    coords,AO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_AO(self)
+    coords,AO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_AO(self,grid_points=grid_points,delta=delta)
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
@@ -669,7 +670,7 @@ def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_rad
 
     plotter = pyvista.Plotter()
 
-    coords,MO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_MO(self)
+    coords,MO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_MO(self,grid_points=grid_points,delta=delta)
 
 
     if with_radius:
@@ -700,7 +701,7 @@ def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_rad
 
 
 
-def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_product_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
     plot_product_MO(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
@@ -741,9 +742,8 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,
     """
 
     plotter = pyvista.Plotter(shape=(1,3),border=True)
-
-    if not "MO_calculated" in self.properties:
-        self.properties["MO_calculated"] = [[] for k in range(len(self.properties["MO_list"]))]
+    coords,AO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_AO(self,grid_points=grid_points,delta=delta)
+    MO_list = self.properties["MO_list"]
 
     if with_radius:
         plotter.subplot(0,0)
@@ -757,12 +757,13 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,
     self.properties["MO_number_2"] = 1
 
 
+
     def create_mesh_MO_1(value):
         plotter.subplot(0,0)
         MO_number_1 = int(round(value))
         self.properties["MO_number_1"] = MO_number_1
-        MO_calculated = self.calculate_MO_chosen(MO_number_1-1,grid_points,delta=delta)
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor,cutoff=cutoff,add_name="1")
+        coords,MO = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_MO(self,MO_number_1-1,grid_points=grid_points,delta=delta)
+        plot_cube(plotter,coords,MO,opacity=opacity,factor=factor,cutoff=cutoff,add_name="1")
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number_1-1]),name="mo energy")
         print_occupancy(plotter,self.properties["MO_occupancy"],MO_number_1)
 
@@ -771,16 +772,17 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,
         plotter.subplot(0,2)
         MO_number_2 = int(round(value))
         self.properties["MO_number_2"] = MO_number_2
-        MO_calculated = self.calculate_MO_chosen(MO_number_2-1,grid_points,delta=delta)
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_calculated,opacity=opacity,factor=factor,cutoff=cutoff,add_name="2")
+        coords,MO = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_MO(self,MO_number_2-1,grid_points=grid_points,delta=delta)
+        plot_cube(plotter,coords,MO,opacity=opacity,factor=factor,cutoff=cutoff,add_name="2")
         plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number_2-1]),name="mo energy")
         print_occupancy(plotter,self.properties["MO_occupancy"],MO_number_2)
 
+
     def calculate_product_MO(MO_ind_1,MO_ind_2):
-        MO_1 = self.calculate_MO_chosen(MO_ind_1-1,grid_points,delta=delta)
-        MO_2 = self.calculate_MO_chosen(MO_ind_2-1,grid_points,delta=delta)
+        coords,MO_1 = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_MO(self,MO_ind_1-1,grid_points=grid_points,delta=delta)
+        coords,MO_2 = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_MO(self,MO_ind_2-1,grid_points=grid_points,delta=delta)
         MO_prod = MO_1 * MO_2
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],MO_prod,opacity=opacity,factor=factor,cutoff=cutoff,add_name="prod")
+        plot_cube(plotter,coords,MO_prod,opacity=opacity,factor=factor,cutoff=cutoff,add_name="prod")
         plotter.add_text(text=r"Product of {} and {}".format(MO_ind_1,MO_ind_2),name="mo prod")
 
     def button_product_MO(value):
@@ -793,7 +795,7 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,
     plotter.subplot(0,0)
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
-    plotter.add_slider_widget(create_mesh_MO_1, [1, len(self.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
+    plotter.add_slider_widget(create_mesh_MO_1, [1, len(MO_list)],value=1,title="Number", fmt="%1.0f")
 
     plotter.subplot(0,1)
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
@@ -804,7 +806,7 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,
     plotter.subplot(0,2)
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
-    plotter.add_slider_widget(create_mesh_MO_2, [1, len(self.properties["MO_calculated"])],value=1,title="Number", fmt="%1.0f")
+    plotter.add_slider_widget(create_mesh_MO_2, [1, len(MO_list)],value=1,title="Number", fmt="%1.0f")
 
     if screenshot_button:
         add_screenshot_button(plotter,window_size_screenshot)
@@ -921,8 +923,7 @@ def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(1
 
     plotter = pyvista.Plotter()
 
-    if not fukui_type in self.properties:
-        self.calculate_fukui_function(mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
+    coords,f0,fp,fm = rgmol.rectilinear_grid_reconstruction.reconstruct_fukui_function(self,mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
 
     if "0" in fukui_type:
         fukui = self.properties["f0"]
@@ -936,13 +937,12 @@ def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(1
     if type(fukui) is None:
         raise TypeError("This fukui function could not be computed, did you give mol_m or mol_p ?")
 
-    fukui = self.properties[fukui_type]
 
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
 
     def create_mesh_cube(value):
-        plot_cube(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],fukui,opacity=opacity,factor=factor,cutoff=value)
+        plot_cube(plotter,coords,fukui,opacity=opacity,factor=factor,cutoff=value)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
@@ -1139,7 +1139,7 @@ def plot_transition_density(self,opacity=0.8,factor=1,with_radius=True,opacity_r
 
 
 
-def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0"):
+def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,do_construct_eigenvectors=0,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=5):
     """
     plot_diagonalized_kernel(kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
 
@@ -1198,7 +1198,7 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_rea
     """
     did_read = 1
     if kernel == "linear_response_function":
-        if "linear_response_eigenvectors" in self.properties:
+        if "Reconstructed_linear_response_eigenvectors" in self.properties:
             print("############################################")
             print("# Eigenmodes already extracted or computed #")
             print("############################################")
@@ -1210,14 +1210,20 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_rea
 
         if try_reading and not "Reconstructed_linear_response_eigenvectors" in self.properties:
             did_read = 0
-            print("########################################")
-            print("# No previous calculations were found. #")
-            print("#   The eigenmodes will be computed.   #")
-            print("########################################")
-            self.calculate_eigenmodes_linear_response_function()
+            if not "contribution_linear_response_eigenvectors" in self.properties:
+                print("########################################")
+                print("# No previous calculations were found. #")
+                print("#   The eigenmodes will be computed.   #")
+                print("########################################")
+                self.calculate_eigenmodes_linear_response_function(do_construct_eigenvectors=do_construct_eigenvectors)
+            else:
+                print("#########################################")
+                print("#    Previous calculation found but     #")
+                print("# the eigenmodes were not reconstructed #")
+                print("#########################################")
         elif not try_reading:
             did_read = 0
-            self.calculate_eigenmodes_linear_response_function()
+            self.calculate_eigenmodes_linear_response_function(do_construct_eigenvectors=do_construct_eigenvectors)
 
         # eigenvectors = self.properties["linear_response_eigenvectors"]
         eigenvalues = self.properties["linear_response_eigenvalues"]
@@ -1225,7 +1231,7 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_rea
         transition_list = self.properties["transition_list"]
         transition_factor_list = self.properties["transition_factor_list"]
 
-        coords,eigenvectors = rgmol.rectilinear_grid_reconstruction.reconstruct_eigenvectors(self)
+        coords,eigenvectors = rgmol.rectilinear_grid_reconstruction.reconstruct_eigenvectors(self,kernel)
 
     elif kernel == "softness_kernel":
         self.calculate_hardness()
@@ -1235,20 +1241,29 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_rea
 
         if try_reading and not "Reconstructed_softness_kernel_eigenvectors" in self.properties:
             did_read = 0
-            print("########################################")
-            print("# No previous calculations were found. #")
-            print("#   The eigenmodes will be computed.   #")
-            print("########################################")
-            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type)
+            if not "contribution_softness_kernel_eigenvectors" in self.properties:
+                print("########################################")
+                print("# No previous calculations were found. #")
+                print("#   The eigenmodes will be computed.   #")
+                print("########################################")
+                self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,do_construct_eigenvectors=do_construct_eigenvectors)
+            else:
+                print("#########################################")
+                print("#    Previous calculation found but     #")
+                print("# the eigenmodes were not reconstructed #")
+                print("#########################################")
         elif not try_reading:
             did_read = 0
-            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type)
+            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,do_construct_eigenvectors=do_construct_eigenvectors)
 
         # eigenvectors = self.properties["softness_kernel_eigenvectors"]
         eigenvalues = self.properties["softness_kernel_eigenvalues"]
         contrib_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
         transition_list = self.properties["transition_list"] + [[[-1,-1]]]
         transition_factor_list = self.properties["transition_factor_list"] + [[[1]]]
+
+        coords,eigenvectors = rgmol.rectilinear_grid_reconstruction.reconstruct_eigenvectors(self,kernel,mol_m=mol_m,mol_p=mol_p,grid_points=grid_points,delta=delta,fukui_type=fukui_type)
+
 
     else:
         raise TypeError("The kernel {} has not been implemented. The available kernels are : linear_response_function and softness_kernel".format(kernel))
@@ -1303,24 +1318,24 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,try_rea
 
 
 
-def plot_analysis_kernel(self,kernel,grid_points=(100,100,100),delta=7,list_vectors=[1,2,3,4,5],try_reading_diagonalized=1,save_diagonalized=1,mol_p=None,mol_m=None,fukui_type="0",save=0,file_name=""):
+def plot_analysis_kernel(self,kernel,list_vectors=[1,2,3,4,5],try_reading_diagonalized=1,save_diagonalized=1,mol_p=None,mol_m=None,fukui_type="0",save=0,file_name=""):
     """analysis"""
 
     if kernel == "linear_response_function":
         if not "linear_response_eigenvectors" in self.list_properties():
-            self.plot_diagonalized_kernel(kernel,grid_points=grid_points,delta=delta,number_plotted_eigenvectors=0,try_reading=try_reading_diagonalized,save=save_diagonalized)
+            self.plot_diagonalized_kernel(kernel,number_plotted_eigenvectors=0,try_reading=try_reading_diagonalized,save=save_diagonalized)
 
     elif kernel == "softness_kernel":
         if not "softness_kernel_eigenvectors" in self.list_properties():
-            self.plot_diagonalized_kernel(kernel,grid_points=grid_points,delta=delta,number_plotted_eigenvectors=0,mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,try_reading=try_reading_diagonalized,save=save_diagonalized)
+            self.plot_diagonalized_kernel(kernel,number_plotted_eigenvectors=0,mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,try_reading=try_reading_diagonalized,save=save_diagonalized)
 
     else:
         raise ValueError("The kernel {} has not been implemented. The available kernels are : linear_response_function and softness_kernel".format(kernel))
 
     self.analysis_eigenmodes(kernel=kernel,list_vectors=list_vectors)
 
-    from_occ = self.properties["from_occ"]
-    to_virt = self.properties["to_virt"]
+    from_occ = np.array(self.properties["from_occ"])
+    to_virt = np.array(self.properties["to_virt"])
 
     colors = ["red","blue","green","darkred","cyan","lime","magenta","teal","purple","darkorange"]
 
@@ -1328,10 +1343,17 @@ def plot_analysis_kernel(self,kernel,grid_points=(100,100,100),delta=7,list_vect
     plt.rcParams.update({'font.size': 15})
     plt.rcParams['svg.fonttype'] = 'none'
 
+    if kernel == "linear_respone_function":
+        plt.subplot(1,2,1)
+        for index in range(len(from_occ)):
+            plt.plot(from_occ[index],"o-",color=colors[index],label=list_vectors[index])
+    elif kernel == "softness_kernel":
+        plt.subplot(2,2,1)
+        for index in range(len(from_occ)):
+            plt.plot(from_occ[index,:-1],"o-",color=colors[index],label=list_vectors[index])
+            plt.plot(len(from_occ[0])-1,from_occ[index,-1],"o",color=colors[index])
+        plt.xticks(ticks=np.arange(len(from_occ[0])),label=[str(k) for k in range(len(from_occ[0])-1)] + ["f"])
 
-    plt.subplot(2,1,1)
-    for index in range(len(from_occ)):
-        plt.plot(from_occ[index],"o-",color=colors[index],label=list_vectors[index])
     plt.xlabel("Occupied MO index",size=17)
     plt.ylabel("Coefficient",size=17)
     plt.legend()
@@ -1339,11 +1361,23 @@ def plot_analysis_kernel(self,kernel,grid_points=(100,100,100),delta=7,list_vect
     n_occ = len(from_occ[0])
     n_virt = len(to_virt[0])
 
-    plt.subplot(2,1,2)
+    if kernel == "linear_response_function":
+        plt.subplot(1,2,2)
+    elif kernel == "softness_kernel":
+        plt.subplot(2,2,2)
+        n_occ-=1
     for index in range(len(to_virt)):
         plt.plot(np.arange(n_occ,n_virt),to_virt[index][n_occ:],"o-",color=colors[index],label=list_vectors[index])
     plt.xlabel("Virtual MO index",size=17)
     plt.ylabel("Coefficient",size=17)
+
+    if kernel == "softness_kernel":
+        plt.subplot(2,1,2)
+        fukui_decomposition = self.properties["fukui_decomposition"]
+        plt.plot(fukui_decomposition,"o-r")
+        plt.xlabel("Eigenmode Index",size=17)
+        plt.ylabel("Electron Transfer Coefficient",size=17)
+        plt.ylim(0,1)
 
 
     plt.tight_layout()
