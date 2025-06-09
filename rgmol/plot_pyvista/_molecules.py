@@ -60,8 +60,27 @@ class _three_buttons:
 
 def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None,opacity=0.5):
     """
-    plots the atomic grid
+    plot_atomic_grid(N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None,opacity=0.5)
 
+    Do a plot of the grid of the molecule, each point of the grid is represented as a point.
+    The color of each point is the same as the atom that is at the center of the atomic grid
+    For more information on the grids, please check :doc:`here<../grid/create_atomic_grid>`
+
+    Parameters
+    ----------
+        N_r_list : list
+            The number of radial points that will be taken for each atom repectively
+        d_leb_list : list
+            The degree of the Lebedev quadrature that will be taken for each atom respectively
+        zeta_list : list
+            The zeta parameter that will be taken for each atom repectively
+        alpha_list : list
+            The alpha parameter that will be taken for each atom repectively
+
+    Returns
+    -------
+        None
+            The plotter will show
     """
     if not self.mol_grids:
         rgmol.grid.create_grid_from_mol(self)
@@ -90,8 +109,29 @@ def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_lis
 
 def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None):
     """
-    plots the atomic grid
+    plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None)
 
+    Do a plot of an array on the atomic grids.
+    The array should be of the shape : (N_grids, N_r, N_ang)
+    For more information on the grids, please check :doc:`here<../grid/create_atomic_grid>`
+
+    Parameters
+    ----------
+        arr : ndarray
+            The array to be plotted, the shape must be (N_grids, N_r, N_ang)
+        N_r_list : list, optional
+            The number of radial points that will be taken for each atom repectively
+        d_leb_list : list, optional
+            The degree of the Lebedev quadrature that will be taken for each atom respectively
+        zeta_list : list, optional
+            The zeta parameter that will be taken for each atom repectively
+        alpha_list : list, optional
+            The alpha parameter that will be taken for each atom repectively
+
+    Returns
+    -------
+        None
+            The plotter will show
     """
     if not self.mol_grids:
         rgmol.grid.create_grid_from_mol(self,N_r_list=N_r_list,d_leb_list=d_leb_list,zeta_list=zeta_list,alpha_list=alpha_list)
@@ -572,14 +612,20 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
 
 def plot_AO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_AO(opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_AO(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Plot the Atomic Orbitals of a molecule
-    The Atomic Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+    Plot the Atomic Orbitals of a molecule.
+    Because no calculations are done, the Atomic Orbitals will be calculated on the representative grid.
+    The representative grid is a cubic grid around the molecule.
+    The delta defines the length to be added to the extremities of the position of the atoms.
     The order of the Atomic Orbitals is defined in the molden file
 
     Parameters
     ----------
+        grid_points : list of 3, optional
+            The number of points for the representative grid in each dimension. By default (100,100,100)
+        delta : float, optional
+            The length added in all directions for the construction of the representative grid. By default 5
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -632,19 +678,21 @@ def plot_AO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_rad
 
 
 
-def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_MO(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_MO(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
-    Plot the Molecular Orbitals of a molecule
-    The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+    Plot the Molecular Orbitals of a molecule.
+    Because no calculations are done, the Molecular Orbitals will be calculated on the representative grid.
+    The representative grid is a cubic grid around the molecule.
+    The delta defines the length to be added to the extremities of the position of the atoms.
 
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the grid in each dimension. By default (40,40,40)
+            The number of points for the representative grid in each dimension. By default (100,100,100)
         delta : float, optional
-            The length added on all directions of the box containing all atomic centers. By default 3
+            The length added in all directions for the construction of the representative grid. By default 5
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -703,7 +751,7 @@ def plot_MO(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_rad
 
 def plot_product_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_product_MO(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_product_MO(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Molecular Orbitals of a molecule on the left and the right.
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule.
@@ -713,9 +761,9 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the grid in each dimension. By default (40,40,40)
+            The number of points for the representative grid in each dimension. By default (100,100,100)
         delta : float, optional
-            The length added on all directions of the box containing all atomic centers. By default 3
+            The length added in all directions for the construction of the representative grid. By default 3
         cutoff : float, optional
             The cutoff of the isodensity plot. By default .2
         opacity : float, optional
@@ -816,21 +864,23 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,
 
 
 
-def plot_electron_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_electron_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_electron_density(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_electron_density(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Electron Density of a molecule.
-    All the AO and the MO will be calculated on the grid if they were not calculated.
-    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+    Because no calculations are truly done, the electron density will be calculated on the representative grid.
+    The representative grid is a cubic grid around the molecule.
+    The delta defines the length to be added to the extremities of the position of the atoms.
+    The order of the Atomic Orbitals is defined in the molden file
 
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the grid in each dimension. By default (40,40,40)
+            The number of points for the representative grid in each dimension. By default (100,100,100)
         delta : float, optional
-            The length added on all directions of the box containing all atomic centers. By default 3
+            The length added in all directions for the construction of the representative grid. By default 5
         cutoff : float, optional
             The cutoff of the isodensity plot. By default .2
         opacity : float, optional
@@ -874,15 +924,18 @@ def plot_electron_density(self,grid_points=(100,100,100),delta=3,opacity=0.8,fac
 
 
 
-def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=10,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_fukui_function(mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=10,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_fukui_function(mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plots the fukui function desired.
     The fukui functions are calculated using finite differences of electron density.
     Thus, the molecule with one electron added (mol_p) or removed (mol_m) must be computed and added as argument to this function.
-
+    Because no calculations are truly done, the fukui function will be calculated on the representative grid.
+    The representative grid is a cubic grid around the molecule.
+    The delta defines the length to be added to the extremities of the position of the atoms.
+    The order of the Atomic Orbitals is defined in the molden file
 
     Parameters
     ----------
@@ -893,9 +946,9 @@ def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(1
         fukui_type : molecule, optional
             The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
         grid_points : list of 3, optional
-            The number of points for the grid in each dimension. By default (40,40,40)
+            The number of points for the representative grid in each dimension. By default (100,100,100)
         delta : float, optional
-            The length added on all directions of the box containing all atomic centers. By default 3
+            The length added in all directions for the construction of the representative grid. By default 5
         cutoff : float, optional
             The cutoff of the isodensity plot. By default .2
         opacity : float, optional
@@ -1044,21 +1097,24 @@ def plot_dipole_moment(self,opacity=0.8,factor=1,opacity_radius=1,factor_radius=
     plotter.show(full_screen=False)
 
 
-def plot_transition_density(self,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_transition_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_transition_density(grid_points=(100,100,100),delta=3,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_transition_density(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Transition Densities of a molecule.
-    All the AO and the MO will be calculated on the grid if they were not calculated.
-    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+    All the AOs and the MOs will be calculated on the grid if they were not calculated.
+    Because no calculations are truly done, the electron density will be calculated on the representative grid.
+    The representative grid is a cubic grid around the molecule.
+    The delta defines the length to be added to the extremities of the position of the atoms.
+    The order of the Atomic Orbitals is defined in the molden file
 
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the grid in each dimension. By default (40,40,40)
+            The number of points for the representative grid in each dimension. By default (100,100,100)
         delta : float, optional
-            The length added on all directions of the box containing all atomic centers. By default 3
+            The length added in all directions for the construction of the representative grid. By default 5
         cutoff : float, optional
             The cutoff of the isodensity plot. By default .2
         opacity : float, optional
@@ -1104,8 +1160,8 @@ def plot_transition_density(self,opacity=0.8,factor=1,with_radius=True,opacity_r
     """
 
     plotter = pyvista.Plotter()
-    # coords,transition_density_list = rgmol.rectilinear_grid_reconstruction.reconstruct_transition_density(self)
-    coords,MO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_MO(self)
+    # coords,transition_density_list = rgmol.rectilinear_grid_reconstruction.reconstruct_transition_density(self,grid_points=grid_points,delta=delta)
+    coords,MO_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_MO(self,grid_points=grid_points,delta=delta)
 
 
     if with_radius:
@@ -1114,7 +1170,7 @@ def plot_transition_density(self,opacity=0.8,factor=1,with_radius=True,opacity_r
 
     def create_mesh_transition_density(value,cutoff):
         transition_number = int(round(value))
-        transition_density_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_transition_density(self,transition_number-1)
+        transition_density_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_transition_density(self,transition_number-1,grid_points=grid_points,delta=delta)
         plot_cube(plotter,coords,transition_density_calculated,opacity=opacity,factor=factor,cutoff=cutoff)
 
 
@@ -1139,17 +1195,20 @@ def plot_transition_density(self,opacity=0.8,factor=1,with_radius=True,opacity_r
 
 
 
-def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,do_construct_eigenvectors=0,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=5):
+def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",number_plotted_eigenvectors=100,do_construct_eigenvectors=False,try_reading=True,save=True ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),grid_points=(100,100,100),delta=5):
     """
-    plot_diagonalized_kernel(kernel,grid_points=(100,100,100),delta=10,number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),mol_p=None,mol_m=None,fukui_type="0")
-
+    plot_diagonalized_kernel(kernel,mol_p=None,mol_m=None,fukui_type="0",number_plotted_eigenvectors=100,do_construct_eigenvectors=0,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),grid_points=(100,100,100),delta=5)
 
     Calculate and diagonalize a kernel.
-    The available kernels are the linear_response_function and the softness_kernel
+    The available kernels are : "linear_response_function" and "softness_kernel"
     Only the eigenmodes are computed using a method that does not calculate the whole kernel.
-    The grid is defined by the number of grid points and around the molecule. The delta defines the length to be added to the extremities of the position of the atoms.
+    All the computations will be done on the atomic grids.
 
-    By default the eigenmodes will be plotted. If one wants not to do the plot, putting number_plotted_eigenvectors to 0 will not produce any plot.
+    In order to reconstruct the eigenmodes on the atomic grid, one needs to use the keyword "do_construct_eigenvectors".
+    One might consider using :doc:`plot_on_atomic_grid<plot_on_atomic_grid>` for visualization
+
+    By default the eigenmodes will also be plotted on the representative grid using the calculations on the atomic grids.
+    If one wants not to do the plot, putting number_plotted_eigenvectors to 0 will not produce any plot.
 
     For the softness kernel as it is calculated using the Parr-Berkowitz relation, the fukui functions need to be computed. For that, a calculation adding (mol_p) or removing an electron (mol_m) needs to be done with the same geometry.
 
@@ -1157,16 +1216,20 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,do_cons
     ----------
         kernel : str
             The kernel to be diagonalized and plotted
+        mol_p : molecule, optional
+            The molecule with an electron added. Needed for calculating the softness kernel with a fukui_type of "0" or "+"
+        mol_m : molecule, optional
+            The molecule with an electron removed. Needed for calculating the softness kernel with a fukui_type of "0" or "-"
+        fukui_type : molecule, optional
+            The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
         number_plotted_eigenvectors : int, optional
             The Number of eigenvectors to be plotted. If 0, no plot will be produced. By default 100
+        do_construct_eigenvectors : bool, optional
+            Choose whether or not to construct the eigenvectors on the atomic grids. False by default
         try_reading : bool, optional
             If the eigenmodes were calculated and saved before, try reading them from the rgmol folder. If False, the computation will be remade. True by default
         save : bool, optional
             The eigenmodes, eigenvalues and contributions of transition densities will be save in the folder rgmol that will be created where the molecule file is located
-        plotting_method : str, optional
-            The method used for plotting. By default isodensity. The other methods are : "multiple isodensities"
-        number_isodensities : int, optional
-            The number of isodensities to be plotted if the method used is multiple isodensities
         opacity : float, optional
             The opacity of the plot. By default .5
         factor : float, optional
@@ -1183,18 +1246,15 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,do_cons
             Adds a screenshot button. True by default
         window_size_screenshot : tuple, optional
             The size of the screenshots. By default (1000,1000)
-        mol_p : molecule, optional
-            The molecule with an electron added. Needed for calculating the softness kernel with a fukui_type of "0" or "+"
-        mol_n : molecule, optional
-            The molecule with an electron removed. Needed for calculating the softness kernel with a fukui_type of "0" or "-"
-        fukui_type : molecule, optional
-            The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
-
+        grid_points : list of 3, optional
+            The number of points for the representative grid in each dimension. By default (100,100,100)
+        delta : float, optional
+            The length added in all directions for the construction of the representative grid. By default 5
 
     Returns
     -------
         None
-            The plotter should display when using this function
+            The plotter should display when using this function and all the properties will be sorted inside the molecule.properties
     """
     did_read = 1
     if kernel == "linear_response_function":
@@ -1285,24 +1345,24 @@ def plot_diagonalized_kernel(self,kernel,number_plotted_eigenvectors=100,do_cons
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
 
 
-    if plotting_method == "isodensity":
-        def create_mesh_diagonalized_kernel(value,cutoff):
-            vector_number = int(round(value))
-            plot_cube(plotter,coords,eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
-            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
+    # if plotting_method == "isodensity":
+    def create_mesh_diagonalized_kernel(value,cutoff):
+        vector_number = int(round(value))
+        plot_cube(plotter,coords,eigenvectors[vector_number-1],opacity=opacity,factor=factor,cutoff=cutoff)
+        plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
 
-            print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
+        print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
-        slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
-        plotter.add_slider_widget(lambda value: slider_function("cutoff",value), [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
+    slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)
+    plotter.add_slider_widget(lambda value: slider_function("cutoff",value), [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
 
-    elif plotting_method == "multiple isodensities":
-        def create_mesh_diagonalized_kernel(value,cutoff):
-            vector_number = int(round(value))
-            plot_cube_multiple_isodensities(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
-            plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
-
-            print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
+    # elif plotting_method == "multiple isodensities":
+    #     def create_mesh_diagonalized_kernel(value,cutoff):
+    #         vector_number = int(round(value))
+    #         plot_cube_multiple_isodensities(plotter,self.properties["voxel_origin"],self.properties["voxel_matrix"],eigenvectors[vector_number-1],factor=factor)
+    #         plotter.add_text(text=r"eigenvalue = "+'{:3.3f} (a.u.)'.format(eigenvalues[vector_number-1]),name="eigenvalue")
+    #
+    #         print_contribution_transition_density(plotter,self,kernel,vector_number,contrib_eigenvectors,transition_list,transition_factor_list)
 
 
     slider_function = _slider(create_mesh_diagonalized_kernel,1,cutoff)

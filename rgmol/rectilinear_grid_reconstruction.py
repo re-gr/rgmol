@@ -19,7 +19,7 @@ from rgmol.grid import *
 
 
 
-def reconstruct_AO(mol,grid_points=(100,100,100),delta=5):
+def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
     """
     calculate_AO(grid_points=(80,80,80))
 
@@ -175,7 +175,7 @@ def reconstruct_MO(mol,grid_points=(80,80,80),delta=5):
     return coords,np.array(MO_calculated)
 
 
-def reconstruct_electron_density(mol,grid_points=(100,100,100),delta=5):
+def reconstruct_electron_density(mol,grid_points=(80,80,80),delta=5):
     """
     calculate_electron_density(grid_points,delta=5)
 
@@ -216,9 +216,9 @@ def reconstruct_electron_density(mol,grid_points=(100,100,100),delta=5):
 
 
 
-def reconstruct_fukui_function(self,mol_p=None,mol_m=None,grid_points=(100,100,100),delta=5):
+def reconstruct_fukui_function(self,mol_p=None,mol_m=None,grid_points=(80,80,80),delta=5):
     """
-    calculate_fukui_function(mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10)
+    calculate_fukui_function(mol_p=None,mol_m=None,grid_points=(80,80,80),delta=10)
 
     Calculates the fukui function using finite differences between electron density.
     If mol_p is provided, f+ will be computed.
@@ -292,7 +292,7 @@ def reconstruct_fukui_function(self,mol_p=None,mol_m=None,grid_points=(100,100,1
 ####################
 
 
-def reconstruct_transition_density(mol,grid_points=(100,100,100),delta=5):
+def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
     """
     calculate_transition_density(grid_points,delta=3)
 
@@ -373,11 +373,17 @@ def reconstruct_transition_density(mol,grid_points=(100,100,100),delta=5):
             occ,virt = transition_list[transition][factor_index]
             transitions[occ,virt] = 1
             transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index]
+    MO_occ = MO_calculated[:transi_occ_max]
+    print(np.shape(transition_density_coefficients),np.shape(MO_occ),np.shape(MO_calculated))
 
-    if nprocs > 1 and 0:
-    # if nprocs > 1:
+
+    # if nprocs > 1 and 0:
+    if nprocs > 1:
         transition_density_list = calculate_transition_density_multithread(mol,transitions,transition_density_coefficients,grid_points,nprocs)
     else:
+        # transition_density_list = np.einsum("ijk,jlmn,klmn->ilmn",transition_density_coefficients,MO_occ,MO_calculated,optimize=True)
+
+
         transition_density_list = np.zeros((len(transition_list),nx,ny,nz))
         for occ in range(transi_occ_max):
             for virt in range(transi_virt_max):
@@ -405,7 +411,7 @@ def reconstruct_transition_density(mol,grid_points=(100,100,100),delta=5):
     return coords,transition_density_list
 
 
-def reconstruct_chosen_transition_density(mol,chosen_transition_density,grid_points=(100,100,100),delta=5):
+def reconstruct_chosen_transition_density(mol,chosen_transition_density,grid_points=(80,80,80),delta=5):
     """
     calculate_chosen_transition_density(chosen_transition_density,grid_points,delta=3)
 

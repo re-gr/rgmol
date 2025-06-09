@@ -124,7 +124,7 @@ def calculate_hardness(self):
     return hardness
 
 
-def calculate_eigenmodes_linear_response_function(self,do_construct_eigenvectors=0):
+def calculate_eigenmodes_linear_response_function(self):
     """
     calculate_eigenmodes_linear_response_function()
 
@@ -183,8 +183,6 @@ def calculate_eigenmodes_linear_response_function(self,do_construct_eigenvectors
                 transition_matrix[first_transition,second_transition] = overlap_integral
                 transition_matrix[second_transition,first_transition] = overlap_integral
 
-
-
     #linear response matrix in transition densities basis
     #following dimensions : i,j,k
     # LR_matrix_in_TDB = np.einsum("k,ik,kj->ij",-2/transition_energy,transition_matrix,transition_matrix)
@@ -195,13 +193,9 @@ def calculate_eigenmodes_linear_response_function(self,do_construct_eigenvectors
 
 
     D = np.diag(-2/transition_energy).dot(transition_matrix)
-    # eigenvalues,eigenvectors = np.linalg.eig(D)
     eigenvalues,eigenvectors = np.linalg.eig(D)
     eigenvectors = eigenvectors.transpose()
 
-    eig_sort = np.argsort(eigenvalues)
-    eigenvalues = eigenvalues[eig_sort]
-    eigenvectors = eigenvectors[eig_sort]
 
     # eigvalB,eigvecB = np.linalg.eigh(transition_matrix)
     # eigvecBtilde = eigvecB * eigvalB**(-1/2)
@@ -211,30 +205,30 @@ def calculate_eigenmodes_linear_response_function(self,do_construct_eigenvectors
 
     # eigenvectors = eigenvectors.transpose()
 
-    if do_construct_eigenvectors:
+    if nprocs >1:
+        reconstructed_eigenvectors, reconstructed_eigenvector_norms = multithreading_reconstruct_eigenvectors_atomic_grids(self,transition_density_list,eigenvectors,nprocs)
+    else:
+        reconstructed_eigenvectors = []
+        reconstructed_eigenvector_norms = []
+        for eigenvector in eigenvectors:
+            reconstructed_eigenvector = np.einsum("j,ijkl->ikl",eigenvector,transition_density_list)
+            #all eigenvectors are defined at a scalar and the square should integrate to 1
+            reconstructed_eigenvector_norm = self.mol_grids.integrate_product(reconstructed_eigenvector,reconstructed_eigenvector)
+            reconstructed_eigenvector_norms.append(reconstructed_eigenvector_norm)
+            reconstructed_eigenvectors.append(reconstructed_eigenvector/reconstructed_eigenvector_norm**(1/2))
 
-        if nprocs >1:
-            reconstructed_eigenvectors = multithreading_reconstruct_eigenvectors_atomic_grids(self,transition_density_list,eigenvectors,nprocs)
-        else:
-            reconstructed_eigenvectors = []
-            for eigenvector in eigenvectors:
-                reconstructed_eigenvector = np.einsum("j,ijkl->ikl",eigenvector,transition_density_list)
-                #all eigenvectors are defined at a scalar
-                reconstructed_eigenvector_norm = self.mol_grids.integrate_product(reconstructed_eigenvector,reconstructed_eigenvector)
-                reconstructed_eigenvectors.append(reconstructed_eigenvector/reconstructed_eigenvector_norm**(1/2))
+    eigenvectors = np.einsum("ij,i->ij",eigenvectors,1/np.array(reconstructed_eigenvector_norms)**(1/2))
+    reconstructed_eigenvectors = np.array(reconstructed_eigenvectors)
 
-        self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
+    eig_sort = np.argsort(eigenvalues)
+    eigenvalues = eigenvalues[eig_sort]
+    eigenvectors = eigenvectors[eig_sort]
+    reconstructed_eigenvectors = reconstructed_eigenvectors[eig_sort]
 
-    # contribution_eigenvectors = eigenvectors / np.einsum("ij,ij->i",eigenvectors,eigenvectors)**(1/2)
-    # for k in contribution_eigenvectors:
-    #     print(np.sum(k**2))
-    # contribution_eigenvectors = []
-    # for k in eigenvectors:
-    #     n = np.sum(k**2)**(1/2)
-    #     contribution_eigenvectors.append(k/n)
 
     self.properties["linear_response_eigenvalues"] = eigenvalues
     self.properties["contribution_linear_response_eigenvectors"] = np.array(eigenvectors)
+    self.properties["linear_response_eigenvectors"] = reconstructed_eigenvectors
 
     time_taken = time.time() - time_before_calc
 
@@ -245,7 +239,7 @@ def calculate_eigenmodes_linear_response_function(self,do_construct_eigenvectors
     return eigenvalues, np.array(eigenvectors)
 
 
-def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=None,do_construct_eigenvectors=0):
+def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=None):
     """
     calculate_softness_kernel_eigenmodes(fukui_type="0",mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10)
 
@@ -356,34 +350,30 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     eigenvalues,eigenvectors = np.linalg.eig(D)
     eigenvectors = eigenvectors.transpose()
 
-    eig_sort = np.argsort(eigenvalues)
-    eigenvalues = eigenvalues[eig_sort]
-    eigenvectors = eigenvectors[eig_sort]
 
     reconstructed_eigenvectors = []
 
-    if do_construct_eigenvectors:
+    if nprocs >1:
+        reconstructed_eigenvectors, reconstructed_eigenvector_norms = multithreading_reconstruct_eigenvectors_atomic_grids(self,basis,eigenvectors,nprocs)
+    else:
+        reconstructed_eigenvectors = []
+        reconstructed_eigenvector_norms = []
+        for eigenvector in eigenvectors:
+            eigenvector_reshaped = eigenvector.reshape((N_trans,1,1,1))
+            reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,basis)
+            reconstructed_eigenvector_norm = mol.mol_grids.integrate_product(reconstructed_eigenvector,reconstructed_eigenvector)
+            reconstructed_eigenvector_norms.append(reconstructed_eigenvector_norm)
+            reconstructed_eigenvectors.append(reconstructed_eigenvector/reconstructed_eigenvector_norm**(1/2))
 
+    eigenvectors = np.einsum("ij,i->ij",eigenvectors,1/np.array(reconstructed_eigenvector_norms)**(1/2))
 
-        if nprocs >1:
-            reconstructed_eigenvectors = multithreading_reconstruct_eigenvectors_atomic_grids(self,basis,eigenvectors,nprocs)
-        else:
-            reconstructed_eigenvectors = []
-            for eigenvector in eigenvectors:
-                eigenvector_reshaped = eigenvector.reshape((N_trans,1,1,1))
-                reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,basis)
-                reconstructed_eigenvectors.append(reconstructed_eigenvector)
-
-        self.properties["softness_kernel_eigenvectors"] = reconstructed_eigenvectors[::-1]
-
-    # contribution_eigenvectors = []
-    # for k in eigenvectors:
-    #     n = np.sum(k**2)**(1/2)
-    #     contribution_eigenvectors.append(k/n)
-
+    eig_sort = np.argsort(eigenvalues)
+    eigenvalues = eigenvalues[eig_sort]
+    eigenvectors = eigenvectors[eig_sort]
+    reconstructed_eigenvectors = reconstructed_eigenvectors[eig_sort]
+    self.properties["softness_kernel_eigenvectors"] = reconstructed_eigenvectors[::-1]
     self.properties["softness_kernel_eigenvalues"] = eigenvalues[::-1]
-    self.properties["contribution_softness_kernel_eigenvectors"] = np.array(eigenvectors)[::-1]
-    # self.properties["contribution_softness_kernel_eigenvectors"] = np.array(contribution_eigenvectors)[::-1]
+    self.properties["contribution_softness_kernel_eigenvectors"] = eigenvectors[::-1]
 
 
     time_taken = time.time() - time_before_calc
@@ -474,7 +464,6 @@ def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2
     if kernel == "softness_kernel":
         for vector_number in range(len(eigenvalues)):
             contributions = contrib_eigenvectors[vector_number-1]
-
             fukui_decomposition.append(contributions[-1]**2 * self.properties["hardness"] * self.properties["softness_kernel_eigenvalues"][vector_number-1])
     f = np.array(fukui_decomposition)
     print(np.sum(f))

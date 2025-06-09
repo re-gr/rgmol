@@ -179,46 +179,22 @@ molecule.write_txt = write_txt
 #########################################
 
 
-def _save_kernel(mol,file_location,rgmol_folder,kernel_name,eigenvectors,output_extension):
+def _save_kernel(mol,file_location,rgmol_folder,kernel_name,eigenvectors):
     """
     This functions saves the eigenmodes of a kernel
     """
 
-    output_extension = output_extension.lower().strip(".")
-
-    if output_extension == "npy":
-        try: os.mkdir(file_location + rgmol_folder+"//"+kernel_name)
-        except: pass
-        for eigenvector in range(len(eigenvectors)):
-            file_name = "eigenvector_{}.npy".format(eigenvector)
-            np.save(file_location+rgmol_folder+"//"+kernel_name+"//"+file_name,eigenvectors[eigenvector])
+    try: os.mkdir(file_location + rgmol_folder+"//"+kernel_name)
+    except: pass
+    for eigenvector in range(len(eigenvectors)):
+        file_name = "eigenvector_{}.npy".format(eigenvector)
+        np.save(file_location+rgmol_folder+"//"+kernel_name+"//"+file_name,eigenvectors[eigenvector])
 
 
 
-    else:
-        with zf.ZipFile(file_location + "rgmol//cubes.zip","w",compression=zf.ZIP_DEFLATED) as rgmol_zip:
-
-            try: rgmol_zip.write(kernel_name)
-            except: pass
-
-            for eigenvector in range(len(eigenvectors)):
-                file_name = "eigenvector_{}.".format(eigenvector)
-                temp_file_name = file_location + "temp//" + file_name
-                if output_extension == "cube":
-                    mol.write_cube(eigenvectors[eigenvector], temp_file_name+"cube")
-                    rgmol_zip.write(temp_file_name+"cube",arcname = kernel_name + "//" + file_name+"cube")
-                    os.remove(temp_file_name+"cube")
-                elif output_extension == "csv" or output_extension == "txt":
-                    mol.write_txt(eigenvectors[eigenvector], temp_file_name+"txt")
-                    rgmol_zip.write(temp_file_name+"txt",arcname = kernel_name + "//" + file_name+"txt")
-                    os.remove(temp_file_name+"txt")
-
-
-
-
-def save(self,append_name="",output_extension="npy"):
+def save(self,kernel,append_name=""):
     """
-    save(output_extension="npy")
+    save(kernel,append_name="")
 
     This function saves the eignemodes of the already computed kernels in a folder called rgmol.
     The rgmol folder is located in the same folder as the input file used for the molecule.
@@ -228,8 +204,6 @@ def save(self,append_name="",output_extension="npy"):
     ----------
         append_name : str, optional
             A string to append to the name of the rgmol folder.
-        output_extension : str, optional
-            The output extension of the cube files. By default npy. The other extension available are txt and cube but are NOT recommended
 
     Returns
     -------
@@ -250,50 +224,52 @@ def save(self,append_name="",output_extension="npy"):
     print("# Writing the eigenvectors #")
     print("############################")
     time_before_writing = time.time()
+    if kernel == "linear_response_function":
+        if "Reconstructed_linear_response_eigenvectors" in self.properties:
+            linear_response_eigenvalues = self.properties["linear_response_eigenvalues"]
+            contribution_linear_response_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
+            Reconstructed_linear_response_eigenvectors = self.properties["Reconstructed_linear_response_eigenvectors"]
 
-    if "Reconstructed_linear_response_eigenvectors" in self.properties:
-        linear_response_eigenvalues = self.properties["linear_response_eigenvalues"]
-        contribution_linear_response_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
-        Reconstructed_linear_response_eigenvectors = self.properties["Reconstructed_linear_response_eigenvectors"]
-
-        np.savetxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
-        np.savetxt(file_location + rgmol_folder + "//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
-        _save_kernel(self,file_location,rgmol_folder,"linear_response_function",Reconstructed_linear_response_eigenvectors,output_extension)
-        grid_points = self.properties["grid_points"]
-        delta = self.properties["delta"]
-        _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
-
-
-    if "linear_response_eigenvectors" in self.properties:
-        linear_response_eigenvectors = self.properties["linear_response_eigenvectors"]
-        linear_response_eigenvalues = self.properties["linear_response_eigenvalues"]
-        contribution_linear_response_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
-        np.savetxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
-        np.savetxt(file_location + rgmol_folder + "//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
-        np.save(file_location + rgmol_folder + "//linear_response_eigenvectors",linear_response_eigenvectors)
-
-    if "Reconstructed_softness_kernel_eigenvectors" in self.properties:
-        softness_kernel_eigenvalues = self.properties["softness_kernel_eigenvalues"]
-        contribution_softness_kernel_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
-        Reconstructed_softness_kernel_eigenvectors = self.properties["Reconstructed_softness_kernel_eigenvectors"]
-
-        np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Linear Response Eigenvalues")
-        np.savetxt(file_location + rgmol_folder + "//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
-        _save_kernel(self,file_location,rgmol_folder,"softness_kernel",Reconstructed_softness_kernel_eigenvectors,output_extension)
-        grid_points = self.properties["grid_points"]
-        delta = self.properties["delta"]
-        _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
+            np.savetxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
+            np.savetxt(file_location + rgmol_folder + "//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
+            _save_kernel(self,file_location,rgmol_folder,"linear_response_function",Reconstructed_linear_response_eigenvectors)
+            grid_points = self.properties["grid_points"]
+            delta = self.properties["delta"]
+            _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
 
 
-    if "softness_kernel_eigenvectors" in self.properties:
-        softness_kernel_eigenvectors = self.properties["softness_kernel_eigenvectors"]
-        softness_kernel_eigenvalues = self.properties["softness_kernel_eigenvalues"]
-        contribution_softness_kernel_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
-        np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Linear Response Eigenvalues")
-        np.savetxt(file_location + rgmol_folder + "//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
-        np.save(file_location + rgmol_folder + "//softness_kernel_eigenvectors",softness_kernel_eigenvectors)
+        if "linear_response_eigenvectors" in self.properties:
+            linear_response_eigenvectors = self.properties["linear_response_eigenvectors"]
+            linear_response_eigenvalues = self.properties["linear_response_eigenvalues"]
+            contribution_linear_response_eigenvectors = self.properties["contribution_linear_response_eigenvectors"]
+            np.savetxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
+            np.savetxt(file_location + rgmol_folder + "//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
+            np.save(file_location + rgmol_folder + "//linear_response_eigenvectors",linear_response_eigenvectors)
+
+    elif kernel == "softness_kernel":
+        if "Reconstructed_softness_kernel_eigenvectors" in self.properties:
+            softness_kernel_eigenvalues = self.properties["softness_kernel_eigenvalues"]
+            contribution_softness_kernel_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
+            Reconstructed_softness_kernel_eigenvectors = self.properties["Reconstructed_softness_kernel_eigenvectors"]
+
+            np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Linear Response Eigenvalues")
+            np.savetxt(file_location + rgmol_folder + "//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
+            _save_kernel(self,file_location,rgmol_folder,"softness_kernel",Reconstructed_softness_kernel_eigenvectors)
+            grid_points = self.properties["grid_points"]
+            delta = self.properties["delta"]
+            _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
 
 
+        if "softness_kernel_eigenvectors" in self.properties:
+            softness_kernel_eigenvectors = self.properties["softness_kernel_eigenvectors"]
+            softness_kernel_eigenvalues = self.properties["softness_kernel_eigenvalues"]
+            contribution_softness_kernel_eigenvectors = self.properties["contribution_softness_kernel_eigenvectors"]
+            np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Linear Response Eigenvalues")
+            np.savetxt(file_location + rgmol_folder + "//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
+            np.save(file_location + rgmol_folder + "//softness_kernel_eigenvectors",softness_kernel_eigenvectors)
+
+    else:
+        raise ValueError("This kernel {} has not been implemented. Please choose linear_response_function or softness kernel".format(kernel))
 
     os.rmdir(file_location + "temp")
 
@@ -387,7 +363,7 @@ def read(self,append_name="",nb_eigen=0):
         print("#####################################################")
 
         #Recreate grid
-        rgmol.grid.create_grid_from_mol(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None)
+        rgmol.grid.create_grid_from_mol(self,N_r=None,d_leb=None,zeta_list=None,alpha_list=None)
 
 
 
@@ -431,50 +407,8 @@ def read(self,append_name="",nb_eigen=0):
         print("#####################################################")
 
         #Recreate grid
-        rgmol.grid.create_grid_from_mol(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None)
+        rgmol.grid.create_grid_from_mol(self,N_r=None,d_leb=None,zeta_list=None,alpha_list=None)
 
-
-
-
-    if "cubes.zip" in listdir_rgmol:
-        print("#############################")
-        print("# Extracting the eigenmodes #")
-        print("#############################")
-        time_before_extract = time.time()
-
-        with zf.ZipFile(file_location+"//"+rgmol_folder+"//cubes.zip",'r') as zip_folder:
-            try:
-                os.mkdir(file_location+"temp")
-            except:
-                pass
-
-            zip_folder.extractall(path=file_location+"temp")
-
-        linear_reponse_eigenvectors = []
-        softness_kernel_eigenvectors = []
-
-        for kernel_name in os.listdir(file_location+"temp"):
-            for eigenvec in os.listdir(file_location+"temp//"+kernel_name):
-                mol_temp = rgmol.extract_cube.extract(file_location+"temp//"+kernel_name+"//"+eigenvec)
-
-                if kernel_name == "linear_response":
-                    linear_response_eigenvectors.append(mol_temp.properties["cube"])
-                elif kernel_name == "softness_kernel":
-                    softness_kernel_eigenvectors.append(mol_temp.properties["cube"])
-
-                os.remove(file_location+"temp//"+kernel_name+"//"+eigenvec)
-            os.remove(file_location+"temp//"+kernel_name)
-        os.remove(file_location+"temp")
-
-        if len(linear_response_eigenvectors) != 0:
-            self.properties["linear_response_eigenvectors"] = linear_response_eigenvectors
-        if len(softness_kernel_eigenvectors) != 0:
-            self.properties["softness_kernel_eigenvectors"] = softness_kernel_eigenvectors
-
-        print("######################################")
-        print("# Finished Extracting the eigenmodes #")
-        print("# in {:3.3f} #".format(time.time()-time_before_extract))
-        print("######################################")
 
     if "linear_response_eigenvalues.txt" in listdir_rgmol:
         linear_response_eigenvalues = np.loadtxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt")

@@ -103,7 +103,7 @@ def calculate_overlap_matrix_multithread(mol,Psi,nprocs):
 
 
 
-def _product_MO_calc(mol,list_add_transition,transitions,nocc,nvirt,index_move,transition_density_coefficients):
+def _product_MO_calc(mol,MO,list_add_transition,transitions,nocc,nvirt,index_move,transition_density_coefficients):
 
     num_transitions = len(transition_density_coefficients)
 
@@ -111,9 +111,7 @@ def _product_MO_calc(mol,list_add_transition,transitions,nocc,nvirt,index_move,t
         if transitions[index]:
             occ,virt = np.unravel_index(index+index_move,(nocc,nvirt))
 
-            MO_OCC = mol.calculate_MO_chosen(occ)
-            MO_VIRT = mol.calculate_MO_chosen(virt)
-            MO_product = MO_OCC * MO_VIRT
+            MO_product = MO[occ] * MO[virt]
 
             transition_coeffs = transition_density_coefficients[:,occ,virt]
             for transition in range(num_transitions):
@@ -176,7 +174,7 @@ def calculate_transition_density_multithread(mol,transitions,transition_density_
     list_transitions,list_X = _divide_bool(transitions.ravel(),nprocs)
 
     for list_transition,index_move,index_proc in zip(list_transitions,list_X,range(nprocs)):
-        thread = th.Thread(target=_product_MO_calc,args=(mol,list_add_transitions[index_proc],list_transition,nocc,nvirt,index_move,transition_density_coefficients))
+        thread = th.Thread(target=_product_MO_calc,args=(mol,mol.properties["Reconstructed_MO"],list_add_transitions[index_proc],list_transition,nocc,nvirt,index_move,transition_density_coefficients))
         list_th.append(thread)
         thread.start()
 
@@ -245,14 +243,14 @@ def multithreading_reconstruct_eigenvectors(transitions,eigenvectors,nprocs):
     return reconstructed_eigenvectors
 
 ##
-def _reconstruct_atomic_grids(mol,reconstructed_eigenvectors,transitions,eigenvectors,index):
+def _reconstruct_atomic_grids(mol,reconstructed_eigenvectors,reconstructed_eigenvector_norms,transitions,eigenvectors,index):
 
     N_grids,N_trans,N_r,N_ang = np.shape(transitions)
 
     for eigenvector,index_eig in zip(eigenvectors,range(len(eigenvectors))):
         reconstructed_eigenvector = np.einsum("j,ijkl->ikl",eigenvector,transitions)
         reconstructed_eigenvector_norm = mol.mol_grids.integrate_product(reconstructed_eigenvector,reconstructed_eigenvector)
-
+        reconstructed_eigenvector_norms[index+index_eig] = reconstructed_eigenvector_norm
         reconstructed_eigenvectors[index+index_eig] = reconstructed_eigenvector/reconstructed_eigenvector_norm**(1/2)
 
 
@@ -268,17 +266,18 @@ def multithreading_reconstruct_eigenvectors_atomic_grids(mol,transitions,eigenve
 
     list_eigenvectors,list_index = _divide_eigenvectors(eigenvectors,nprocs)
     reconstructed_eigenvectors = [np.zeros((N_grids,N_r,N_ang)) for k in range(N_trans)]
+    reconstructed_eigenvector_norms = [0 for k in range(N_trans)]
 
     list_th = []
     for eigenvectors,index in zip(list_eigenvectors,list_index):
-        thread = th.Thread(target=_reconstruct_atomic_grids,args=(mol,reconstructed_eigenvectors,transitions,eigenvectors,index))
+        thread = th.Thread(target=_reconstruct_atomic_grids,args=(mol,reconstructed_eigenvectors,reconstructed_eigenvector_norms,transitions,eigenvectors,index))
         list_th.append(thread)
         thread.start()
 
     for thread in list_th:
         thread.join()
 
-    return np.array(reconstructed_eigenvectors)
+    return np.array(reconstructed_eigenvectors),np.array(reconstructed_eigenvector_norms)
 
 
 

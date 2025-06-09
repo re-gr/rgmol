@@ -451,9 +451,9 @@ def create_rectilinear_grid_from_molecule(mol,grid_points=(80,80,80),delta=7):
 
 
 
-def create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None):
+def create_grid_from_mol(mol,N_r=None,d_leb=None,zeta_list=None,alpha_list=None):
     """
-    create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None)
+    create_grid_from_mol(mol,N_r=None,d_leb=None,zeta_list=None,alpha_list=None)
 
     Creates atomic grids for all the atoms in the molecule.
     For more details on the atomic grids, see :doc:`create_atomic_grid<create_atomic_grid>`
@@ -462,11 +462,11 @@ def create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_
     ----------
         mol : molecule
             The molecule for which the grids will be computed
-        N_r_list : list, optional
-            The list of the number of points in the radial part.
+        N_r : list, optional
+            The number of radial points for each atomic grid
             If not provided, an already optimized value will be used
-        d_leb_list : list, optional
-            The order of Lebedev quadrature used
+        d_leb : list, optional
+            The order of Lebedev quadrature used for each atomic grid
             If not provided, an already optimized value will be used
         zeta_list : list, optional
             The zeta parameter, more info on :doc:`create_atomic_grid<create_atomic_grid>`
@@ -485,11 +485,21 @@ def create_grid_from_mol(mol,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_
         return
 
     list_grids = []
-    for atom,index_atom in zip(mol.atoms,range(len(mol.atoms))):
-        N_r, d_leb, zeta, alpha = None, None, None, None
 
-        if N_r_list: N_r = N_r_list[index_atom]
-        if d_leb_list: d_leb = d_leb_list[index_atom]
+    N_r_list = []
+    d_leb_list = []
+    for atom in mol.atoms:
+        if not N_r:
+            N_r = dict_N_r[atom.name]
+        if not d_leb:
+            d_leb = dict_d_leb[atom.name]
+        N_r_list.append(N_r)
+        d_leb_list.append(d_leb)
+    d_leb = np.max(d_leb_list)
+    N_r_list = np.max(N_r_list)
+
+    for atom,index_atom in zip(mol.atoms,range(len(mol.atoms))):
+        zeta, alpha = None, None
         if alpha_list: alpha = alpha_list[index_atom]
         if zeta_list: zeta = zeta_list[index_atom]
 
@@ -544,10 +554,7 @@ def create_atomic_grid(atom,N_r=None,d_leb=None,zeta=None,alpha=None):
         .. [1] Treutler, O.; Ahlrichs, R.The Journal of Chemical Physics1995,102,346–354.
         .. [2] Lebedev, V. I.; Laikov, D. N. InDoklady Mathematics, 1999; Vol. 59,pp 477–481.
     """
-    if not N_r:
-        N_r = dict_N_r[atom.name]
-    if not d_leb:
-        d_leb = dict_d_leb[atom.name]
+
     if not zeta:
         zeta = dict_zeta[atom.name]
     if not alpha:
