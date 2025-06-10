@@ -21,20 +21,23 @@ from rgmol.grid import *
 
 def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
     """
-    calculate_AO(grid_points=(80,80,80))
+    calculate_AO(mol,grid_points=(80,80,80),detla=5)
 
-    Calculate all atomic orbitals for a molecule and puts it in molecule.properties["AO_calculated"]
-    If no voxel were associated with the molecule, it will automatically create a voxel
+    Calculate all atomic orbitals for a molecule on the representation grid
+    If no representation grids were associated with the molecule, it will automatically create it
 
     Parameters
     ----------
-        grid_points : list of 3
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
         delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
+            the length added on all directions to the box containing all atomic centers
 
     Returns
     -------
-        AO_calculated : list of ndarray
+        coords, AO_calculated
     """
 
     if "Reconstructed_AO" in mol.properties:
@@ -76,7 +79,6 @@ def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
             for ao in AO_calc:
                 AO_calculated.append(ao)
 
-
     time_taken = time.time() - time_before_calc
     print("###########################################")
     print("# Finished Reconstructing Atomic Orbitals #")
@@ -91,22 +93,24 @@ def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
 
 def reconstruct_chosen_MO(mol,MO_chosen,grid_points=(80,80,80),delta=5):
     """
-    calculate_MO(grid_points)
+    calculate_MO(mol,grid_points=(80,80,80),delta=5)
 
-    Calculate all molecular orbitals for a molecule and puts it in molecule.properties["MO_calculated"]
-
-    If no voxel were associated with the molecule, it will automatically create a voxel
-    If the AO were not calculated it will also calculate them
+    Calculate all molecular orbitals for a molecule on the representation grid
+    If no representation grids were associated with the molecule, it will automatically create it
+    If the AO were not calculated on this grid, it will also calculate them
 
     Parameters
     ----------
-        grid_points : list of 3
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
         delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
+            the length added on all directions to the box containing all atomic centers
 
     Returns
     -------
-        MO_calculated : list of ndarray
+        coords, MO_calculated
     """
 
     if "Reconstructed_MO" in mol.properties:
@@ -123,22 +127,24 @@ def reconstruct_chosen_MO(mol,MO_chosen,grid_points=(80,80,80),delta=5):
 
 def reconstruct_MO(mol,grid_points=(80,80,80),delta=5):
     """
-    calculate_MO(grid_points)
+    calculate_MO(mol,grid_points=(80,80,80),delta=5)
 
-    Calculate all molecular orbitals for a molecule and puts it in molecule.properties["MO_calculated"]
-
-    If no voxel were associated with the molecule, it will automatically create a voxel
-    If the AO were not calculated it will also calculate them
+    Calculate all molecular orbitals for a molecule on the representation grid
+    If no representation grids were associated with the molecule, it will automatically create it
+    If the AO were not calculated on this grid, it will also calculate them
 
     Parameters
     ----------
-        grid_points : list of 3
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
         delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
+            the length added on all directions to the box containing all atomic centers
 
     Returns
     -------
-        MO_calculated : list of ndarray
+        coords, MO_calculated
     """
 
     if "Reconstructed_MO" in mol.properties:
@@ -177,22 +183,24 @@ def reconstruct_MO(mol,grid_points=(80,80,80),delta=5):
 
 def reconstruct_electron_density(mol,grid_points=(80,80,80),delta=5):
     """
-    calculate_electron_density(grid_points,delta=5)
+    calculate_electron_density(mol,grid_points=(80,80,80),delta=5)
 
-    Calculates the electron density for a molecule and puts it in molecule.properties["electron_density"]
-
-    If no voxel were associated with the molecule, it will automatically create a voxel
-    If the MO were not calculated it will also calculate them
+    Calculates the electron density for a molecule on the representation grid
+    If no representation grids were associated with the molecule, it will automatically create it
+    If the MO were not calculated on this grid, it will also calculate them
 
     Parameters
     ----------
-        grid_points : list of 3
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
         delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
+            the length added on all directions to the box containing all atomic centers
 
     Returns
     -------
-        electron_density : ndarray
+        coords, electron_density
     """
 
     coords,MO_calculated = reconstruct_MO(mol,grid_points=grid_points,delta=delta)
@@ -216,11 +224,11 @@ def reconstruct_electron_density(mol,grid_points=(80,80,80),delta=5):
 
 
 
-def reconstruct_fukui_function(self,mol_p=None,mol_m=None,grid_points=(80,80,80),delta=5):
+def reconstruct_fukui_function(mol,mol_p=None,mol_m=None,grid_points=(80,80,80),delta=5):
     """
-    calculate_fukui_function(mol_p=None,mol_m=None,grid_points=(80,80,80),delta=10)
+    calculate_fukui_function(mol,mol_p=None,mol_m=None,grid_points=(80,80,80),delta=5)
 
-    Calculates the fukui function using finite differences between electron density.
+    Calculates the fukui function using finite differences between electron density on the representation grid.
     If mol_p is provided, f+ will be computed.
     If mol_m is provided, f- will be computed.
     If both are provided, f+, f- and f0 will be computed.
@@ -228,19 +236,16 @@ def reconstruct_fukui_function(self,mol_p=None,mol_m=None,grid_points=(80,80,80)
 
     Parameters
     ----------
-    grid_points : list of 3
-    delta : float, optional
-        the length added on all directions of the box containing all atomic centers
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
+        delta : float, optional
+            the length added on all directions to the box containing all atomic centers
 
     Returns
     -------
-    f0
-        the f0 fukui function
-    fp
-        the f+ fukui function
-    fm
-        the f- fukui function
-
+        coords, f0, fp, fm
 
     Notes
     -----
@@ -253,9 +258,9 @@ def reconstruct_fukui_function(self,mol_p=None,mol_m=None,grid_points=(80,80,80)
     if not(mol_p) and not(mol_m):
         raise TypeError("Need at least the molecule with N+1 or N-1 number of electrons")
 
-    if not "Reconstructed_electron_density" in self.properties:
-        coords,elec_dens = reconstruct_electron_density(self,grid_points=grid_points,delta=delta)
-    rhoN = self.properties["Reconstructed_electron_density"]
+    if not "Reconstructed_electron_density" in mol.properties:
+        coords,elec_dens = reconstruct_electron_density(mol,grid_points=grid_points,delta=delta)
+    rhoN = mol.properties["Reconstructed_electron_density"]
 
     if mol_p:
         #calculate f+
@@ -294,20 +299,22 @@ def reconstruct_fukui_function(self,mol_p=None,mol_m=None,grid_points=(80,80,80)
 
 def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
     """
-    calculate_transition_density(grid_points,delta=3)
+    calculate_transition_density(mol,grid_points,grid_points=(80,80,80),delta=5)
 
-    Calculates all the transition densities for a molecule
+    Calculates all the transition densities for a molecule on the representation grid
 
     Parameters
     ----------
-        grid_points : list of 3
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
         delta : float, optional
             the length added on all directions to the box containing all atomic centers
 
     Returns
     -------
-        transition_density_list
-
+        coords, transition_density_list
 
     Notes
     -----
@@ -413,21 +420,24 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
 
 def reconstruct_chosen_transition_density(mol,chosen_transition_density,grid_points=(80,80,80),delta=5):
     """
-    calculate_chosen_transition_density(chosen_transition_density,grid_points,delta=3)
+    calculate_chosen_transition_density(mol,chosen_transition_density,grid_points=(80,80,80),delta=5)
 
-    Calculates a chosen transition density for a molecule
+    Calculates a chosen transition density for a molecule on the representation grid
 
     Parameters
     ----------
+        mol : molecule
+            the molecule
         chosen_transition_density : int
-        grid_points : list of 3
+            the index of the chosen transition_density
+        grid_points : list of 3, optional
+            the number of points on the representation grid
         delta : float, optional
-            the length added on all directions of the box containing all atomic centers
+            the length added on all directions to the box containing all atomic centers
 
     Returns
     -------
         transition_density
-
 
     Notes
     -----
@@ -481,12 +491,33 @@ def reconstruct_chosen_transition_density(mol,chosen_transition_density,grid_poi
         transition_density += transition_MO[1][0] * MO_OCC * MO_VIRT
 
     mol.properties["Reconstructed_transition_density_list"][chosen_transition_density] = transition_density
-    return transition_density
+    return coords,transition_density
 
 
 def reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=None,mol_m=None,fukui_type="0"):
     """
+    reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=None,mol_m=None,fukui_type="0")
 
+    Calculates the eigenmodes of a kernel for a molecule on the representation grid
+
+    Parameters
+    ----------
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
+        delta : float, optional
+            the length added on all directions to the box containing all atomic centers
+        mol_p : molecule, optional
+            The molecule with an electron added. Needed for calculating the softness kernel with a fukui_type of "0" or "+"
+        mol_m : molecule, optional
+            The molecule with an electron removed. Needed for calculating the softness kernel with a fukui_type of "0" or "-"
+        fukui_type : molecule, optional
+            The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
+
+    Returns
+    -------
+        coords, reconstructed_eigenvectors
     """
     nprocs = rgmol.nprocs
     nx,ny,nz = grid_points

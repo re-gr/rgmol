@@ -300,7 +300,9 @@ class grid:
 
         return Int
 
-
+#################
+## Cubic grids ##
+#################
 
 def create_cubic_grid_from_molecule(mol,grid_points,delta=5):
     """
@@ -384,7 +386,7 @@ def create_rectilinear_grid_from_molecule(mol,grid_points=(80,80,80),delta=7):
     """
     create_cubic_grid_from_molecule(mol,grid_points=(80,80,80),delta=7)
 
-    Creates a cubic voxel from the position of atoms in a molecule
+    Creates a rectilinear grid from the position of atoms in a molecule
 
     Parameters
     ----------
@@ -449,7 +451,9 @@ def create_rectilinear_grid_from_molecule(mol,grid_points=(80,80,80),delta=7):
     return r,[x_tot,y_tot,z_tot]
 
 
-
+##################
+## Atomic grids ##
+##################
 
 def create_grid_from_mol(mol,N_r=None,d_leb=None,zeta_list=None,alpha_list=None):
     """
@@ -599,27 +603,6 @@ def create_atomic_grid(atom,N_r=None,d_leb=None,zeta=None,alpha=None):
     grid_i = grid(coords,atom.pos,"atomic",coords_gc=x,dV=dV)
 
     return grid_i
-
-# def create_grid_atom_lin(atom,N_r,N_ang,R=1):
-#
-#
-#     Theta = (np.arange(N_ang)*np.pi/N_ang).reshape((1,1,N_ang))
-#     Phi = (np.arange(N_ang)*2*np.pi/N_ang).reshape((1,N_ang,1))
-#
-#     r_0 = np.cos((np.arange(N_r)+1)/(N_r+1) *np.pi) #Gauss Chebyshev Type 2
-#     r_0 = r_0 - (r_0==1)*0.001 #Convert x=1 to x=0.999
-#     r = R*(1+r_0)/(1-r_0) #Becke Transform
-#
-#     r = r.reshape((N_r,1,1))
-#
-#     coords = r.reshape((1,N_r,1,1))*np.array([1.,0,0]).reshape((3,1,1,1)) + \
-#              Theta.reshape((1,1,N_ang,1))*np.array([0,1.,0]).reshape((3,1,1,1)) + \
-#              Phi.reshape((1,1,1,N_ang))*np.array([0,0,1.]).reshape((3,1,1,1))
-#
-#
-#     grid_i = grid(coords,atom.pos,"atomic",R=R,coords_gc=r_0)
-#
-#     return grid_i
 
 
 

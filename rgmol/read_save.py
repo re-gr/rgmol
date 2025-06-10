@@ -140,37 +140,37 @@ def write_cube(self,cube,file_name,description="cube"):
     with open(file_name,"w") as file:
         file.writelines(Lines)
 
-def write_txt(self,cube,file_name):
-    """
-    write_txt(cube,file_name)
-
-    This functions writes a txt file containing a 3D array.
-    This method is not the preferred one, just use mol.save()
-
-    Parameters
-    ----------
-        cube : ndarray
-            The cube file to save
-        file_name : str
-            The name of the file
-
-    Returns
-    -------
-        None
-            The file is written
-    """
-
-    grid_points = self.properties["grid_points"]
-    nx,ny,nz = grid_points
-    comments = ""
-    for coord in grid_points:
-        comments += str(coord) + " "
-
-    np.savetxt(file_name,cube.reshape((nx*ny,nz)),header=comments,fmt="%3.6e")
+# def write_txt(self,cube,file_name):
+#     """
+#     write_txt(cube,file_name)
+#
+#     This functions writes a txt file containing a 3D array.
+#     This method is not the preferred one, just use mol.save()
+#
+#     Parameters
+#     ----------
+#         cube : ndarray
+#             The cube file to save
+#         file_name : str
+#             The name of the file
+#
+#     Returns
+#     -------
+#         None
+#             The file is written
+#     """
+#
+#     grid_points = self.properties["grid_points"]
+#     nx,ny,nz = grid_points
+#     comments = ""
+#     for coord in grid_points:
+#         comments += str(coord) + " "
+#
+#     np.savetxt(file_name,cube.reshape((nx*ny,nz)),header=comments,fmt="%3.6e")
 
 
 molecule.write_cube = write_cube
-molecule.write_txt = write_txt
+# molecule.write_txt = write_txt
 
 
 
@@ -198,7 +198,6 @@ def save(self,kernel,append_name=""):
 
     This function saves the eignemodes of the already computed kernels in a folder called rgmol.
     The rgmol folder is located in the same folder as the input file used for the molecule.
-    By default the extension used is npy as it is the faster method.
 
     Parameters
     ----------
@@ -290,6 +289,8 @@ def read(self,append_name="",nb_eigen=0):
     ----------
         append_name : str, optional
             A string to append to the name of the rgmol folder.
+        nb_eigen : int, optional
+            How many eigenmodes will be extracted
 
     Returns
     -------

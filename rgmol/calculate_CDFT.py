@@ -28,9 +28,10 @@ def calculate_fukui_function(self,mol_p=None,mol_m=None):
 
     Parameters
     ----------
-    grid_points : list of 3
-    delta : float, optional
-        the length added on all directions of the box containing all atomic centers
+    mol_p : molecule, optional
+        A molecule with the same atoms and positions, but with an extra electron. By default None
+    mol_m : molecule, optional
+        A molecule with the same atoms and positions, but with an electron less. By default None
 
     Returns
     -------
@@ -132,12 +133,10 @@ def calculate_eigenmodes_linear_response_function(self):
     This method does not calculate directly the linear response, but only the eigenmodes.
     The mathematics behind this function will soon be available somewhere...
 
-
     Parameters
     ----------
-    grid_points : list of 3
-    delta : float, optional
-        the length added on all directions of the box containing all atomic centers
+        None
+            All the data should be inside the molecule. Needs TD-DFT and molden properties
 
     Returns
     -------
@@ -241,13 +240,12 @@ def calculate_eigenmodes_linear_response_function(self):
 
 def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=None):
     """
-    calculate_softness_kernel_eigenmodes(fukui_type="0",mol_p=None,mol_m=None,grid_points=(100,100,100),delta=10)
+    calculate_softness_kernel_eigenmodes(fukui_type="0",mol_p=None,mol_m=None)
 
     Calculates the softness kernel from the transition densities and the fukui function using the Parr-Berkowitz relation.
     For that, a calculation adding (mol_p) or removing an electron (mol_m) needs to be done with the same geometry.
     This method does not calculate directly the softness kernel, but only the eigenmodes.
     The mathematics behind this function will soon be available somewhere...
-
 
     Parameters
     ----------
@@ -257,9 +255,6 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
         The molecule with an electron removed. Needed for calculating the softness kernel with a fukui_type of "0" or "-"
     fukui_type : molecule, optional
         The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
-    grid_points : list of 3
-    delta : float, optional
-        the length added on all directions of the box containing all atomic centers
 
     Returns
     -------
@@ -400,8 +395,26 @@ molecule.calculate_softness_kernel_eigenmodes = calculate_softness_kernel_eigenm
 
 def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2,3,4,5]):
     """
-    do analysis
-    list vector starting from 1
+    analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2,3,4,5])
+
+    Computes some analysis of the eigenmodes of the linear_response_function or the softness_kernel.
+    The kernels must be computed beforehand.
+    The analysis are : Percentage of occupied MO in the mode, percentage of virtual MO in the mode.
+    For the softness kernel, the proportion of electron transferred in each mode.
+    These quantities will be stored in mol.properties["from_occ"], "to_virt", and "fukui_decomposition"
+    :doc:`plot_analysis<../plot/plot_analysis>` can be used to plot these quantities
+
+    Parameters
+    ----------
+        kernel : str
+            The kernel on which the analysis will be made. Either "linear_reponse_function" or "softness_kernel"
+        list_vectors : list, optional
+            The list of the vectors that will be decomposed on Occupied Virtual orbitals. Starting to 1 instead of 0. By default [1,2,3,4,5]
+
+    Returns
+    -------
+        None
+
     """
 
     if kernel == "linear_response_function":
@@ -475,7 +488,7 @@ def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2
     if kernel == "softness_kernel":
         self.properties["fukui_decomposition"] = fukui_decomposition
 
-
+    return
 
 
 molecule.analysis_eigenmodes = analysis_eigenmodes
@@ -483,70 +496,70 @@ molecule.analysis_eigenmodes = analysis_eigenmodes
 
 ##TEMPO
 
-
-def calculate_overlaps(self):
-    """
-    calculate_eigenmodes_linear_response_function()
-
-    Calculates the linear response function from the transition densities.
-    This method does not calculate directly the linear response, but only the eigenmodes.
-    The mathematics behind this function will soon be available somewhere...
-
-
-    Parameters
-    ----------
-    grid_points : list of 3
-    delta : float, optional
-        the length added on all directions of the box containing all atomic centers
-
-    Returns
-    -------
-    linear_response_eigenvalues
-        the eigenvalues of the linear response function
-    linear_response_eigenvectors
-        the eigenvectors of the linear response function
-
-    Notes
-    -----
-    The linear response function kernel can be computed as :
-
-    :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
-
-    With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
-
-    Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
-    """
-
-    if not "transition_density_list" in self.properties:
-        self.calculate_transition_density()
-
-    #Dummy implementation for now
-    transition_density_list = self.properties["transition_density_list"]
-    transition_energy = np.array(self.properties['transition_energy'])
-
-    N_grids,N_trans,N_r,N_ang = np.shape(transition_density_list)
-
-    nprocs = rgmol.nprocs
-
-    print("#################################")
-    print("# Calculating Eigenmodes of LRF #")
-    print("#################################")
-    time_before_calc = time.time()
-
-    if nprocs >1:
-        transition_matrix = calculate_overlap_matrix_multithread(self,transition_density_list,nprocs)
-    else:
-        transition_matrix = np.zeros((N_trans,N_trans))
-        for first_transition in range(N_trans):
-            for second_transition in range(first_transition+1):
-                overlap_integral = 0
-                for grid,index_grid in zip(self.mol_grids.grids,range(N_grids)):
-                    overlap_integral += grid.integrate(transition_density_list[index_grid,first_transition] * transition_density_list[index_grid,second_transition])
-
-                transition_matrix[first_transition,second_transition] = overlap_integral
-                transition_matrix[second_transition,first_transition] = overlap_integral
-    D = np.diag(-2/transition_energy).dot(transition_matrix)
-
-    return D
-
-molecule.calculate_overlaps = calculate_overlaps
+#
+# def calculate_overlaps(self):
+#     """
+#     calculate_overlaps()
+#
+#     Calculates the linear response function from the transition densities.
+#     This method does not calculate directly the linear response, but only the eigenmodes.
+#     The mathematics behind this function will soon be available somewhere...
+#
+#
+#     Parameters
+#     ----------
+#     grid_points : list of 3
+#     delta : float, optional
+#         the length added on all directions of the box containing all atomic centers
+#
+#     Returns
+#     -------
+#     linear_response_eigenvalues
+#         the eigenvalues of the linear response function
+#     linear_response_eigenvectors
+#         the eigenvectors of the linear response function
+#
+#     Notes
+#     -----
+#     The linear response function kernel can be computed as :
+#
+#     :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
+#
+#     With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
+#
+#     Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
+#     """
+#
+#     if not "transition_density_list" in self.properties:
+#         self.calculate_transition_density()
+#
+#     #Dummy implementation for now
+#     transition_density_list = self.properties["transition_density_list"]
+#     transition_energy = np.array(self.properties['transition_energy'])
+#
+#     N_grids,N_trans,N_r,N_ang = np.shape(transition_density_list)
+#
+#     nprocs = rgmol.nprocs
+#
+#     print("#################################")
+#     print("# Calculating Eigenmodes of LRF #")
+#     print("#################################")
+#     time_before_calc = time.time()
+#
+#     if nprocs >1:
+#         transition_matrix = calculate_overlap_matrix_multithread(self,transition_density_list,nprocs)
+#     else:
+#         transition_matrix = np.zeros((N_trans,N_trans))
+#         for first_transition in range(N_trans):
+#             for second_transition in range(first_transition+1):
+#                 overlap_integral = 0
+#                 for grid,index_grid in zip(self.mol_grids.grids,range(N_grids)):
+#                     overlap_integral += grid.integrate(transition_density_list[index_grid,first_transition] * transition_density_list[index_grid,second_transition])
+#
+#                 transition_matrix[first_transition,second_transition] = overlap_integral
+#                 transition_matrix[second_transition,first_transition] = overlap_integral
+#     D = np.diag(-2/transition_energy).dot(transition_matrix)
+#
+#     return D
+#
+# molecule.calculate_overlaps = calculate_overlaps

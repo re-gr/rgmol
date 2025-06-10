@@ -281,7 +281,7 @@ def calculate_AO(self):
     Parameters
     ----------
         None
-            If no grids were computed, a new one will be automatically created
+            All the data needed should already be inside the molecule object
 
     Returns
     -------
@@ -295,7 +295,7 @@ def calculate_AO(self):
     N_grids = len(mol_grids.grids)
 
     if not "AO_list" in self.properties:
-        raise TypeError("The Atomic Orbital functions were not found.")
+        raise TypeError("The Atomic Orbital functions were not found. Please extract them from a molden file")
 
     AO_list = self.properties["AO_list"]
     AO_type_list = self.properties["AO_type_list"]
@@ -336,7 +336,7 @@ def calculate_AO(self):
     Ints = np.array(Ints).reshape((N_grids,len(AO_calculated)))
     Ints = np.sum(Ints,axis=0).reshape((1,len(AO_calculated),1,1))
     #Renormalize the results. They should be around 1-1e-10 before normalization though
-    # AO_calculated_list = AO_calculated_list / Ints**(1/2)
+    AO_calculated_list = AO_calculated_list / Ints**(1/2)
 
     self.properties["AO_calculated_list"] = np.array(AO_calculated_list)
 
@@ -360,11 +360,13 @@ def calculate_MO(self):
 
     If no grids were associated with the molecule, it will automatically create all atomic grids
     If the AO were not calculated it will also calculate them
+    By default the MO are normalized to the occupancy of the MO
+    That means that in restricted calculations, they are normalized to 2
 
     Parameters
     ----------
         None
-            If no grids were computed, a new one will be automatically created
+            All the data needed should already be inside the molecule object
 
     Returns
     -------
@@ -419,25 +421,24 @@ def calculate_MO(self):
 
 def calculate_MO_chosen(self,MO_chosen):
     """
-    calculate_MO_chosen(MO_chosen,grid_points,delta=3)
+    calculate_MO_chosen(MO_chosen)
 
     Calculate a molecular orbitals for a molecule and puts it in molecule.properties["MO_calculated"][MO_chosen]
 
-    If no voxel were associated with the molecule, it will automatically create a voxel
+    If no grids were associated with the molecule, it will automatically create all atomic grids
     If the AO were not calculated it will also calculate them
-
+    By default the MO are normalized to the occupancy of the MO
+    That means that in restricted calculations, they are normalized to 2
 
     Parameters
     ----------
         MO_chosen : int
             the number of the molecular orbital starting at 0
-        grid_points : list of 3
-        delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
 
     Returns
     -------
         MO_calculated_list : ndarray
+
     """
     if not "AO_calculated" in self.properties:
         calculate_AO(self)
@@ -479,9 +480,8 @@ def calculate_electron_density(self):
 
     Parameters
     ----------
-        grid_points : list of 3
-        delta : float, optional
-            the length added on all directiosn to the box containing all atomic centers
+        None
+            All the data should already be inside the molecule object
 
     Returns
     -------
@@ -507,7 +507,6 @@ def calculate_electron_density(self):
 
 molecule.calculate_AO = calculate_AO
 molecule.calculate_MO = calculate_MO
-# molecule.calculate_occupied_MO = calculate_occupied_MO
 molecule.calculate_MO_chosen = calculate_MO_chosen
 molecule.calculate_electron_density = calculate_electron_density
 
@@ -518,20 +517,19 @@ molecule.calculate_electron_density = calculate_electron_density
 
 def calculate_transition_density(self):
     """
-    calculate_transition_density(grid_points,delta=3)
+    calculate_transition_density()
 
     Calculates all the transition densities for a molecule
+    If the MO were not calculated it will also calculate them
 
     Parameters
     ----------
-        grid_points : list of 3
-        delta : float, optional
-            the length added on all directions to the box containing all atomic centers
+        None
+            All the data should already be inside the molecule object
 
     Returns
     -------
         transition_density_list
-
 
     Notes
     -----
