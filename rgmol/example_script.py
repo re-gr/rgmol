@@ -47,27 +47,27 @@ if __name__=="__main__":
     if False:
         file = rgmol.examples.molden_H2CO
         mol = rgmol.extract_molden.extract(file,do_order_bonds=1)
-        mol.plot_AO(delta=5,grid_points=(80,80,80))
+        mol.plot_AO()
 
     ## Visualization of Molecular Orbitals
     if False:
         file = rgmol.examples.molden_H2CO
         mol = rgmol.extract_molden.extract(file,do_order_bonds=1)
-        mol.plot_MO(delta=8,grid_points=(80,80,80))
+        mol.plot_MO()
 
     ## Visualization of Transition Densities
     if False:
         file = rgmol.examples.molden_H2CO
         mol = rgmol.extract_molden.extract(file,do_order_bonds=1)
         rgmol.extract_orca.extract_properties(rgmol.examples.orca_H2CO,mol=mol)
-        mol.plot_transition_density(delta=5,grid_points=(100,100,100),opacity_radius=.4)
+        mol.plot_transition_density()
 
     ## Visualization of Diagonalized Non-Condensed Kernel : Linear response function
     if False:
         file = rgmol.examples.molden_H2CO
         mol = rgmol.extract_molden.extract(file,do_order_bonds=1)
         rgmol.extract_orca.extract_properties(rgmol.examples.orca_H2CO,mol=mol)
-        mol.plot_diagonalized_kernel(kernel="linear_response_function",grid_points=(80,80,80),delta=10)
+        mol.plot_diagonalized_kernel(kernel="linear_response_function")
 
     ## Visualization of Diagonalized Non-Condensed Kernel : Softness kernel
     if False:
@@ -78,7 +78,7 @@ if __name__=="__main__":
         file_m = rgmol.examples.molden_H2CO_m
         mol_m = rgmol.extract_molden.extract(file_m)
 
-        mol.plot_diagonalized_kernel(kernel="softness_kernel",mol_m=mol_m,fukui_type="f-",grid_points=(80,80,80),delta=10)
+        mol.plot_diagonalized_kernel(kernel="softness_kernel",mol_m=mol_m,fukui_type="f-")
 
     ## Visualization of Dipole moments
     if False:
