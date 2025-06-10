@@ -21,7 +21,7 @@ from rgmol.grid import *
 
 def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
     """
-    calculate_AO(mol,grid_points=(80,80,80),detla=5)
+    reconstruct_AO(mol,grid_points=(80,80,80),detla=5)
 
     Calculate all atomic orbitals for a molecule on the representation grid
     If no representation grids were associated with the molecule, it will automatically create it
@@ -93,9 +93,9 @@ def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
 
 def reconstruct_chosen_MO(mol,MO_chosen,grid_points=(80,80,80),delta=5):
     """
-    calculate_MO(mol,grid_points=(80,80,80),delta=5)
+    reconstruct_chosen_MO(mol,grid_points=(80,80,80),delta=5)
 
-    Calculate all molecular orbitals for a molecule on the representation grid
+    Calculate a chosen molecular orbitals for a molecule on the representation grid
     If no representation grids were associated with the molecule, it will automatically create it
     If the AO were not calculated on this grid, it will also calculate them
 
@@ -127,7 +127,7 @@ def reconstruct_chosen_MO(mol,MO_chosen,grid_points=(80,80,80),delta=5):
 
 def reconstruct_MO(mol,grid_points=(80,80,80),delta=5):
     """
-    calculate_MO(mol,grid_points=(80,80,80),delta=5)
+    reconstruct_MO(mol,grid_points=(80,80,80),delta=5)
 
     Calculate all molecular orbitals for a molecule on the representation grid
     If no representation grids were associated with the molecule, it will automatically create it
@@ -183,7 +183,7 @@ def reconstruct_MO(mol,grid_points=(80,80,80),delta=5):
 
 def reconstruct_electron_density(mol,grid_points=(80,80,80),delta=5):
     """
-    calculate_electron_density(mol,grid_points=(80,80,80),delta=5)
+    reconstruct_electron_density(mol,grid_points=(80,80,80),delta=5)
 
     Calculates the electron density for a molecule on the representation grid
     If no representation grids were associated with the molecule, it will automatically create it
@@ -226,7 +226,7 @@ def reconstruct_electron_density(mol,grid_points=(80,80,80),delta=5):
 
 def reconstruct_fukui_function(mol,mol_p=None,mol_m=None,grid_points=(80,80,80),delta=5):
     """
-    calculate_fukui_function(mol,mol_p=None,mol_m=None,grid_points=(80,80,80),delta=5)
+    reconstruct_fukui_function(mol,mol_p=None,mol_m=None,grid_points=(80,80,80),delta=5)
 
     Calculates the fukui function using finite differences between electron density on the representation grid.
     If mol_p is provided, f+ will be computed.
@@ -299,7 +299,7 @@ def reconstruct_fukui_function(mol,mol_p=None,mol_m=None,grid_points=(80,80,80),
 
 def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
     """
-    calculate_transition_density(mol,grid_points,grid_points=(80,80,80),delta=5)
+    reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5)
 
     Calculates all the transition densities for a molecule on the representation grid
 
@@ -381,7 +381,6 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
             transitions[occ,virt] = 1
             transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index]
     MO_occ = MO_calculated[:transi_occ_max]
-    print(np.shape(transition_density_coefficients),np.shape(MO_occ),np.shape(MO_calculated))
 
 
     # if nprocs > 1 and 0:
@@ -420,7 +419,7 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
 
 def reconstruct_chosen_transition_density(mol,chosen_transition_density,grid_points=(80,80,80),delta=5):
     """
-    calculate_chosen_transition_density(mol,chosen_transition_density,grid_points=(80,80,80),delta=5)
+    reconstruct_chosen_transition_density(mol,chosen_transition_density,grid_points=(80,80,80),delta=5)
 
     Calculates a chosen transition density for a molecule on the representation grid
 
@@ -469,7 +468,7 @@ def reconstruct_chosen_transition_density(mol,chosen_transition_density,grid_poi
         mol.properties["Reconstructed_transition_density_list"] = [[] for k in range(len(mol.properties["transition_list"]))]
 
     if type(mol.properties["Reconstructed_transition_density_list"][chosen_transition_density]) is not list:
-        return mol.properties["Reconstructed_transition_density_list"][chosen_transition_density]
+        return coords, mol.properties["Reconstructed_transition_density_list"][chosen_transition_density]
 
 
     transition_list = mol.properties["transition_list"][chosen_transition_density]

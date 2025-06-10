@@ -27,6 +27,8 @@ import rgmol.calculate_CDFT
 import rgmol.read_save
 import rgmol.plot_pyvista
 import rgmol.potential
+import rgmol.grid
+import rgmol.rectilinear_grid_reconstruction
 
 __version__ = "0.1.4.0"
 

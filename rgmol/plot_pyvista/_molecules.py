@@ -610,9 +610,9 @@ def plot_multiple_isodensities(base_name_file,list_files,plotted_isodensity="cub
 ## Plotting Atomic / Molecular Properties ##
 ############################################
 
-def plot_AO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_AO(self,grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_AO(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_AO(grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Atomic Orbitals of a molecule.
     Because no calculations are done, the Atomic Orbitals will be calculated on the representative grid.
@@ -623,7 +623,7 @@ def plot_AO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_rad
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the representative grid in each dimension. By default (100,100,100)
+            The number of points for the representative grid in each dimension. By default (80,80,80)
         delta : float, optional
             The length added in all directions for the construction of the representative grid. By default 5
         opacity : float, optional
@@ -678,9 +678,9 @@ def plot_AO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_rad
 
 
 
-def plot_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_MO(self,grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_MO(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_MO(grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Molecular Orbitals of a molecule.
     Because no calculations are done, the Molecular Orbitals will be calculated on the representative grid.
@@ -690,7 +690,7 @@ def plot_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_rad
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the representative grid in each dimension. By default (100,100,100)
+            The number of points for the representative grid in each dimension. By default (80,80,80)
         delta : float, optional
             The length added in all directions for the construction of the representative grid. By default 5
         opacity : float, optional
@@ -749,9 +749,9 @@ def plot_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_rad
 
 
 
-def plot_product_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_product_MO(self,grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_product_MO(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_product_MO(grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
     Plot the Molecular Orbitals of a molecule on the left and the right.
     The Molecular Orbitals will be calculated on the grid that will be defined by the number of grid points and around the molecule.
@@ -761,7 +761,7 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the representative grid in each dimension. By default (100,100,100)
+            The number of points for the representative grid in each dimension. By default (80,80,80)
         delta : float, optional
             The length added in all directions for the construction of the representative grid. By default 3
         cutoff : float, optional
@@ -864,9 +864,9 @@ def plot_product_MO(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,
 
 
 
-def plot_electron_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_electron_density(self,grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_electron_density(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_electron_density(grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Electron Density of a molecule.
@@ -878,7 +878,7 @@ def plot_electron_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,fac
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the representative grid in each dimension. By default (100,100,100)
+            The number of points for the representative grid in each dimension. By default (80,80,80)
         delta : float, optional
             The length added in all directions for the construction of the representative grid. By default 5
         cutoff : float, optional
@@ -924,9 +924,9 @@ def plot_electron_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,fac
 
 
 
-def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_fukui_function(mol_p=None,mol_m=None,fukui_type="0",grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_fukui_function(mol_p=None,mol_m=None,fukui_type="0",grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plots the fukui function desired.
@@ -946,7 +946,7 @@ def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(1
         fukui_type : molecule, optional
             The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
         grid_points : list of 3, optional
-            The number of points for the representative grid in each dimension. By default (100,100,100)
+            The number of points for the representative grid in each dimension. By default (80,80,80)
         delta : float, optional
             The length added in all directions for the construction of the representative grid. By default 5
         cutoff : float, optional
@@ -979,11 +979,11 @@ def plot_fukui_function(self,mol_p=None,mol_m=None,fukui_type="0",grid_points=(1
     coords,f0,fp,fm = rgmol.rectilinear_grid_reconstruction.reconstruct_fukui_function(self,mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
 
     if "0" in fukui_type:
-        fukui = self.properties["f0"]
+        fukui = f0
     elif "+" in fukui_type or "p" in fukui_type:
-        fukui = self.properties["f+"]
+        fukui = fp
     elif "-" in fukui_type or "m" in fukui_type:
-        fukui = self.properties["f-"]
+        fukui = fm
     else:
         raise ValueError('This kind of fukui function does not exist. Please chose between 0, + or -')
 
@@ -1097,9 +1097,9 @@ def plot_dipole_moment(self,opacity=0.8,factor=1,opacity_radius=1,factor_radius=
     plotter.show(full_screen=False)
 
 
-def plot_transition_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+def plot_transition_density(self,grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
     """
-    plot_transition_density(grid_points=(100,100,100),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+    plot_transition_density(grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
 
 
     Plot the Transition Densities of a molecule.
@@ -1112,7 +1112,7 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,f
     Parameters
     ----------
         grid_points : list of 3, optional
-            The number of points for the representative grid in each dimension. By default (100,100,100)
+            The number of points for the representative grid in each dimension. By default (80,80,80)
         delta : float, optional
             The length added in all directions for the construction of the representative grid. By default 5
         cutoff : float, optional
@@ -1170,7 +1170,7 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,f
 
     def create_mesh_transition_density(value,cutoff):
         transition_number = int(round(value))
-        transition_density_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_transition_density(self,transition_number-1,grid_points=grid_points,delta=delta)
+        coords,transition_density_calculated = rgmol.rectilinear_grid_reconstruction.reconstruct_chosen_transition_density(self,transition_number-1,grid_points=grid_points,delta=delta)
         plot_cube(plotter,coords,transition_density_calculated,opacity=opacity,factor=factor,cutoff=cutoff)
 
 
@@ -1195,16 +1195,16 @@ def plot_transition_density(self,grid_points=(100,100,100),delta=5,opacity=0.8,f
 
 
 
-def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",number_plotted_eigenvectors=100,do_construct_eigenvectors=False,try_reading=True,save=True ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),grid_points=(100,100,100),delta=5):
+def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",number_plotted_eigenvectors=100,try_reading=True,save=True ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),grid_points=(80,80,80),delta=5):
     """
-    plot_diagonalized_kernel(kernel,mol_p=None,mol_m=None,fukui_type="0",number_plotted_eigenvectors=100,do_construct_eigenvectors=0,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),grid_points=(100,100,100),delta=5)
+    plot_diagonalized_kernel(kernel,mol_p=None,mol_m=None,fukui_type="0",number_plotted_eigenvectors=100,try_reading=True,save=True,plotting_method="isodensity",number_isodensities=10 ,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000),grid_points=(80,80,80),delta=5)
 
     Calculate and diagonalize a kernel.
     The available kernels are : "linear_response_function" and "softness_kernel"
     Only the eigenmodes are computed using a method that does not calculate the whole kernel.
     All the computations will be done on the atomic grids.
 
-    In order to reconstruct the eigenmodes on the atomic grid, one needs to use the keyword "do_construct_eigenvectors".
+    The eigenmodes will also be computed on the atomic grids.
     One might consider using :doc:`plot_on_atomic_grid<plot_on_atomic_grid>` for visualization
 
     By default the eigenmodes will also be plotted on the representative grid using the calculations on the atomic grids.
@@ -1224,8 +1224,6 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
             The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
         number_plotted_eigenvectors : int, optional
             The Number of eigenvectors to be plotted. If 0, no plot will be produced. By default 100
-        do_construct_eigenvectors : bool, optional
-            Choose whether or not to construct the eigenvectors on the atomic grids. False by default
         try_reading : bool, optional
             If the eigenmodes were calculated and saved before, try reading them from the rgmol folder. If False, the computation will be remade. True by default
         save : bool, optional
@@ -1247,7 +1245,7 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
         window_size_screenshot : tuple, optional
             The size of the screenshots. By default (1000,1000)
         grid_points : list of 3, optional
-            The number of points for the representative grid in each dimension. By default (100,100,100)
+            The number of points for the representative grid in each dimension. By default (80,80,80)
         delta : float, optional
             The length added in all directions for the construction of the representative grid. By default 5
 
@@ -1275,7 +1273,7 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
                 print("# No previous calculations were found. #")
                 print("#   The eigenmodes will be computed.   #")
                 print("########################################")
-                self.calculate_eigenmodes_linear_response_function(do_construct_eigenvectors=do_construct_eigenvectors)
+                self.calculate_eigenmodes_linear_response_function()
             else:
                 print("#########################################")
                 print("#    Previous calculation found but     #")
@@ -1283,7 +1281,7 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
                 print("#########################################")
         elif not try_reading:
             did_read = 0
-            self.calculate_eigenmodes_linear_response_function(do_construct_eigenvectors=do_construct_eigenvectors)
+            self.calculate_eigenmodes_linear_response_function()
 
         # eigenvectors = self.properties["linear_response_eigenvectors"]
         eigenvalues = self.properties["linear_response_eigenvalues"]
@@ -1306,7 +1304,7 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
                 print("# No previous calculations were found. #")
                 print("#   The eigenmodes will be computed.   #")
                 print("########################################")
-                self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,do_construct_eigenvectors=do_construct_eigenvectors)
+                self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type)
             else:
                 print("#########################################")
                 print("#    Previous calculation found but     #")
@@ -1314,7 +1312,7 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
                 print("#########################################")
         elif not try_reading:
             did_read = 0
-            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,do_construct_eigenvectors=do_construct_eigenvectors)
+            self.calculate_softness_kernel_eigenmodes(mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type)
 
         # eigenvectors = self.properties["softness_kernel_eigenvectors"]
         eigenvalues = self.properties["softness_kernel_eigenvalues"]
@@ -1329,7 +1327,7 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
         raise TypeError("The kernel {} has not been implemented. The available kernels are : linear_response_function and softness_kernel".format(kernel))
 
     if save and not did_read:
-        self.save()
+        self.save(kernel)
 
     #Stop here if no eigenvectors are to be plotted
     if number_plotted_eigenvectors < 1:
@@ -1378,8 +1376,41 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
 
 
 
-def plot_analysis_kernel(self,kernel,list_vectors=[1,2,3,4,5],try_reading_diagonalized=1,save_diagonalized=1,mol_p=None,mol_m=None,fukui_type="0",save=0,file_name=""):
-    """analysis"""
+def plot_analysis_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",list_vectors=[1,2,3,4,5],try_reading_diagonalized=True,save_diagonalized=True,save=True,file_name="analysis"):
+    """
+    plot_analysis_kernel(kernel,mol_p=None,mol_m=None,fukui_type="0",list_vectors=[1,2,3,4,5],try_reading_diagonalized=True,save_diagonalized=True,save=1,file_name="analysis")
+
+    Computes and plot some analysis of the eigenmodes of the linear_response_function or the softness_kernel.
+    The analysis are : Percentage of occupied MO in the mode, percentage of virtual MO in the mode.
+    For the softness kernel, the proportion of electron transferred in each mode.
+    By default this will produce a file called analysis.png
+
+    Parameters
+    ----------
+        kernel : str
+            The kernel on which the analysis will be made. Either "linear_reponse_function" or "softness_kernel"
+        mol_p : molecule, optional
+            The molecule with an electron added. Needed for calculating the softness kernel with a fukui_type of "0" or "+"
+        mol_m : molecule, optional
+            The molecule with an electron removed. Needed for calculating the softness kernel with a fukui_type of "0" or "-"
+        fukui_type : molecule, optional
+            The type of fukui function used to calculate the softness kernel. The available types are "0", "+" or "-"
+        list_vectors : list, optional
+            The list of the vectors that will be decomposed on Occupied Virtual orbitals. Starting to 1 instead of 0. By default [1,2,3,4,5]
+        try_reading_diagonalized : bool, optional
+            If the eigenmodes will be read or not. By default True
+        save_diagonalized : bool, optional
+            If the eigenmodes will be saved or not. By default True
+        save : bool, optional
+            If the image is saved or showed. By default True
+        file_name : str, optional
+            The name of the file, the extension is not necessary as the default one is png. But if one wants to save in another format, putting the format will save the file in that format. By default "analysis"
+
+    Returns
+    -------
+        None
+            The image is either save or plotted
+    """
 
     if kernel == "linear_response_function":
         if not "linear_response_eigenvectors" in self.list_properties():
@@ -1403,10 +1434,11 @@ def plot_analysis_kernel(self,kernel,list_vectors=[1,2,3,4,5],try_reading_diagon
     plt.rcParams.update({'font.size': 15})
     plt.rcParams['svg.fonttype'] = 'none'
 
-    if kernel == "linear_respone_function":
+    if kernel == "linear_response_function":
         plt.subplot(1,2,1)
         for index in range(len(from_occ)):
             plt.plot(from_occ[index],"o-",color=colors[index],label=list_vectors[index])
+
     elif kernel == "softness_kernel":
         plt.subplot(2,2,1)
         for index in range(len(from_occ)):
@@ -1437,7 +1469,7 @@ def plot_analysis_kernel(self,kernel,list_vectors=[1,2,3,4,5],try_reading_diagon
         plt.plot(fukui_decomposition,"o-r")
         plt.xlabel("Eigenmode Index",size=17)
         plt.ylabel("Electron Transfer Coefficient",size=17)
-        plt.ylim(0,1)
+        # plt.ylim(0,1)
 
 
     plt.tight_layout()

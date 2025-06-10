@@ -124,7 +124,7 @@ class atom(object):
 
 class molecule(object):
     """
-    molecule(atoms,bonds,properties={},name=None)
+    molecule(atoms,bonds,properties={},name=None,file="",mol_grids=None)
 
     Constructs a molecule from atoms.
 
@@ -150,15 +150,17 @@ class molecule(object):
 
     Attributes
     ----------
-        name : str
         atoms : list
         bonds : list
         properties : dict
+        name : str
+        file : str
+        mol_grids : mol_grids
     """
 
-    def __init__(self,atoms,bonds,properties={},name=None,file=None,mol_grids=None):
+    def __init__(self,atoms,bonds,properties={},name=None,file="",mol_grids=None):
         """
-        molecule(atoms,bonds,properties={},name=None)
+        molecule(atoms,bonds,properties={},name=None,file="",mol_grids=None)
 
         Constructs a molecule from atoms.
 
@@ -184,10 +186,12 @@ class molecule(object):
 
         Attributes
         ----------
-            name : str
             atoms : list
             bonds : list
             properties : dict
+            name : str
+            file : str
+            mol_grids : mol_grids
         """
 
         self.name = name
