@@ -77,6 +77,8 @@ def extract_properties(file,mol=None):
 
     flag_excited_states = 0
 
+    D,P,M = [],[],[]
+
     for line in codecs.open(file, 'r',encoding="utf-8"):
 
         if "EXCITED STATES" in line:
@@ -142,15 +144,12 @@ def extract_properties(file,mol=None):
 
             if "ABSORPTION" in line and "ELECTRIC DIPOLE" in line:
                 abs_ed,abs_vd,cd_ed,cd_vd = 1,0,0,0
-                D = []
                 state_transition = []
                 energy_transition_spectra = []
             elif "ABSORPTION" in line and "VELOCITY DIPOLE" in line:
                 abs_ed,abs_vd,cd_ed,cd_vd = 0,1,0,0
-                P = []
             elif "CD" in line and "ELECTRIC DIPOLE" in line:
                 abs_ed,abs_vd,cd_ed,cd_vd = 0,0,1,0
-                M = []
             elif "CD" in line and "VELOCITY DIPOLE" in line:
                 abs_ed,abs_vd,cd_ed,cd_vd = 0,0,0,1
 
@@ -232,4 +231,28 @@ def extract(file,do_order_bonds=0):
     mol.bonds = find_bonds(mol,do_order_bonds=do_order_bonds)
 
     return mol
+
+def extract_json(file,mol=None):
+    """
+    """
+    import json
+
+    with open(file) as f:
+        data = json.load(f)
+
+    TDDFT = data["Molecule"]["TD-DFT"]
+
+    L = []
+    transition_list = []
+    for k in TDDFT:
+        L.append(k["X+Y"])
+        Orbwin = k["OrbWin"]
+        transition_list.append(np.array([ [x,y] for x in range(Orbwin[0],Orbwin[1]+1) for y in range(Orbwin[2],Orbwin[3]+1)]))
+
+    N1,N2 = np.shape(np.array(L))
+    mol.properties["transition_factor_list"] = np.array(L).reshape((N1,N2,1))
+    mol.properties["transition_list"] = transition_list
+
+
+
 
