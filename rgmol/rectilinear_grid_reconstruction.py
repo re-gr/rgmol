@@ -427,7 +427,7 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
                     transition_coeffs = transition_density_coefficients[:,occ,virt]
                     for transition in range(num_transition):
                         coeff = transition_coeffs[transition]
-                        if coeff>1e-7:
+                        if coeff!=0:
                             transition_density_list[transition] = transition_density_list[transition] + coeff * MO_product
 
 

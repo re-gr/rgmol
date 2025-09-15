@@ -188,23 +188,23 @@ def calculate_eigenmodes_linear_response_function(self):
     # eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     # eigenvectors = eigenvectors.transpose()
 
-    if 0:
-        diag,transf = np.linalg.eigh(transition_matrix)
-        pij = transf.dot(np.diag(diag)**(1/2)).dot(transf.transpose())
 
-        D = -2*np.einsum("ik,jk,k->ij",pij,pij,1/transition_energy)
-        eigenvalues, eigenvectors = np.linalg.eigh(D)
-        inv_pij = transf.dot(np.diag(1/diag).dot(transf.transpose()))
-        # inv_pij = np.linalg.inv(pij).transpose()
-        # eigenvectors = (inv_pij.dot(eigenvectors.transpose()))
-        # eigenvectors = (eigenvectors.dot(inv_pij)).transpose()
-        eigenvectors = eigenvectors.transpose()
+    diag,transf = np.linalg.eigh(transition_matrix)
+    pij = transf.dot(np.diag(diag)**(1/2)).dot(transf.transpose())
+
+    D = -2*np.einsum("ik,jk,k->ij",pij,pij,1/transition_energy)
+    eigenvalues, eigenvectors = np.linalg.eigh(D)
+    inv_pij = transf.dot(np.diag(1/diag**(1/2)).dot(transf.transpose()))
+    # inv_pij = np.linalg.inv(pij)
+    # eigenvectors = (inv_pij.dot(eigenvectors.transpose()))
+    eigenvectors = (inv_pij.dot(eigenvectors).transpose())
+    # eigenvectors = eigenvectors.transpose()
 
 
 
-    D = np.diag(-2/transition_energy).dot(transition_matrix)
-    eigenvalues,eigenvectors = np.linalg.eig(D)
-    eigenvectors = eigenvectors.transpose()
+    # D = np.diag(-2/transition_energy).dot(transition_matrix)
+    # eigenvalues,eigenvectors = np.linalg.eig(D)
+    # eigenvectors = eigenvectors.transpose()
 
 
     # return D,transition_matrix
