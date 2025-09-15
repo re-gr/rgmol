@@ -40,11 +40,17 @@ def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
         coords, AO_calculated
     """
 
+
     if "Reconstructed_AO" in mol.properties:
         return mol.properties["Reconstructed_coords"],mol.properties["Reconstructed_AO"]
 
     # r,c = create_rectilinear_grid_from_molecule(mol,grid_points=grid_points)
-    r,c = create_cubic_grid_from_molecule(mol,grid_points=grid_points,delta=delta)
+    if not "Reconstructed_coords" in mol.properties:
+        r,c = create_cubic_grid_from_molecule(mol,grid_points=grid_points,delta=delta)
+
+    else:
+        c = mol.properties["Reconstructed_coords"]
+        r = mol.properties["Reconstructed_coords_xyz"]
 
 
     if not "AO_list" in mol.properties:
@@ -86,6 +92,7 @@ def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
     print("###########################################")
 
     mol.properties["Reconstructed_coords"] = c
+    mol.properties["Reconstructed_coords_xyz"] = r
     mol.properties["Reconstructed_AO"] = np.array(AO_calculated)
 
     return c,np.array(AO_calculated)
@@ -114,15 +121,23 @@ def reconstruct_chosen_MO(mol,MO_chosen,grid_points=(80,80,80),delta=5):
     """
 
     if "Reconstructed_MO" in mol.properties:
-        return mol.properties["Reconstructed_coords"],mol.properties["Reconstructed_MO"]
+        return mol.properties["Reconstructed_coords"],mol.properties["Reconstructed_MO"][MO_chosen]
 
     coords,AO_calculated = reconstruct_AO(mol,grid_points=grid_points,delta=delta)
+    x,y,z = coords
+    dx = x[1]-x[0]
+    dy = y[1]-y[0]
+    dz = z[1]-z[0]
+    dV = dx*dy*dz
 
     MO_list = np.array(mol.properties["MO_list"])
     MO = MO_list[MO_chosen]
     MO_not_normalized = np.einsum("ijkl,i->jkl",AO_calculated,MO)
+    occ = mol.properties["MO_occupancy"][0]
+    MO = MO_not_normalized / (np.einsum("jkl,jkl->",MO_not_normalized,MO_not_normalized)/occ*dV)**(1/2)
+    # MO = MO_not_normalized
 
-    return coords,MO_not_normalized
+    return coords,MO
 
 
 def reconstruct_MO(mol,grid_points=(80,80,80),delta=5):
@@ -152,6 +167,12 @@ def reconstruct_MO(mol,grid_points=(80,80,80),delta=5):
 
     coords,AO_calculated = reconstruct_AO(mol,grid_points=grid_points,delta=delta)
 
+    x,y,z = coords
+    dx = x[1]-x[0]
+    dy = y[1]-y[0]
+    dz = z[1]-z[0]
+    dV = dx*dy*dz
+
     occ = mol.properties["MO_occupancy"][0]
 
     print('#####################################')
@@ -163,7 +184,7 @@ def reconstruct_MO(mol,grid_points=(80,80,80),delta=5):
 
     MO_list = np.array(mol.properties["MO_list"])
     MO_calculated = np.einsum("ij,jklm->iklm",MO_list,AO_calculated)
-    MO_norm = np.einsum("ijkl,ijkl->i", MO_calculated, MO_calculated) / occ
+    MO_norm = np.einsum("ijkl,ijkl->i", MO_calculated, MO_calculated) / occ*dV
     MO_norm = MO_norm.reshape((len(MO_norm),1,1,1))
     MO_calculated = MO_calculated / MO_norm **(1/2)
 
@@ -203,8 +224,6 @@ def reconstruct_electron_density(mol,grid_points=(80,80,80),delta=5):
         coords, electron_density
     """
 
-    coords,MO_calculated = reconstruct_MO(mol,grid_points=grid_points,delta=delta)
-
 
     MO_occ = np.array(mol.properties["MO_occupancy"])
     MO_occ_arr = MO_occ>0
@@ -212,10 +231,11 @@ def reconstruct_electron_density(mol,grid_points=(80,80,80),delta=5):
 
     MO_occ = MO_occ[MO_occ_arr]
 
-    MO_occupied = MO_calculated[:MO_occ_index]
-    MO_occ_occupied = MO_occ[:MO_occ_index]
-
-
+    MO_occupied = []
+    for k in range(MO_occ_index):
+        coords,MO_calculated = reconstruct_chosen_MO(mol,k,grid_points=grid_points,delta=delta)
+        MO_occupied.append(MO_calculated)
+    MO_occupied = np.array(MO_occupied)
     electron_density = np.einsum("ijkl,ijkl->jkl",MO_occupied,MO_occupied)
 
     mol.properties["Reconstructed_electron_density"] = electron_density
@@ -258,8 +278,9 @@ def reconstruct_fukui_function(mol,mol_p=None,mol_m=None,grid_points=(80,80,80),
     if not(mol_p) and not(mol_m):
         raise TypeError("Need at least the molecule with N+1 or N-1 number of electrons")
 
-    if not "Reconstructed_electron_density" in mol.properties:
-        coords,elec_dens = reconstruct_electron_density(mol,grid_points=grid_points,delta=delta)
+    # if not "Reconstructed_electron_density" in mol.properties:
+    coords,elec_dens = reconstruct_electron_density(mol,grid_points=grid_points,delta=delta)
+
     rhoN = mol.properties["Reconstructed_electron_density"]
 
     if mol_p:
@@ -288,6 +309,10 @@ def reconstruct_fukui_function(mol,mol_p=None,mol_m=None,grid_points=(80,80,80),
     if mol_p and mol_m:
         f0 = (fp+fm)/2
     else: f0 = None
+
+    mol.properties["Reconstructed_f0"] = f0
+    mol.properties["Reconstructed_f+"] = fp
+    mol.properties["Reconstructed_f-"] = fm
 
     return coords,f0,fp,fm
 
@@ -384,8 +409,8 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
 
 
     # if nprocs > 1 and 0:
-    if nprocs > 1:
-        transition_density_list = calculate_transition_density_multithread(mol,transitions,transition_density_coefficients,grid_points,nprocs)
+    if nprocs > 1 and 0:
+        transition_density_list = reconstruct_transition_density_multithread(mol,transitions,transition_density_coefficients,grid_points,nprocs)
     else:
         # transition_density_list = np.einsum("ijk,jlmn,klmn->ilmn",transition_density_coefficients,MO_occ,MO_calculated,optimize=True)
 
@@ -402,7 +427,7 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
                     transition_coeffs = transition_density_coefficients[:,occ,virt]
                     for transition in range(num_transition):
                         coeff = transition_coeffs[transition]
-                        if coeff!=0:
+                        if coeff>1e-7:
                             transition_density_list[transition] = transition_density_list[transition] + coeff * MO_product
 
 
@@ -556,9 +581,9 @@ def reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=Non
     else:
         reconstructed_eigenvectors = []
         for eigenvector in contribution_eigenvectors:
-            eigenvector_reshaped = eigenvector.reshape((N_trans,1,1,1))
-            reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,Reconstructed_transition_density_list)
+            reconstructed_eigenvector = np.einsum("i,ijkl->jkl",eigenvector,Reconstructed_transition_density_list)
             reconstructed_eigenvectors.append(reconstructed_eigenvector)
+        reconstructed_eigenvectors = np.array(reconstructed_eigenvectors)
     if kernel == "linear_response_function":
         mol.properties["Reconstructed_linear_response_eigenvectors"] = np.array(reconstructed_eigenvectors)
     elif kernel == "softness_kernel":
@@ -571,4 +596,4 @@ def reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=Non
     print('# in {:3.3f} s #'.format(time_taken))
     print("########################################")
 
-    return coords,np.array(reconstructed_eigenvectors)
+    return coords,reconstructed_eigenvectors

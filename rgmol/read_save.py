@@ -232,9 +232,9 @@ def save(self,kernel,append_name=""):
             np.savetxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt",linear_response_eigenvalues,comments="#",header="Linear Response Eigenvalues")
             np.savetxt(file_location + rgmol_folder + "//contribution_linear_response.txt",contribution_linear_response_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
             _save_kernel(self,file_location,rgmol_folder,"linear_response_function",Reconstructed_linear_response_eigenvectors)
-            grid_points = self.properties["grid_points"]
-            delta = self.properties["delta"]
-            _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
+            # grid_points = self.properties["grid_points"]
+            # delta = self.properties["delta"]
+            # _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
 
 
         if "linear_response_eigenvectors" in self.properties:
@@ -254,9 +254,9 @@ def save(self,kernel,append_name=""):
             np.savetxt(file_location + rgmol_folder + "//softness_kernel_eigenvalues.txt",softness_kernel_eigenvalues,comments="#",header="Linear Response Eigenvalues")
             np.savetxt(file_location + rgmol_folder + "//contribution_softness_kernel.txt",contribution_softness_kernel_eigenvectors,comments="#",header="Contribution of transition densities on eigenmodes")
             _save_kernel(self,file_location,rgmol_folder,"softness_kernel",Reconstructed_softness_kernel_eigenvectors)
-            grid_points = self.properties["grid_points"]
-            delta = self.properties["delta"]
-            _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
+            # grid_points = self.properties["grid_points"]
+            # delta = self.properties["delta"]
+            # _write_voxel(file_location + rgmol_folder +"//voxel_parameters.txt",grid_points,delta)
 
 
         if "softness_kernel_eigenvectors" in self.properties:
@@ -314,8 +314,8 @@ def read(self,append_name="",nb_eigen=0):
         grid_points,delta = _read_voxel(file_location+rgmol_folder+"//voxel_parameters.txt")
         self.properties["grid_points"] = grid_points
         self.properties["delta"] = delta
-        r,c = rgmol.grid.create_cubic_grid_from_molecule(self,grid_points=grid_points,delta=delta)
-        self.properties["Reconstructed_coords"] = c
+        # r,c = rgmol.grid.create_cubic_grid_from_molecule(self,grid_points=grid_points,delta=delta)
+        # self.properties["Reconstructed_coords"] = c
 
     else:
         print("No representation grid parameters were found, the extraction will proceed anyway")
@@ -413,7 +413,7 @@ def read(self,append_name="",nb_eigen=0):
 
     if "linear_response_eigenvalues.txt" in listdir_rgmol:
         linear_response_eigenvalues = np.loadtxt(file_location + rgmol_folder + "//linear_response_eigenvalues.txt")
-        contribution_linear_response = np.real(np.loadtxt(file_location + rgmol_folder + "//contribution_linear_response.txt",dtype=np.complex_))
+        contribution_linear_response = np.real(np.loadtxt(file_location + rgmol_folder + "//contribution_linear_response.txt"))
 
         self.properties["linear_response_eigenvalues"] = linear_response_eigenvalues
         self.properties["contribution_linear_response_eigenvectors"] = contribution_linear_response

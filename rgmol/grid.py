@@ -11,8 +11,6 @@ These methods allow the calculation of various chemical properties such as AO, M
 import numpy as np
 import scipy as sp
 from rgmol.objects import *
-from rgmol.threading_functions import *
-import scipy as sp
 from rgmol.dicts import *
 
 
@@ -59,18 +57,23 @@ class mol_grids:
         ----------
             grids : list
                 The list of all the grids
-            centers : list
+            centers : array
                 The list of the centers
+            coords : array
+                The list of all the coordinates
             dV : array
                 The dV of all grids
         """
         self.grids = grids
         grids_centers = []
+        grids_coords = []
 
         for grid_i in grids:
             grids_centers.append(grid_i.center)
+            grids_coords.append(grid_i.xyz_coords)
 
         self.grids_centers = np.array(grids_centers)
+        self.coords = np.array(grids_coords)
 
 
     def integrate(self,arr):
@@ -339,6 +342,7 @@ def create_cubic_grid_from_molecule(mol,grid_points,delta=5):
     x_step = (xmax - xmin + 2*delta)/nx
     y_step = (ymax - ymin + 2*delta)/ny
     z_step = (zmax - zmin + 2*delta)/nz
+    print(x_step,y_step,z_step)
 
     voxel_matrix = [[x_step,0,0],[0,y_step,0],[0,0,z_step]]
     r,c = create_coordinates_from_cubic_grid(grid_points,voxel_origin,voxel_matrix)
@@ -485,8 +489,8 @@ def create_grid_from_mol(mol,N_r=None,d_leb=None,zeta_list=None,alpha_list=None)
             The molecule attribute mol_grids will contain the result
     """
 
-    if mol.mol_grids:
-        return
+    # if mol.mol_grids:
+    #     return
 
     list_grids = []
 
@@ -508,7 +512,6 @@ def create_grid_from_mol(mol,N_r=None,d_leb=None,zeta_list=None,alpha_list=None)
         if zeta_list: zeta = zeta_list[index_atom]
 
         list_grids.append(create_atomic_grid(atom,N_r=N_r,d_leb=d_leb,zeta=zeta,alpha=alpha))
-
 
 
     m_grids = mol_grids(list_grids)

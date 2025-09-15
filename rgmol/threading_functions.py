@@ -29,7 +29,7 @@ def _overlap_matrix(mol,overlap_matrix,Psi,length,start_i,start_j):
             index_i,index_j = i + start_i, j + start_j
             overlap = 0
             for grid,index_grid in zip(mol.mol_grids.grids,range(N_grids)):
-                overlap += grid.integrate(Psi[index_grid,index_i]*Psi[index_grid,index_j])
+                overlap += grid.integrate_product(Psi[index_grid,index_i],Psi[index_grid,index_j])
             overlap_matrix[index_i,index_j] = overlap
             overlap_matrix[index_j,index_i] = overlap
 
@@ -103,21 +103,20 @@ def calculate_overlap_matrix_multithread(mol,Psi,nprocs):
 
 
 
-def _product_MO_calc(mol,MO,list_add_transition,transitions,nocc,nvirt,index_move,transition_density_coefficients):
-
-    num_transitions = len(transition_density_coefficients)
+def _product_MO_calc(mol,MO,list_add_transition,transitions,index_move,transition_density_coefficients):
+    N_trans, N_occ, N_virt = np.shape(transition_density_coefficients)
 
     for index in range(len(transitions)):
         if transitions[index]:
-            occ,virt = np.unravel_index(index+index_move,(nocc,nvirt))
+            occ,virt = np.unravel_index(index+index_move,(N_occ,N_virt))
 
-            MO_product = MO[occ] * MO[virt]
+            MO_product = MO[:,occ] * MO[:,virt]
 
             transition_coeffs = transition_density_coefficients[:,occ,virt]
-            for transition in range(num_transitions):
+            for transition in range(N_trans):
                 coeff = transition_coeffs[transition]
-                if coeff!=0:
-                    list_add_transition[transition] += coeff * MO_product
+                if abs(coeff)>1e-5:
+                    list_add_transition[:,transition] = list_add_transition[:,transition] + coeff * MO_product
 
 def _divide_bool(arr,nprocs):
     """
@@ -155,7 +154,58 @@ def _divide_bool(arr,nprocs):
     return list_bools,list_X
 
 
-def calculate_transition_density_multithread(mol,transitions,transition_density_coefficients,grid_points,nprocs):
+def calculate_transition_density_multithread(mol,transitions,transition_density_coefficients,nprocs):
+    """
+    This function divides the virtual coefficients into multiple parts
+    """
+    #This hard cap is because it is actually slower to put too much processors
+    if nprocs > 4:
+        nprocs = 4
+    MO = mol.properties["MO_calculated_list"]
+
+    N_grids, N_MO, N_r, N_ang = np.shape(MO)
+    N_trans = len(mol.properties["transition_list"])
+
+    list_add_transitions = np.zeros((nprocs,N_grids,N_trans,N_r,N_ang))
+    list_th = []
+
+
+    list_transitions,list_X = _divide_bool(transitions.ravel(),nprocs)
+
+    for list_transition,index_move,index_proc in zip(list_transitions,list_X,range(nprocs)):
+        thread = th.Thread(target=_product_MO_calc,args=(mol,MO,list_add_transitions[index_proc],list_transition,index_move,transition_density_coefficients))
+        list_th.append(thread)
+        thread.start()
+
+    for thread in list_th:
+        thread.join()
+    transition_density_list = np.einsum("ijklm->jklm",list_add_transitions)
+
+    return transition_density_list
+
+#####################################
+## TRANSITION DENSITY CALCUALTIONS ##
+#####################################
+
+
+
+def _reconstruct_product_MO_calc(mol,MO,list_add_transition,transitions,nocc,nvirt,index_move,transition_density_coefficients):
+
+    num_transitions = len(transition_density_coefficients)
+
+    for index in range(len(transitions)):
+        if transitions[index]:
+            occ,virt = np.unravel_index(index+index_move,(nocc,nvirt))
+
+            MO_product = MO[occ] * MO[virt]
+
+            transition_coeffs = transition_density_coefficients[:,occ,virt]
+            for transition in range(num_transitions):
+                coeff = transition_coeffs[transition]
+                if coeff!=0:
+                    list_add_transition[transition] += coeff * MO_product
+
+def reconstruct_transition_density_multithread(mol,transitions,transition_density_coefficients,grid_points,nprocs):
     """
     This function divides the virtual coefficients into multiple parts
     """
@@ -174,7 +224,7 @@ def calculate_transition_density_multithread(mol,transitions,transition_density_
     list_transitions,list_X = _divide_bool(transitions.ravel(),nprocs)
 
     for list_transition,index_move,index_proc in zip(list_transitions,list_X,range(nprocs)):
-        thread = th.Thread(target=_product_MO_calc,args=(mol,mol.properties["Reconstructed_MO"],list_add_transitions[index_proc],list_transition,nocc,nvirt,index_move,transition_density_coefficients))
+        thread = th.Thread(target=_reconstruct_product_MO_calc,args=(mol,mol.properties["Reconstructed_MO"],list_add_transitions[index_proc],list_transition,nocc,nvirt,index_move,transition_density_coefficients))
         list_th.append(thread)
         thread.start()
 
@@ -227,9 +277,11 @@ def multithreading_reconstruct_eigenvectors(transitions,eigenvectors,nprocs):
         nprocs = 4
 
     N_trans,nx,ny,nz = np.shape(transitions)
+    eigenvectors = eigenvectors[:1500]
 
     list_eigenvectors,list_index = _divide_eigenvectors(eigenvectors,nprocs)
-    reconstructed_eigenvectors = [np.zeros((nx,ny,nz)) for k in range(N_trans)]
+    reconstructed_eigenvectors = [np.zeros((nx,ny,nz)) for k in range(1500)]
+    # reconstructed_eigenvectors = [np.zeros((nx,ny,nz)) for k in range(N_trans)]
 
     list_th = []
     for eigenvectors,index in zip(list_eigenvectors,list_index):

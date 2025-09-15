@@ -170,7 +170,6 @@ def calculate_eigenmodes_linear_response_function(self):
     print("# Calculating Eigenmodes of LRF #")
     print("#################################")
     time_before_calc = time.time()
-
     if nprocs >1:
         transition_matrix = calculate_overlap_matrix_multithread(self,transition_density_list,nprocs)
     else:
@@ -181,7 +180,6 @@ def calculate_eigenmodes_linear_response_function(self):
 
                 transition_matrix[first_transition,second_transition] = overlap_integral
                 transition_matrix[second_transition,first_transition] = overlap_integral
-
     #linear response matrix in transition densities basis
     #following dimensions : i,j,k
     # LR_matrix_in_TDB = np.einsum("k,ik,kj->ij",-2/transition_energy,transition_matrix,transition_matrix)
@@ -190,11 +188,26 @@ def calculate_eigenmodes_linear_response_function(self):
     # eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     # eigenvectors = eigenvectors.transpose()
 
+    if 0:
+        diag,transf = np.linalg.eigh(transition_matrix)
+        pij = transf.dot(np.diag(diag)**(1/2)).dot(transf.transpose())
+
+        D = -2*np.einsum("ik,jk,k->ij",pij,pij,1/transition_energy)
+        eigenvalues, eigenvectors = np.linalg.eigh(D)
+        inv_pij = transf.dot(np.diag(1/diag).dot(transf.transpose()))
+        # inv_pij = np.linalg.inv(pij).transpose()
+        # eigenvectors = (inv_pij.dot(eigenvectors.transpose()))
+        # eigenvectors = (eigenvectors.dot(inv_pij)).transpose()
+        eigenvectors = eigenvectors.transpose()
+
+
 
     D = np.diag(-2/transition_energy).dot(transition_matrix)
     eigenvalues,eigenvectors = np.linalg.eig(D)
     eigenvectors = eigenvectors.transpose()
 
+
+    # return D,transition_matrix
 
     # eigvalB,eigvecB = np.linalg.eigh(transition_matrix)
     # eigvecBtilde = eigvecB * eigvalB**(-1/2)
@@ -312,7 +325,8 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     factor = np.array((transition_energy/2).tolist() + [hardness])
 
     #Append the hardness and divide the energy by 2 to take into account the 2 in the formula of the LRF
-    length_basis = len(basis)
+    length_basis = len(basis[0])
+
 
 
 
@@ -322,7 +336,7 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
         overlap_matrix = np.zeros((length_basis,length_basis))
         for first_transition in range(length_basis):
             for second_transition in range(first_transition+1):
-                overlap_integral = self.mol_grids.integrate_product(transition_density_list[:,first_transition],overlap_matrix[:,second_transition])
+                overlap_integral = self.mol_grids.integrate_product(basis[:,first_transition],basis[:,second_transition])
                 overlap_matrix[first_transition,second_transition] = overlap_integral
                 overlap_matrix[second_transition,first_transition] = overlap_integral
 
@@ -346,19 +360,18 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     eigenvectors = eigenvectors.transpose()
 
 
-    reconstructed_eigenvectors = []
-
     if nprocs >1:
         reconstructed_eigenvectors, reconstructed_eigenvector_norms = multithreading_reconstruct_eigenvectors_atomic_grids(self,basis,eigenvectors,nprocs)
     else:
         reconstructed_eigenvectors = []
         reconstructed_eigenvector_norms = []
         for eigenvector in eigenvectors:
-            eigenvector_reshaped = eigenvector.reshape((N_trans,1,1,1))
-            reconstructed_eigenvector = np.einsum("ijkl,ijkl->jkl",eigenvector_reshaped,basis)
-            reconstructed_eigenvector_norm = mol.mol_grids.integrate_product(reconstructed_eigenvector,reconstructed_eigenvector)
+            reconstructed_eigenvector = np.einsum("j,ijkl->ikl",eigenvector,basis)
+            reconstructed_eigenvector_norm = self.mol_grids.integrate_product(reconstructed_eigenvector,reconstructed_eigenvector)
             reconstructed_eigenvector_norms.append(reconstructed_eigenvector_norm)
             reconstructed_eigenvectors.append(reconstructed_eigenvector/reconstructed_eigenvector_norm**(1/2))
+        reconstructed_eigenvectors = np.array(reconstructed_eigenvectors)
+        reconstructed_eigenvector_norms = np.array(reconstructed_eigenvector_norms)
 
     eigenvectors = np.einsum("ij,i->ij",eigenvectors,1/np.array(reconstructed_eigenvector_norms)**(1/2))
 
@@ -464,6 +477,7 @@ def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2
         for k in range(len(from_occ)):
             for j in range(len(transition_contrib[0])):
                 from_occ[k] += transition_contrib[k,j]**2
+        from_occ = from_occ/np.sum(from_occ)
         from_occ_list.append(from_occ)
 
 
@@ -471,6 +485,7 @@ def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2
         for k in range(len(to_virt)):
             for j in range(len(transition_contrib)):
                 to_virt[k] += transition_contrib[j,k]**2
+        to_virt = to_virt/np.sum(to_virt)
         to_virt_list.append(to_virt)
 
     fukui_decomposition = []
@@ -479,7 +494,6 @@ def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2
             contributions = contrib_eigenvectors[vector_number-1]
             fukui_decomposition.append(contributions[-1]**2 * self.properties["hardness"] * self.properties["softness_kernel_eigenvalues"][vector_number-1])
     f = np.array(fukui_decomposition)
-    print(np.sum(f))
 
 
 
@@ -491,7 +505,117 @@ def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2
     return
 
 
+def calculate_polarization(self,kernel,mol_p=None,mol_m=None,fukui_type="0",try_reading_diagonalized=True,save_diagonalized=True,reconstruct=False,new_mo=False):
+    """
+    """
+
+    if not "external_potential" in self.properties:
+        raise TypeError("No external potential found. Must be calculated using mol.set_external_potential or mol.set_external_potential_from_file")
+
+    ext_pot = self.properties["external_potential"]
+
+    if kernel == "linear_response_function":
+        # if not "linear_response_eigenvectors" in self.properties:
+        #     self.plot_diagonalized_kernel(kernel,number_plotted_eigenvectors=0,try_reading=try_reading_diagonalized,save=save_diagonalized)
+        eigenvalues = self.properties["linear_response_eigenvalues"]
+        eigenvectors = self.properties["linear_response_eigenvectors"]
+        if reconstruct:
+            Reconstructed_eigenvectors = self.properties["Reconstructed_linear_response_eigenvectors"]
+        contributions = self.properties["contribution_linear_response_eigenvectors"]
+
+    elif kernel == "softness_kernel":
+        # if not "softness_kernel_eigenvectors" in self.properties:
+        #     self.plot_diagonalized_kernel(kernel,number_plotted_eigenvectors=0,mol_p=mol_p,mol_m=mol_m,fukui_type=fukui_type,try_reading=try_reading_diagonalized,save=save_diagonalized)
+        eigenvalues = self.properties["softness_kernel_eigenvalues"]
+        eigenvectors = self.properties["softness_kernel_eigenvectors"]
+        if reconstruct:
+            Reconstructed_eigenvectors = self.properties["Reconstructed_softness_kernel_eigenvectors"]
+        contributions = self.properties["contribution_softness_kernel_eigenvectors"]
+
+    else:
+        raise ValueError("The kernel {} has not been implemented. The available kernels are : linear_response_function and softness_kernel".format(kernel))
+
+
+
+    mol_grids = self.mol_grids
+    dV = mol_grids.get_dV()
+
+
+    transition_list = self.properties["transition_list"]
+    transition_factor_list = self.properties["transition_factor_list"]
+
+    transi_occ_max = 0
+    transi_virt_max = 0
+    num_transition = len(transition_list)
+    if new_mo:
+        for transition,transition_factor in zip(transition_list,transition_factor_list):
+            # print(transition)
+            transi_occ = np.max(transition[:,0])
+            transi_virt = np.max(transition[:,1])
+
+            if transi_occ_max < transi_occ:
+                transi_occ_max = transi_occ
+            if transi_virt_max < transi_virt:
+                transi_virt_max = transi_virt
+
+        transi_occ_max += 1
+        transi_virt_max += 1
+        transition_density_coefficients = np.zeros((num_transition,transi_occ_max,transi_virt_max))
+        for transition in range(len(transition_list)):
+            for factor_index in range(len(transition_list[transition])):
+                occ,virt = transition_list[transition][factor_index]
+                transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index]
+
+        transition_density_coefficients = transition_density_coefficients[:len(contributions)]
+        coeffs_transitions = np.einsum("jia,kj->kia",transition_density_coefficients,contributions)
+
+
+        coef_MO = np.einsum("k,k,kia->ia",eigenvalues,projections,coeffs_transitions)/2
+
+        c, MO = rgmol.rectilinear_grid_reconstruction.reconstruct_MO(self)
+        nx,ny,nz = np.shape(MO[0])
+        MO_reconstructed = np.zeros((transi_occ_max,nx,ny,nz))
+        MO_virt = MO[:transi_virt_max]
+        for k in range(transi_occ_max):
+            # print(np.shape(coef_MO[k]),np.shape(MO_virt),np.shape(MO_reconstructed),np.shape(MO[k]))
+            MO_reconstructed[k] = MO[k] + np.einsum("i,ijkl->jkl",coef_MO[k],MO_virt)
+
+    projections = np.einsum("ijkl,jkl,jkl->i",eigenvectors,ext_pot,dV)
+    polarization = np.einsum("i,i,ijkl->jkl",eigenvalues,projections,eigenvectors)
+
+    if reconstruct:
+        Reconstructed_polarization = np.einsum("i,i,ijkl->jkl",eigenvalues[:len(Reconstructed_eigenvectors)],projections[:len(Reconstructed_eigenvectors)],Reconstructed_eigenvectors)
+
+    if kernel == "linear_response_function":
+        self.properties["linear_response_projection_external_potential"] = projections
+        self.properties["linear_response_polarization"] = polarization
+        if reconstruct:
+            self.properties["Reconstructed_linear_response_polarization"] = Reconstructed_polarization
+        if new_mo:
+            self.properties["newmo"] = MO_reconstructed
+
+    elif kernel == "softness_kernel":
+        self.properties["softness_kernel_projection_external_potential"] = projections
+        self.properties["softness_kernel_polarization"] = polarization
+        if reconstruct:
+            self.properties["Reconstructed_softness_kernel_polarization"] = Reconstructed_polarization
+        if new_mo:
+            self.properties["newmo"] = MO_reconstructed
+
+
+    if reconstruct:
+        return projections, polarization, Reconstructed_polarization
+    return projections, polarization, None
+
+
+
+
+
+
 molecule.analysis_eigenmodes = analysis_eigenmodes
+molecule.calculate_polarization = calculate_polarization
+
+
 
 
 ##TEMPO
