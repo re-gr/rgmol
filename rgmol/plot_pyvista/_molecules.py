@@ -58,7 +58,7 @@ class _three_buttons:
 ##############################################
 
 
-def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None,opacity=0.5):
+def plot_atomic_grid(self,N_r=None,d_leb=None,zeta_list=None,alpha_list=None,opacity=0.5,factor_radius=0.5,opacity_radius=0.5):
     """
     plot_atomic_grid(N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None,opacity=0.5)
 
@@ -68,9 +68,9 @@ def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_lis
 
     Parameters
     ----------
-        N_r_list : list
+        N_r : int
             The number of radial points that will be taken for each atom repectively
-        d_leb_list : list
+        d_leb : int
             The degree of the Lebedev quadrature that will be taken for each atom respectively
         zeta_list : list
             The zeta parameter that will be taken for each atom repectively
@@ -83,7 +83,7 @@ def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_lis
             The plotter will show
     """
     if not self.mol_grids:
-        rgmol.grid.create_grid_from_mol(self)
+        rgmol.grid.create_grid_from_mol(self,N_r=N_r,d_leb=d_leb,zeta_list=zeta_list,alpha_list=alpha_list)
 
 
     plotter = pyvista.Plotter()
@@ -97,7 +97,7 @@ def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_lis
         plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=opacity,color=atom.color)
 
     for atom_x in self.atoms:
-        atom_x.plot(plotter,opacity=1.0,factor=1)
+        atom_x.plot(plotter,opacity=opacity_radius,factor=factor_radius)
 
 
 
@@ -107,9 +107,9 @@ def plot_atomic_grid(self,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_lis
     return
 
 
-def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None):
+def plot_on_atomic_grid(self,arr,N_r=None,d_leb=None,zeta_list=None,alpha_list=None):
     """
-    plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,alpha_list=None)
+    plot_on_atomic_grid(self,arr,N_r=None,d_leb=None,zeta_list=None,alpha_list=None)
 
     Do a plot of an array on the atomic grids.
     The array should be of the shape : (N_grids, N_r, N_ang)
@@ -119,9 +119,9 @@ def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,al
     ----------
         arr : ndarray
             The array to be plotted, the shape must be (N_grids, N_r, N_ang)
-        N_r_list : list, optional
+        N_r : int
             The number of radial points that will be taken for each atom repectively
-        d_leb_list : list, optional
+        d_leb : int
             The degree of the Lebedev quadrature that will be taken for each atom respectively
         zeta_list : list, optional
             The zeta parameter that will be taken for each atom repectively
@@ -134,7 +134,7 @@ def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,al
             The plotter will show
     """
     if not self.mol_grids:
-        rgmol.grid.create_grid_from_mol(self,N_r_list=N_r_list,d_leb_list=d_leb_list,zeta_list=zeta_list,alpha_list=alpha_list)
+        rgmol.grid.create_grid_from_mol(self,N_r=N_r,d_leb=d_leb,zeta_list=zeta_list,alpha_list=alpha_list)
 
 
     plotter = pyvista.Plotter()
@@ -145,6 +145,7 @@ def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,al
         wn = grid.wn
         dV = grid.dV
         val = np.max(abs(array*wn*dV))
+        val = np.max(abs(array))
         if val > maxx:
             maxx = val
 
@@ -156,7 +157,9 @@ def plot_on_atomic_grid(self,arr,N_r_list=None,d_leb_list=None,zeta_list=None,al
         wn = grid.wn
         dV = grid.dV
 
-        points = plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=[1.0,0.4,0.0,0.4,1.0],scalars=array_to_plot*wn*dV,clim=(-maxx,maxx),cmap="rainbow4")
+        # points = plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=[1.0,0.4,0.0,0.4,1.0],scalars=array_to_plot*wn*dV,clim=(-maxx,maxx),cmap="rainbow4")
+        points = plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=[1.0,0.8,0.6,0.0,0.6,0.8,1.0],scalars=array_to_plot,clim=(-maxx,maxx),cmap="cwr")
+        # points = plotter.add_points(points,render_points_as_spheres=True,point_size=40,opacity=[1.0,0.4,0.1,0.4,1.0],scalars=array_to_plot,clim=(-maxx,maxx),cmap="rainbow4")
 
 
     for atom_x in self.atoms:
@@ -521,11 +524,67 @@ def plot_isodensity(self,plotted_isodensity="cube",opacity=0.8,factor=1,with_rad
             The plotter should display when using this function
     """
     plotter = pyvista.Plotter()
-    r,coords = rgmol.grid.create_cubic_grid_from_molecule(self,grid_points=np.shape(self.properties[plotted_isodensity]))
+    if "Reconstructed_coords" in self.properties:
+        coords = self.properties["Reconstructed_coords"]
+        # r = self.properties["Reconstructed_coords_xyz"]
+    else:
+        r,coords = rgmol.grid.create_cubic_grid_from_molecule(self,grid_points=np.shape(self.properties[plotted_isodensity]))
     if with_radius:
         self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
     def create_mesh_cube(value):
         plot_cube(plotter,coords,self.properties[plotted_isodensity],opacity=opacity,factor=factor,cutoff=value)
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(create_mesh_cube, [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+    plotter.show(full_screen=False)
+
+    return
+
+def plot_isodensity_diff(self,plotted_isodensity="cube",opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+    """
+    plot_isodensity(plotted_isodensity="cube",opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+
+    Plot an isodensity
+
+    Parameters
+    ----------
+        plotted_isodensity : str, optional
+            The isodensity to be plotted. By default "cube"
+        opacity : float, optional
+            The opacity of the plot. By default equals to 1
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default equals to 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot. By default .2
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+    """
+    plotter = pyvista.Plotter()
+    if "Reconstructed_coords" in self.properties:
+        coords = self.properties["Reconstructed_coords"]
+        # r = self.properties["Reconstructed_coords_xyz"]
+    else:
+        r,coords = rgmol.grid.create_cubic_grid_from_molecule(self,grid_points=np.shape(self.properties[plotted_isodensity]))
+    if with_radius:
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius,show_bonds=True)
+    def create_mesh_cube(value):
+        plot_cube_multiple_isodensities(plotter,coords,self.properties[plotted_isodensity],opacity=opacity,factor=factor,cutoff=value)
 
     light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
     plotter.add_light(light)
@@ -673,6 +732,7 @@ def plot_AO(self,grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius
 
     plotter.show(full_screen=False)
     return
+
 
 
 
@@ -1289,7 +1349,7 @@ def plot_diagonalized_kernel(self,kernel,mol_p=None,mol_m=None,fukui_type="0",nu
         transition_list = self.properties["transition_list"]
         transition_factor_list = self.properties["transition_factor_list"]
 
-        coords,eigenvectors = rgmol.rectilinear_grid_reconstruction.reconstruct_eigenvectors(self,kernel)
+        coords,eigenvectors = rgmol.rectilinear_grid_reconstruction.reconstruct_eigenvectors(self,kernel,mol_m=mol_m,mol_p=mol_p,grid_points=grid_points,delta=delta,fukui_type=fukui_type)
 
     elif kernel == "softness_kernel":
         self.calculate_hardness()
@@ -1489,6 +1549,7 @@ molecule.plot_property = plot_property
 molecule.plot_condensed_kernel = plot_condensed_kernel
 molecule.plot_diagonalized_condensed_kernel = plot_diagonalized_condensed_kernel
 molecule.plot_isodensity = plot_isodensity
+molecule.plot_isodensity_diff = plot_isodensity_diff
 molecule.plot_multiple_isodensities = plot_multiple_isodensities
 molecule.plot_AO = plot_AO
 molecule.plot_MO = plot_MO
@@ -1501,3 +1562,75 @@ molecule.plot_diagonalized_kernel = plot_diagonalized_kernel
 molecule.plot_analysis_kernel = plot_analysis_kernel
 
 
+
+
+def plot_tempo(self,MO_calculated,grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000)):
+    """
+    plot_MO(grid_points=(80,80,80),delta=5,opacity=0.8,factor=1,with_radius=True,opacity_radius=1,factor_radius=.3,cutoff=.2,screenshot_button=True,window_size_screenshot=(1000,1000))
+
+    Plot the Molecular Orbitals of a molecule.
+    Because no calculations are done, the Molecular Orbitals will be calculated on the representative grid.
+    The representative grid is a cubic grid around the molecule.
+    The delta defines the length to be added to the extremities of the position of the atoms.
+
+    Parameters
+    ----------
+        grid_points : list of 3, optional
+            The number of points for the representative grid in each dimension. By default (80,80,80)
+        delta : float, optional
+            The length added in all directions for the construction of the representative grid. By default 5
+        opacity : float, optional
+            The opacity of the plot. By default .5
+        factor : float, optional
+            The factor by which the plotted_property will be multiplied. By default 1
+        with_radius : bool, optional
+            Chose to show the radius and the bonds between the atoms or not. By default True
+        opacity_radius : float, optional
+            The opacity of the radius plot. By default .8
+        factor_radius : float, optional
+            The factor by which the radius will be multiplied. By default .3
+        cutoff : float, optional
+            The initial cutoff of the isodensity plot. By default .2
+        screenshot_button : bool, optional
+            Adds a screenshot button. True by default
+        window_size_screenshot : tuple, optional
+            The size of the screenshots. By default (1000,1000)
+
+    Returns
+    -------
+        None
+            The plotter should display when using this function
+    """
+
+    plotter = pyvista.Plotter()
+
+    coords,e = rgmol.rectilinear_grid_reconstruction.reconstruct_MO(self,grid_points=grid_points,delta=delta)
+
+
+    if with_radius:
+        self.plot(plotter,factor=factor_radius,opacity=opacity_radius)
+
+    def create_mesh_MO(value,cutoff):
+        MO_number = int(round(value))
+        MO = MO_calculated[MO_number-1]
+        MO = np.sign(MO)*MO**2
+
+        plot_cube(plotter,coords,MO,opacity=opacity,factor=factor,cutoff=cutoff)
+        plotter.add_text(text=r"Energy = "+'{:3.3f} (a.u.)'.format(self.properties["MO_energy"][MO_number-1]),name="mo energy")
+        print_occupancy(plotter,self.properties["MO_occupancy"],MO_number)
+
+    slider_function = _slider(create_mesh_MO,1,cutoff)
+
+
+    light = pyvista.Light((0,1,0),(0,0,0),"white",light_type="camera light",attenuation_values=(0,0,0))
+    plotter.add_light(light)
+    plotter.add_slider_widget(lambda value: slider_function("AO",value), [1, len(MO_calculated)],value=1,title="Number", fmt="%1.0f")
+    plotter.add_slider_widget(lambda value: slider_function("cutoff",value), [1e-6,1-1e-6],value=cutoff,title="Cutoff", fmt="%1.2f",pointa=(0.1,.9),pointb=(0.35,.9))
+
+    if screenshot_button:
+        add_screenshot_button(plotter,window_size_screenshot)
+
+    plotter.show(full_screen=False)
+    return
+
+molecule.plot_tempo = plot_tempo

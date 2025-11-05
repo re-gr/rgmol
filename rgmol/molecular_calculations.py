@@ -600,10 +600,8 @@ def calculate_transition_density(self):
 
 
 
-    if nprocs > 1 and 0:
-    # if nprocs > 1:
-        transition_density_list = calculate_transition_density_multithread(self,transitions,transition_density_coefficients,grid_points,nprocs)
-
+    if nprocs > 1:
+        transition_density_list = calculate_transition_density_multithread(self,transitions,transition_density_coefficients,nprocs)
     else:
         transition_density_list = np.zeros((N_grids,len(transition_list),N_r,N_ang))
         for occ in range(transi_occ_max):
@@ -617,7 +615,7 @@ def calculate_transition_density(self):
                     transition_coeffs = transition_density_coefficients[:,occ,virt]
                     for transition in range(num_transition):
                         coeff = transition_coeffs[transition]
-                        if coeff!=0:
+                        if abs(coeff)>1e-7:
                             transition_density_list[:,transition] = transition_density_list[:,transition] + coeff * MO_product
 
 
@@ -630,6 +628,8 @@ def calculate_transition_density(self):
     print('# in {:3.3f} s #'.format(time_taken))
     print("###########################################")
     return transition_density_list
+
+
 
 
 molecule.calculate_transition_density = calculate_transition_density

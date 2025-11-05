@@ -348,18 +348,20 @@ def plot_cube(plotter,coords,cube,cutoff=0.1,opacity=1,factor=1,add_name=""):
 
 
 
-def plot_cube_multiple_isodensities(plotter,voxel_origin,voxel_matrix,cube,number_isodensities=10,opacity=1,factor=1,add_name=""):
+def plot_cube_multiple_isodensities(plotter,coords,cube,number_isodensities=10,opacity=1,factor=1,add_name="",cutoff=0.9):
     """
     plot multiple isodensities
     """
+    x,y,z = coords
 
     nx,ny,nz = np.shape(cube)
     cube_transposed = np.transpose(cube,(2,1,0))
 
-    grid = pyvista.ImageData(dimensions=(nx,ny,nz),spacing=(voxel_matrix[0][0], voxel_matrix[1][1], voxel_matrix[2][2]),origin=voxel_origin)
+    grid = pyvista.RectilinearGrid(x,y,z)
+    grid = grid.cast_to_structured_grid()
 
     #Calculate cube density
-    cube_density = abs(cube_transposed) * voxel_matrix[0][0] * voxel_matrix[1][1] * voxel_matrix[2][2]
+    cube_density = abs(cube_transposed)
 
     #Calculate renormalization as for some reason some cube files are not normalized
     cube_density = cube_density / np.sum(cube_density)
@@ -379,9 +381,10 @@ def plot_cube_multiple_isodensities(plotter,voxel_origin,voxel_matrix,cube,numbe
     cube_values_positive = cube_values + (cube_transposed<0).flatten() * (1-cube_values)
     cube_values_negative = cube_values + (cube_transposed>0).flatten() * (1-cube_values)
 
+
     # for cutoff in cutoffs
-    contour_positive = grid.contour(isosurfaces=number_isodensities,scalars=cube_values_positive,rng=[0,0.9])
-    contour_negative = grid.contour(isosurfaces=number_isodensities,scalars=cube_values_negative,rng=[0,0.9])
+    contour_positive = grid.contour(isosurfaces=number_isodensities,scalars=cube_values_positive,rng=[0,1-cutoff])
+    contour_negative = grid.contour(isosurfaces=number_isodensities,scalars=cube_values_negative,rng=[0,1-cutoff])
 
     import matplotlib.colors as mpc
 
@@ -612,6 +615,7 @@ def add_screenshot_button(plotter,window_size):
             repres = button.GetRepresentation()
             repres.VisibilityOn()
             button.SetRepresentation(repres)
+
 
     plotter.add_text(text="Screenshot",name="screenshot",position=(90.,20.))
     plotter.add_checkbox_button_widget(button_screenshot,size=80,color_off="blue")

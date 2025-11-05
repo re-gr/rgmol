@@ -1,9 +1,6 @@
-!opt B3LYP cc-PVTZ
-* xyzfile 0 1 H2CO.xyz
-$new_job
-!B3LYP cc-PVTZ
+!PBE0 aug-cc-PVTZ
 %TDDFT
-NROOTS 50
+NROOTS 100
 TPrint 0.000001
 TDA TRUE
 END

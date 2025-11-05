@@ -367,7 +367,6 @@ def read(self,append_name="",nb_eigen=0):
         rgmol.grid.create_grid_from_mol(self,N_r=None,d_leb=None,zeta_list=None,alpha_list=None)
 
 
-
     if "softness_kernel" in listdir_rgmol:
         print("#############################")
         print("# Extracting the eigenmodes #")
@@ -392,6 +391,8 @@ def read(self,append_name="",nb_eigen=0):
         print("# Finished Extracting the eigenmodes #")
         print("# in {:3.3f} #".format(time.time()-time_before_extract))
         print("######################################")
+
+
 
     if "softness_kernel_eigenvectors.npy" in listdir_rgmol:
         print("############################################")

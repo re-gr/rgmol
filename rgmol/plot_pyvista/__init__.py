@@ -16,7 +16,7 @@ The documentation can be found on `rgmol wiki <re-gr.github.io/rgmol_wiki>`_
 
 from ._molecules import *
 from ._group_molecules import *
-
+from ._vid import *
 
 
 

@@ -187,7 +187,7 @@ def calculate_eigenmodes_linear_response_function(self):
     # eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
     # eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     # eigenvectors = eigenvectors.transpose()
-
+    return transition_matrix
 
     diag,transf = np.linalg.eigh(transition_matrix)
     pij = transf.dot(np.diag(diag)**(1/2)).dot(transf.transpose())
@@ -354,10 +354,21 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     #
     # eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
 
+
+    diag,transf = np.linalg.eigh(overlap_matrix)
+    pij = transf.dot(np.diag(diag)**(1/2)).dot(transf.transpose())
+
+    D = np.einsum("ik,jk,k->ij",pij,pij,1/factor)
+    eigenvalues, eigenvectors = np.linalg.eigh(D)
+    inv_pij = transf.dot(np.diag(1/diag**(1/2)).dot(transf.transpose()))
+    # inv_pij = np.linalg.inv(pij)
+    # eigenvectors = (inv_pij.dot(eigenvectors.transpose()))
+    eigenvectors = (inv_pij.dot(eigenvectors).transpose())
+
     # eigenvalues, eigenvectors = sp.linalg.eigh(s_matrix,overlap_matrix)
-    D = np.diag(1/factor).dot(overlap_matrix)
-    eigenvalues,eigenvectors = np.linalg.eig(D)
-    eigenvectors = eigenvectors.transpose()
+    # D = np.diag(1/factor).dot(overlap_matrix)
+    # eigenvalues,eigenvectors = np.linalg.eig(D)
+    # eigenvectors = eigenvectors.transpose()
 
 
     if nprocs >1:
@@ -491,8 +502,8 @@ def analysis_eigenmodes(self,kernel="linear_response_function",list_vectors=[1,2
     fukui_decomposition = []
     if kernel == "softness_kernel":
         for vector_number in range(len(eigenvalues)):
-            contributions = contrib_eigenvectors[vector_number-1]
-            fukui_decomposition.append(contributions[-1]**2 * self.properties["hardness"] * self.properties["softness_kernel_eigenvalues"][vector_number-1])
+            contributions = contrib_eigenvectors[vector_number]
+            fukui_decomposition.append(contributions[-1]**2 * self.properties["hardness"] * self.properties["softness_kernel_eigenvalues"][vector_number])
     f = np.array(fukui_decomposition)
 
 
@@ -615,75 +626,3 @@ def calculate_polarization(self,kernel,mol_p=None,mol_m=None,fukui_type="0",try_
 molecule.analysis_eigenmodes = analysis_eigenmodes
 molecule.calculate_polarization = calculate_polarization
 
-
-
-
-##TEMPO
-
-#
-# def calculate_overlaps(self):
-#     """
-#     calculate_overlaps()
-#
-#     Calculates the linear response function from the transition densities.
-#     This method does not calculate directly the linear response, but only the eigenmodes.
-#     The mathematics behind this function will soon be available somewhere...
-#
-#
-#     Parameters
-#     ----------
-#     grid_points : list of 3
-#     delta : float, optional
-#         the length added on all directions of the box containing all atomic centers
-#
-#     Returns
-#     -------
-#     linear_response_eigenvalues
-#         the eigenvalues of the linear response function
-#     linear_response_eigenvectors
-#         the eigenvectors of the linear response function
-#
-#     Notes
-#     -----
-#     The linear response function kernel can be computed as :
-#
-#     :math:`\\chi(r,r') = -2\\sum_{k\\neq0} \\frac{\\rho_0^k(r) \\rho_0^k(r')}{E_k-E_0}`
-#
-#     With :math:`\\rho_0^k` the transition density, and :math:`E_k` the energy of the transition k.
-#
-#     Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
-#     """
-#
-#     if not "transition_density_list" in self.properties:
-#         self.calculate_transition_density()
-#
-#     #Dummy implementation for now
-#     transition_density_list = self.properties["transition_density_list"]
-#     transition_energy = np.array(self.properties['transition_energy'])
-#
-#     N_grids,N_trans,N_r,N_ang = np.shape(transition_density_list)
-#
-#     nprocs = rgmol.nprocs
-#
-#     print("#################################")
-#     print("# Calculating Eigenmodes of LRF #")
-#     print("#################################")
-#     time_before_calc = time.time()
-#
-#     if nprocs >1:
-#         transition_matrix = calculate_overlap_matrix_multithread(self,transition_density_list,nprocs)
-#     else:
-#         transition_matrix = np.zeros((N_trans,N_trans))
-#         for first_transition in range(N_trans):
-#             for second_transition in range(first_transition+1):
-#                 overlap_integral = 0
-#                 for grid,index_grid in zip(self.mol_grids.grids,range(N_grids)):
-#                     overlap_integral += grid.integrate(transition_density_list[index_grid,first_transition] * transition_density_list[index_grid,second_transition])
-#
-#                 transition_matrix[first_transition,second_transition] = overlap_integral
-#                 transition_matrix[second_transition,first_transition] = overlap_integral
-#     D = np.diag(-2/transition_energy).dot(transition_matrix)
-#
-#     return D
-#
-# molecule.calculate_overlaps = calculate_overlaps
