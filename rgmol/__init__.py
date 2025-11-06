@@ -30,7 +30,7 @@ import rgmol.potential
 import rgmol.grid
 import rgmol.rectilinear_grid_reconstruction
 
-__version__ = "0.1.4.3"
+__version__ = "0.1.4.4"
 
 nprocs = 1
 

@@ -187,7 +187,6 @@ def calculate_eigenmodes_linear_response_function(self):
     # eigenvalues, eigenvectors = np.linalg.eigh(diag_matrix)
     # eigenvalues, eigenvectors = sp.linalg.eigh(LR_matrix_in_TDB,transition_matrix)
     # eigenvectors = eigenvectors.transpose()
-    return transition_matrix
 
     diag,transf = np.linalg.eigh(transition_matrix)
     pij = transf.dot(np.diag(diag)**(1/2)).dot(transf.transpose())
