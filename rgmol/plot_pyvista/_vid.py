@@ -86,7 +86,7 @@ def vibration_video(self,file_name,eddm,norm=3,nb_turns=10,nb_points=300,grid_po
     # cm = mol.properties["center_of_mass"]
     # coords = coords_0
 
-    mol.plot(plotter,factor=.3,opacity=1)
+    self.plot(plotter,factor=.3,opacity=1)
 
     plotter.add_text(text="Video",name="vid",position=(90.,20.))
     plotter.add_checkbox_button_widget(do_vid,size=80,color_off="blue")
