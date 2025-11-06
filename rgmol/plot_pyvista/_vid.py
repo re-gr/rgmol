@@ -16,11 +16,6 @@ import rgmol.grid
 import rgmol.plot_pyvista._functions as rgmol_funcs
 
 
-file = "H2CO_6311//H2CO.molden.input"
-file2 = "H2CO_6311//H2CO.out"
-
-mol = rgmol.extract_molden.extract(file,do_order_bonds=1)
-rgmol.extract_orca.extract_properties(file2,mol=mol)
 
 
 def Rz(alpha):
