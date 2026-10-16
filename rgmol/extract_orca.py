@@ -244,15 +244,19 @@ def extract_json(file,mol=None):
 
     L = []
     transition_list = []
-    for k in TDDFT:
-        L.append(k["X+Y"])
-        Orbwin = k["OrbWin"]
-        transition_list.append(np.array([ [x,y] for x in range(Orbwin[0],Orbwin[1]+1) for y in range(Orbwin[2],Orbwin[3]+1)]))
+    if TDDFT[0]["TDA"] == "ON":
+        for k in TDDFT:
+            list_coefs = np.array(k["X"][1:])
+            L.append(list_coefs.flatten())
+            Orbwin = k["OrbWin"]
+            transition_list.append(np.array([ [x,y] for x in range(Orbwin[0],Orbwin[1]+1) for y in range(Orbwin[2],Orbwin[3]+1)]))
+    else:
+        for k in TDDFT:
+            list_coefs = np.array(k["X+Y"])
+            L.append(list_coefs.flatten())
+            Orbwin = k["OrbWin"]
+            transition_list.append(np.array([ [x,y] for x in range(Orbwin[0],Orbwin[1]+1) for y in range(Orbwin[2],Orbwin[3]+1)]))
 
     N1,N2 = np.shape(np.array(L))
     mol.properties["transition_factor_list"] = np.array(L).reshape((N1,N2,1))
     mol.properties["transition_list"] = transition_list
-
-
-
-
