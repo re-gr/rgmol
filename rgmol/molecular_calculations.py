@@ -596,7 +596,7 @@ def calculate_transition_density(self):
         for factor_index in range(len(transition_list[transition])):
             occ,virt = transition_list[transition][factor_index]
             transitions[occ,virt] = 1
-            transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index]
+            transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index][0]
 
 
 
@@ -633,4 +633,3 @@ def calculate_transition_density(self):
 
 
 molecule.calculate_transition_density = calculate_transition_density
-

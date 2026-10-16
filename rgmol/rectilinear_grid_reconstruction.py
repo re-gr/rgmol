@@ -404,7 +404,7 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
         for factor_index in range(len(transition_list[transition])):
             occ,virt = transition_list[transition][factor_index]
             transitions[occ,virt] = 1
-            transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index]
+            transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index][0]
     MO_occ = MO_calculated[:transi_occ_max]
 
 
