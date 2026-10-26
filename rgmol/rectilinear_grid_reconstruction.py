@@ -19,6 +19,7 @@ from rgmol.grid import *
 
 
 
+
 def reconstruct_AO(mol,grid_points=(80,80,80),delta=5):
     """
     reconstruct_AO(mol,grid_points=(80,80,80),detla=5)
@@ -399,17 +400,18 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
     transi_virt_max += 1
     transitions = np.zeros((transi_occ_max,transi_virt_max))
     transition_density_coefficients = np.zeros((num_transition,transi_occ_max,transi_virt_max))
-    count = 0
+
     for transition in range(len(transition_list)):
         for factor_index in range(len(transition_list[transition])):
             occ,virt = transition_list[transition][factor_index]
             transitions[occ,virt] = 1
             transition_density_coefficients[transition,occ,virt] = transition_factor_list[transition][factor_index][0]
+
     MO_occ = MO_calculated[:transi_occ_max]
 
 
     # if nprocs > 1 and 0:
-    if nprocs > 1 and 0:
+    if nprocs > 1:
         transition_density_list = reconstruct_transition_density_multithread(mol,transitions,transition_density_coefficients,grid_points,nprocs)
     else:
         # transition_density_list = np.einsum("ijk,jlmn,klmn->ilmn",transition_density_coefficients,MO_occ,MO_calculated,optimize=True)
@@ -427,7 +429,7 @@ def reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5):
                     transition_coeffs = transition_density_coefficients[:,occ,virt]
                     for transition in range(num_transition):
                         coeff = transition_coeffs[transition]
-                        if coeff!=0:
+                        if abs(coeff)>1e-7:
                             transition_density_list[transition] = transition_density_list[transition] + coeff * MO_product
 
 
@@ -517,8 +519,186 @@ def reconstruct_chosen_transition_density(mol,chosen_transition_density,grid_poi
     mol.properties["Reconstructed_transition_density_list"][chosen_transition_density] = transition_density
     return coords,transition_density
 
+def reconstruct_transition_density_IPA(mol,grid_points=(80,80,80),delta=5,min_En=-3):
+    """
+    reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5)
 
-def reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=None,mol_m=None,fukui_type="0"):
+    Calculates all the transition densities for a molecule on the representation grid
+
+    Parameters
+    ----------
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
+        delta : float, optional
+            the length added on all directions to the box containing all atomic centers
+
+    Returns
+    -------
+        coords, transition_density_list
+
+    Notes
+    -----
+    The transition densities are defined as
+
+    | :math:`\\rho_0^k = \\sum_i c_i (Occ_i(r) * Virt_i(r))`
+    | With the sum being on all the transitions of the excitation, :math:`Occ_i(r)` and :math:`Virt_i(r)` being respectively the occupied and the virtual molecular orbitals considered in the transition, and :math:`c_i` the coefficient of the transition.
+
+    Examples
+    --------
+    For a TD-DFT calculation output :
+
+    STATE  1:  E=   0.148431 au      4.039 eV
+       | 18a ->  20a  :     0.5000 (c= 0.7071)
+       | 19a ->  21a  :     0.5000 (c= -0.7071)
+
+    The transition density will be :
+        | :math:`\\rho_0^1 =  c_1 (\\psi_{18}(r) * \\psi_{20}(r)) + c_2 (\\psi_{19}(r) * \\psi_{21}(r))`
+        | with :math:`c_1 = 0.7071` and :math:`c_2 = -0.7071`
+    """
+
+
+    coords,MO_calculated = reconstruct_MO(mol,grid_points=grid_points,delta=delta)
+    nx,ny,nz = grid_points
+
+
+    print("#####################################")
+    print("# Reconstructing Transition Density #")
+    print("#####################################")
+
+    time_before_calc = time.time()
+
+    MO_energy = mol.properties["MO_energy"]
+
+    N_MO = len(MO_energy)
+    num_occ = np.argmin(mol.properties["MO_occupancy"])
+    index_min_en = np.argmax(MO_energy >= min_En)
+
+
+    num_transition = (N_MO - num_occ) * (num_occ-index_min_en)
+    transition_energy = []
+    transition_density_list = np.zeros((num_transition,nx,ny,nz))
+
+
+    index = 0
+    for occ in range(index_min_en,num_occ):
+        for virt in range(num_occ,N_MO):
+            MO_prod = MO_calculated[occ] * MO_calculated[virt]
+
+            transition_density_list[index] = MO_prod
+            transition_energy.append(MO_energy[virt] - MO_energy[occ])
+
+            index+=1
+
+
+    mol.properties["transition_energy"] = np.array(transition_energy)
+    mol.properties["Reconstructed_transition_density_list"] = np.array(transition_density_list)
+
+    time_taken = time.time()-time_before_calc
+    print("##############################################")
+    print("# Finished Reconstructing Transition Density #")
+    print('# in {:3.3f} s #'.format(time_taken))
+    print("##############################################")
+    return coords,transition_density_list
+
+
+def reconstruct_chosen_transition_density_IPA(mol,chosen_transition_density,grid_points=(80,80,80),delta=5,min_En=-3):
+    """
+    reconstruct_transition_density(mol,grid_points=(80,80,80),delta=5)
+
+    Calculates all the transition densities for a molecule on the representation grid
+
+    Parameters
+    ----------
+        mol : molecule
+            the molecule
+        grid_points : list of 3, optional
+            the number of points on the representation grid
+        delta : float, optional
+            the length added on all directions to the box containing all atomic centers
+
+    Returns
+    -------
+        coords, transition_density_list
+
+    Notes
+    -----
+    The transition densities are defined as
+
+    | :math:`\\rho_0^k = \\sum_i c_i (Occ_i(r) * Virt_i(r))`
+    | With the sum being on all the transitions of the excitation, :math:`Occ_i(r)` and :math:`Virt_i(r)` being respectively the occupied and the virtual molecular orbitals considered in the transition, and :math:`c_i` the coefficient of the transition.
+
+    Examples
+    --------
+    For a TD-DFT calculation output :
+
+    STATE  1:  E=   0.148431 au      4.039 eV
+       | 18a ->  20a  :     0.5000 (c= 0.7071)
+       | 19a ->  21a  :     0.5000 (c= -0.7071)
+
+    The transition density will be :
+        | :math:`\\rho_0^1 =  c_1 (\\psi_{18}(r) * \\psi_{20}(r)) + c_2 (\\psi_{19}(r) * \\psi_{21}(r))`
+        | with :math:`c_1 = 0.7071` and :math:`c_2 = -0.7071`
+    """
+
+
+
+    coords,MO_calculated = reconstruct_MO(mol,grid_points=grid_points,delta=delta)
+    nx,ny,nz = grid_points
+
+
+    print("#####################################")
+    print("# Reconstructing Transition Density #")
+    print("#####################################")
+
+    time_before_calc = time.time()
+
+    MO_energy = mol.properties["MO_energy"]
+
+
+    num_occ = np.argmin(mol.properties["MO_occupancy"])
+    num_virt = len(MO_energy) - num_occ
+    index_min_en = np.argmax(MO_energy >= min_En)
+
+
+    ########THERE IS AN ISSUE HERE
+    occ = chosen_transition_density//num_virt + index_min_en
+    virt = chosen_transition_density%num_virt + num_occ
+
+    print("occ : {}, virt : {} ".format(occ,virt))
+
+    num_transition = (len(mol.properties["MO_occupancy"]) - num_occ) * (num_occ - index_min_en)
+    transition_energy = []
+
+    if not "transition_density_list" in mol.properties:
+        mol.properties["transition_density_list"] = np.zeros((num_transition,nx,ny,nz))
+        N_MO = len(MO_energy)
+        transition_energy = [MO_energy[virt] - MO_energy[occ] for virt in range(num_occ,N_MO) for occ in range(index_min_en,num_occ+index_min_en)]
+        mol.properties["transition_energy"] = transition_energy
+
+    transition_density_list = mol.properties["transition_density_list"]
+
+
+    MO_prod = MO_calculated[occ] * MO_calculated[virt]
+
+    transition_density_list[chosen_transition_density] = MO_prod
+    print("int : {}".format(np.sum(MO_prod)))
+
+
+    mol.properties["Reconstructed_transition_density_list"] = transition_density_list
+
+
+    time_taken = time.time()-time_before_calc
+    print("##############################################")
+    print("# Finished Reconstructing Transition Density #")
+    print('# in {:3.3f} s #'.format(time_taken))
+    print("##############################################")
+    return coords,MO_prod
+
+
+
+def reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=None,mol_m=None,fukui_type="0",IPA=False,number_reconstructed=100):
     """
     reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=None,mol_m=None,fukui_type="0")
 
@@ -549,8 +729,10 @@ def reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=Non
         if "Reconstructed_linear_response_eigenvectors" in mol.properties:
             return mol.properties["Reconstructed_coords"],mol.properties["Reconstructed_linear_response_eigenvectors"]
         contribution_eigenvectors = mol.properties["contribution_linear_response_eigenvectors"]
-
-        coords,Reconstructed_transition_density_list = reconstruct_transition_density(mol,grid_points=grid_points,delta=delta)
+        if IPA:
+            coords,Reconstructed_transition_density_list = reconstruct_transition_density_IPA(mol,grid_points=grid_points,delta=delta)
+        else:
+            coords,Reconstructed_transition_density_list = reconstruct_transition_density(mol,grid_points=grid_points,delta=delta)
         N_trans,nx,ny,nz = np.shape(Reconstructed_transition_density_list)
 
     if kernel == "softness_kernel":
@@ -558,7 +740,10 @@ def reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=Non
             return mol.properties["Reconstructed_coords"],mol.properties["Reconstructed_softness_kernel_eigenvectors"]
         contribution_eigenvectors = mol.properties["contribution_softness_kernel_eigenvectors"]
 
-        coords,Reconstructed_transition_density_list = reconstruct_transition_density(mol,grid_points=grid_points,delta=delta)
+        if IPA:
+            coords,Reconstructed_transition_density_list = reconstruct_transition_density_IPA(mol,grid_points=grid_points,delta=delta)
+        else:
+            coords,Reconstructed_transition_density_list = reconstruct_transition_density(mol,grid_points=grid_points,delta=delta)
         cooords, f0, fp, fm = reconstruct_fukui_function(mol,mol_p=mol_p,mol_m=mol_m,grid_points=grid_points,delta=delta)
 
         if "0" in fukui_type:
@@ -577,10 +762,10 @@ def reconstruct_eigenvectors(mol,kernel,grid_points=(80,80,80),delta=5,mol_p=Non
     time_before_calc = time.time()
 
     if nprocs >1:
-        reconstructed_eigenvectors = multithreading_reconstruct_eigenvectors(Reconstructed_transition_density_list,contribution_eigenvectors,nprocs)
+        reconstructed_eigenvectors = multithreading_reconstruct_eigenvectors(Reconstructed_transition_density_list,contribution_eigenvectors[:number_reconstructed],nprocs)
     else:
         reconstructed_eigenvectors = []
-        for eigenvector in contribution_eigenvectors:
+        for eigenvector in contribution_eigenvectors[:number_reconstructed]:
             reconstructed_eigenvector = np.einsum("i,ijkl->jkl",eigenvector,Reconstructed_transition_density_list)
             reconstructed_eigenvectors.append(reconstructed_eigenvector)
         reconstructed_eigenvectors = np.array(reconstructed_eigenvectors)

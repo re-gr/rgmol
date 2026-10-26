@@ -125,7 +125,7 @@ def calculate_hardness(self):
     return hardness
 
 
-def calculate_eigenmodes_linear_response_function(self):
+def calculate_eigenmodes_linear_response_function(self,IPA=False):
     """
     calculate_eigenmodes_linear_response_function()
 
@@ -157,11 +157,15 @@ def calculate_eigenmodes_linear_response_function(self):
     """
 
     if not "transition_density_list" in self.properties:
-        self.calculate_transition_density()
+        if IPA:
+            self.calculate_transition_density_IPA()
+        else:
+            self.calculate_transition_density()
 
     #Dummy implementation for now
     transition_density_list = self.properties["transition_density_list"]
     transition_energy = np.array(self.properties['transition_energy'])
+
     N_grids,N_trans,N_r,N_ang = np.shape(transition_density_list)
 
     nprocs = rgmol.nprocs
@@ -198,6 +202,14 @@ def calculate_eigenmodes_linear_response_function(self):
     # eigenvectors = (inv_pij.dot(eigenvectors.transpose()))
     eigenvectors = (inv_pij.dot(eigenvectors).transpose())
     # eigenvectors = eigenvectors.transpose()
+
+
+    # D = np.diag(-2/transition_energy).dot(transition_matrix)
+    # eigenvalues,eigenvectors = np.linalg.eig(D)
+    # # T,eigenvectors = sp.linalg.schur(D)
+    # # eigenvalues = np.array([T[k,k] for k in range(len(T))])
+    # eigenvectors = eigenvectors.transpose()
+    # # return D,transition_matrix
 
 
 
@@ -250,7 +262,7 @@ def calculate_eigenmodes_linear_response_function(self):
     return eigenvalues, np.array(eigenvectors)
 
 
-def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=None):
+def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=None,IPA=False):
     """
     calculate_softness_kernel_eigenmodes(fukui_type="0",mol_p=None,mol_m=None)
 
@@ -287,9 +299,11 @@ def calculate_softness_kernel_eigenmodes(self,fukui_type="0",mol_p=None,mol_m=No
     Therefore, the molecule needs the transition properties that can be extracted from a TD-DFT calculation, and the MO extracted from a molden file. More details can be found :doc:`here<../tuto/orbitals>`.
     """
 
-
     if not "transition_density_list" in self.properties:
-        self.calculate_transition_density()
+        if IPA:
+            self.calculate_transition_density_IPA()
+        else:
+            self.calculate_transition_density()
 
     transition_density_list = self.properties["transition_density_list"]
     transition_energy = np.array(self.properties['transition_energy'])
@@ -624,4 +638,3 @@ def calculate_polarization(self,kernel,mol_p=None,mol_m=None,fukui_type="0",try_
 
 molecule.analysis_eigenmodes = analysis_eigenmodes
 molecule.calculate_polarization = calculate_polarization
-

@@ -633,3 +633,82 @@ def calculate_transition_density(self):
 
 
 molecule.calculate_transition_density = calculate_transition_density
+
+
+def calculate_transition_density_IPA(self,min_En = -3):
+    """
+    calculate_transition_density_IPA()
+
+    Calculates all the transition densities for a molecule using the independent particle approximation
+    If the MO were not calculated it will also calculate them
+
+    Parameters
+    ----------
+        None
+            All the data should already be inside the molecule object
+
+    Returns
+    -------
+        transition_density_list
+
+    Notes
+    -----
+    In the IPA, the transition densities are defined as
+
+    | :math:`\\rho_0^{i,j} = (Occ_i(r) * Virt_j(r))`
+    | and the energy of the transition being the difference of energy of the two orbitals
+    """
+
+    if "transition_density_list" in self.properties:
+        return self.properties["transition_density_list"]
+
+
+    if not "MO_calculated_list" in self.properties:
+        self.calculate_MO()
+
+    time_before_calc = time.time()
+
+    MO_calculated_list = self.properties["MO_calculated_list"]
+    MO_energy = self.properties["MO_energy"]
+    N_grids,N_MO,N_r,N_ang = np.shape(MO_calculated_list)
+
+
+    num_occ = np.argmin(self.properties["MO_occupancy"])
+    index_min_en = np.argmax(MO_energy >= min_En)
+
+
+    num_transition = (N_MO - num_occ) * (num_occ-index_min_en)
+    transition_energy = []
+    transition_density_list = np.zeros((N_grids,num_transition,N_r,N_ang))
+
+
+    index = 0
+    for occ in range(index_min_en,num_occ):
+        for virt in range(num_occ,N_MO):
+            MO_prod = MO_calculated_list[:,occ] * MO_calculated_list[:,virt]
+
+            transition_density_list[:,index] = MO_prod
+            transition_energy.append(MO_energy[virt] - MO_energy[occ])
+
+            index+=1
+
+
+
+    # sort_energy = np.argsort(transition_energy)
+
+    self.properties["transition_energy"] = np.array(transition_energy)
+    self.properties["transition_density_list"] = np.array(transition_density_list)
+    transition_density_list = np.array(transition_density_list)
+
+
+
+
+    time_taken = time.time()-time_before_calc
+    print("###########################################")
+    print("# Finished calculating Transition Density #")
+    print('# in {:3.3f} s #'.format(time_taken))
+    print("###########################################")
+
+    return transition_density_list
+
+molecule.calculate_transition_density_IPA = calculate_transition_density_IPA

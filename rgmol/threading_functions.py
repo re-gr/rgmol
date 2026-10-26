@@ -115,7 +115,7 @@ def _product_MO_calc(mol,MO,list_add_transition,transitions,index_move,transitio
             transition_coeffs = transition_density_coefficients[:,occ,virt]
             for transition in range(N_trans):
                 coeff = transition_coeffs[transition]
-                if abs(coeff)>1e-5:
+                if abs(coeff)>1e-7:
                     list_add_transition[:,transition] = list_add_transition[:,transition] + coeff * MO_product
 
 def _divide_bool(arr,nprocs):
@@ -202,7 +202,7 @@ def _reconstruct_product_MO_calc(mol,MO,list_add_transition,transitions,nocc,nvi
             transition_coeffs = transition_density_coefficients[:,occ,virt]
             for transition in range(num_transitions):
                 coeff = transition_coeffs[transition]
-                if coeff!=0:
+                if abs(coeff) > 1e-7:
                     list_add_transition[transition] += coeff * MO_product
 
 def reconstruct_transition_density_multithread(mol,transitions,transition_density_coefficients,grid_points,nprocs):
@@ -330,8 +330,3 @@ def multithreading_reconstruct_eigenvectors_atomic_grids(mol,transitions,eigenve
         thread.join()
 
     return np.array(reconstructed_eigenvectors),np.array(reconstructed_eigenvector_norms)
-
-
-
-
-
